@@ -1,2 +1,11 @@
-# CDSI-BioMechZoo-Summer-2024-Project
-Project 1 for CDSI for Summer 2024.
+# Repository for the Python version of biomechZoo
+
+## Environment
+
+cd to the root folder in the terminal or command window, and run the following commands:
+
+``conda create -n biomechzoo python=3.10 -y``
+
+``conda activate biomechzoo``
+
+``conda install -r requirements.txt``
