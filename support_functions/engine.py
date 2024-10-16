@@ -18,6 +18,8 @@ def engine(**kwargs):
     Returns:
     list -- A list of file paths that match the criteria.
     """
+    #todo: engine could probably be updated using glob module
+
     path = kwargs.get('path') or kwargs.get('fld', '')
     folder = kwargs.get('folder', 'all')
     search = kwargs.get('search_path', 'all')

@@ -1,66 +1,15 @@
 import scipy.io
+from scipy.io.matlab.mio5_params import mat_struct
 import numpy as np
 import os
+from datetime import datetime
+import inspect
+import ezc3d
+
+import fileparts
+
 
 # A set of functions to handle zoo input/output operations
-
-
-def c3d_to_zoo(fl, verbose=False):
-    """ convert c3d file located at fl into dictionary with easily accessible marker data
-
-    Arguments:
-        fl      ... str, full path to c3d file
-        verbose ... bool, Default = False. If true, information about processing printed to screen
-    Returns:
-        data    ... dict, c3d file with markers as keys and coordinates as values
-
-    Notes:
-        - For details on reading c3d with ezc3d see:
-        https://github.com/pyomeca/ezc3d#python-3
-    """
-
-    import ezc3d
-
-    if verbose:
-        print('converting c3d to dict for: {}'.format(fl))
-
-    # load c3d object
-    d = ezc3d.c3d(fl)
-
-    # add all markers to a dictionary
-    marker_names = d['parameters']['POINT']['LABELS']['value']  # marker names
-    point_data = d['data']['points']  # 4xNxT, where 4 represent the components XYZ1
-    data = {}
-    for i, marker_name in enumerate(marker_names):
-        data[marker_name] = point_data[0:3, i, :].T  # we only want XYZ components in N X 3 format
-
-    # add analog data to dictionary
-    analog_names = d['parameters']['ANALOG']['LABELS']['value']
-    analog_data = d['data']['analogs']
-    for i, analog_name in enumerate(analog_names):
-        data[analog_name] = analog_data[0:3, i, :].T  # we only want XYZ components in N X 3 format
-
-    # add meta information
-    if 'parameters' in d.keys():
-        data['parameters'] = {}
-        params = list(d['parameters'].keys())
-        for param in params:
-            data['parameters'][param] = d['parameters'][param]
-
-    # header
-    if 'header' in d.keys():
-        data['header'] = {}
-        headers = list(d['header'].keys())
-        for header in headers:
-            data['header'][param] = d['header'][header]
-
-    return data
-
-
-import scipy.io
-import numpy as np
-from scipy.io.matlab.mio5_params import mat_struct
-from collections.abc import Iterable
 
 
 def mat_struct_to_dict(mat_struct):
@@ -128,32 +77,54 @@ def zload(file_path, verbose=False):
         return None
 
 
-def zsave(data, file_path, message=None, verbose=False):
+def zsave(fl, data, message=None):
     """
     Save the dictionary as a special .zoo (MAT) file.
 
     Parameters:
+    fl (str): The full path where the .zoo file will be saved.
     data (dict): The data to save as a .zoo file.
-    file_path (str): The full path where the .zoo file will be saved.
     """
 
-    #todo: save the process to Zoosystem
+    # Determine which function called zsave
+    stack = inspect.stack()
+    if len(stack) > 1:
+        process = stack[1].function
+    else:
+        process = 'process'
+
+    # Add additional processing info
+    if not message:
+        message = ''
+
+    process = '{} ({})'.format(process, datetime.now().strftime('%Y-%m-%d'))
+
+    # Write processing step to zoosystem
+    if 'Processing' not in data['zoosystem']:
+        data['zoosystem']['Processing'] = [process]
+    else:
+        # Ensure 'Processing' is a list before appending
+        if isinstance(data['zoosystem']['Processing'], list):
+            data['zoosystem']['Processing'].append(process)
+        else:
+            # If it is not a list, convert it to a list
+            data['zoosystem']['Processing'] = [data['zoosystem']['Processing'], process]
 
     # Ensure the file has a .zoo extension
-    if not file_path.endswith('.zoo'):
-        file_path += '.zoo'
+    directory, filename, ext = fileparts(fl)
+    if ext is None:
+        fl += '.zoo'
+    if not fl.endswith('.zoo'):
+        fl = os.path.join(directory, filename, '.zoo')
 
-    # Create the .mat file and rename to .zoo
-    mat_file_path = file_path.replace('.zoo', '.mat')
+    # Create the .mat file
+    mat_file_path = fl.replace('.zoo', '.mat')
 
     # Save the dictionary as a .mat file
     scipy.io.savemat(mat_file_path, data)
 
     # Rename the .mat file to .zoo
-    os.rename(mat_file_path, file_path)
-
-    if verbose:
-        print('File saved successfully as {}'.format(file_path))
+    os.rename(mat_file_path, fl)
 
 
 def zoo_to_dict(data):
@@ -162,20 +133,13 @@ def zoo_to_dict(data):
 
     return data
 
+
 if __name__ == "__main__":
     # For basic testing
 
-    # load c3d file
-    current_dir = os.getcwd()
-    parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
-    fl_c3d = os.path.join(parent_dir, 'sample study/Data/raw c3d files/HC002D/Straight/HC002D06.c3d')
-
-    # convert to zoo
-    data1 = c3d_to_zoo(fl_c3d, verbose=True)
 
     # save zoo file as
     fl_zoo = fl_c3d.replace('.c3d', '_temp.zoo')
-    zsave(data1, fl_zoo)
 
     # load zoo file
     data2 = zload(fl_zoo)
