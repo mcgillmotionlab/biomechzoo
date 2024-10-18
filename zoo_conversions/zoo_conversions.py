@@ -19,7 +19,7 @@ def c3d_to_zoo(fld, delFile=False, verbose=False):
         https://github.com/pyomeca/ezc3d#python-3
     """
     #todo implement file deletion
-    
+
     [_, fl, saveFile] = checkinput(fld, '.c3d')
 
     if verbose:
