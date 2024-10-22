@@ -1,6 +1,6 @@
 import unittest
 import os
-from support_functions.zoo_handler import zload
+from support_functions.support_functions import zload
 
 
 class TestZooFunctions(unittest.TestCase):
