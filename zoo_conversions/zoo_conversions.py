@@ -1,7 +1,8 @@
 import ezc3d
 
-from support_functions.support_functions import zsave, zload
-from support_functions.support_functions import checkinput
+from support_functions.zsave import zsave
+from support_functions.zload import zload
+from support_functions.checkinput import checkinput
 
 
 def c3d_to_zoo(fld, delFile=False, verbose=False):
@@ -67,10 +68,10 @@ if __name__ == "__main__":
     import os
     # For basic testing
 
-    # load a c3d file from the sample study
+    # load a c3d file from the sample_study
     current_dir = os.getcwd()
     parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
-    fl_c3d = os.path.join(parent_dir, 'sample study/Data/raw c3d files/HC002D/Straight/HC002D06.c3d')
+    fl_c3d = os.path.join(parent_dir, 'sample_study/Data/raw c3d files/HC002D/Straight/HC002D06.c3d')
     fl_zoo = fl_c3d.replace('c3d', 'zoo')
 
     # convert to zoo

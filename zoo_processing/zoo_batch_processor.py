@@ -1,7 +1,9 @@
 import os
 import shutil
 
-from support_functions.support_functions import zload, zsave, engine
+from support_functions.engine import engine
+from support_functions.zsave import zsave
+from support_functions.zload import zload
 from removechannel_data import removechannel_data
 
 
@@ -47,7 +49,7 @@ class BatchProcessor:
 # get original folder and copy to working folder
 current_dir = os.getcwd()
 parent_dir = os.path.abspath(os.path.join(current_dir, '..'))
-fld = os.path.join(parent_dir, 'sample study/Data/1-c3d2zoo/')
+fld = os.path.join(parent_dir, 'sample_study/Data/1-c3d2zoo/')
 fld_new = fld.replace('1-c3d2zoo', '2-remove_channels')
 shutil.copytree(fld, fld_new, dirs_exist_ok=True)
 
