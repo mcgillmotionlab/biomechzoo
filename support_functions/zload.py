@@ -42,5 +42,5 @@ if __name__ == '__main__':
     import os
     CURRENT_DIR = os.getcwd()
     DATA_DIR = os.path.abspath(os.path.join(CURRENT_DIR, '..', 'sample_study', 'Data'))
-    fl = os.path.join(DATA_DIR, '1-c3d2zoo', 'HC002D', 'Static', 'HC002D02.zoo')
+    fl = os.path.join(DATA_DIR, '1-c3d2zoo', 'HC002D', 'Turn', 'HC002D25.zoo')
     zload(fl)

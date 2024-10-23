@@ -13,8 +13,7 @@ class TestZload(unittest.TestCase):
     def setUp(self):
         """Setup resources for testing."""
         # Path to a valid and invalid .zoo (MAT) file for testing purposes.
-        # self.valid_zoo_file = os.path.join(DATA_DIR, '1-c3d2zoo', 'HC002D', 'Straight', 'HC002D06.zoo')
-        self.valid_zoo_file = '/Users/phild/Code/biomechZoo_python/sample_study/Data/1-c3d2zoo/HC002D/Straight/HC002D06.zoo'
+        self.valid_zoo_file = os.path.join(DATA_DIR, '1-c3d2zoo', 'HC002D', 'Turn', 'HC002D25.zoo')
         self.inexistant_zoo_file = 'idontexist.zoo'
         # self.invalid_zoo_file = os.path.join(DATA_DIR, 'raw c3d files', 'HC002D', 'Straight', 'HC002D06.c3d')
 
