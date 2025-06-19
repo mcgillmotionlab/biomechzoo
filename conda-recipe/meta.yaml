@@ -1,0 +1,27 @@
+package:
+  name: biomechzoo
+  version: "0.1.0"
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  script: python -m pip install .  # Uses setup.py to install
+
+requirements:
+  host:
+    - python >=3.7
+    - pip
+  run:
+    - python >=3.7
+    - numpy
+    - scipy
+    - matplotlib
+    - ezc3d
+
+about:
+  home: https://github.com/yourusername/biomechzoo
+  license: MIT
+  license_file: LICENSE
+  summary: "Python port of the BiomechZoo biomechanics toolbox"

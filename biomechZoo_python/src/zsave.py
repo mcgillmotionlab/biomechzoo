@@ -4,7 +4,7 @@ from datetime import datetime
 
 import scipy.io
 
-from support_functions.fileparts import fileparts
+from src.fileparts import fileparts
 
 
 def zsave(fl, data, message=None):

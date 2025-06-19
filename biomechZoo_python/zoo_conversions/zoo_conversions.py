@@ -1,8 +1,8 @@
 import ezc3d
 
-from support_functions.zsave import zsave
-from support_functions.zload import zload
-from support_functions.checkinput import checkinput
+from src.zsave import zsave
+from src.zload import zload
+from src.checkinput import checkinput
 
 
 def c3d_to_zoo(fld, delFile=False, verbose=False):

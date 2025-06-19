@@ -1,9 +1,9 @@
 import os
 import shutil
 
-from support_functions.engine import engine
-from support_functions.zsave import zsave
-from support_functions.zload import zload
+from src.engine import engine
+from src.zsave import zsave
+from src.zload import zload
 from removechannel_data import removechannel_data
 
 

@@ -1,5 +1,5 @@
-from support_functions.fileparts import fileparts
-from support_functions.engine import engine
+from src.fileparts import fileparts
+from src.engine import engine
 
 
 def checkinput(pth, ext):

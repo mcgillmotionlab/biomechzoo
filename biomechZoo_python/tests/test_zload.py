@@ -1,7 +1,7 @@
 import unittest
 import os
 
-from support_functions.zload import zload
+from src.zload import zload
 
 
 CURRENT_DIR = os.getcwd()

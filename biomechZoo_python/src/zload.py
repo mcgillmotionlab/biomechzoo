@@ -1,7 +1,7 @@
 import os
 import scipy.io
 
-from support_functions.mat_struct_to_dict import mat_struct_to_dict
+from src.mat_struct_to_dict import mat_struct_to_dict
 
 
 def zload(file_path, verbose=False):
