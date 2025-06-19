@@ -2,6 +2,32 @@ import os
 
 
 def engine(root_folder, extension, subfolders=None, name_contains=None):
+    """
+    Recursively search for files with a given extension, optionally filtering by
+    specific subfolders and substrings in filenames.
+
+    This function walks through every directory and subdirectory starting at
+    'root_folder'. If 'subfolders' is provided, it limits the search only to those
+    folders (or any of their subfolders) whose names appear in 'subfolders'. For
+    example, if subfolders=['Straight'], it will only consider files inside any
+    folder named 'Straight' at any depth within the root folder.
+
+    For each file found, it checks whether the file's extension matches the given
+    'extension' (case-insensitive). If 'name_contains' is specified, it also
+    requires the filename to contain that substring (case-insensitive).
+
+    Arguments:
+        root_folder (str): The root directory path where the search begins.
+        extension (str): File extension to search for (e.g., '.zoo', '.c3d').
+        subfolders (list of str, optional): List of folder names to restrict the search to.
+            Only files inside these folders (or their subfolders) are included.
+            If None, search all subfolders.
+        name_contains (str, optional): Substring that must be present in the filename
+            (case-insensitive). If None, no substring filtering is applied.
+
+    Returns:
+        list of str: List of full file paths matching the criteria.
+    """
     matched_files = []
 
     subfolders_set = set(subfolders) if subfolders else None
