@@ -7,7 +7,7 @@ source:
 
 build:
   noarch: python
-  script: python -m pip install .  # Uses setup.py to install
+  script: python -m pip install .  # Uses setup.py to install your package
 
 requirements:
   host:
@@ -18,10 +18,13 @@ requirements:
     - numpy
     - scipy
     - matplotlib
-    - ezc3d
 
 about:
   home: https://github.com/yourusername/biomechzoo
   license: MIT
   license_file: LICENSE
   summary: "Python port of the BiomechZoo biomechanics toolbox"
+
+extra:
+  recipe-maintainers:
+    - your-conda-forge-username

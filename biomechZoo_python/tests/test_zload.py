@@ -5,7 +5,7 @@ from src.zload import zload
 
 
 CURRENT_DIR = os.getcwd()
-DATA_DIR = os.path.abspath(os.path.join(CURRENT_DIR, '..', 'sample_study', 'Data'))
+DATA_DIR = os.path.abspath(os.path.join(CURRENT_DIR, '..', 'data', 'sample_study'))
 
 
 class TestZload(unittest.TestCase):
