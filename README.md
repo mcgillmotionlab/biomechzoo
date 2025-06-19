@@ -2,7 +2,7 @@
 
 ## Environment
 
-cd to the root folder in the terminal or command window, and run the following commands:
+cd to the root folder of the repository in the terminal or command window, and run the following commands:
 
 ``conda create -n biomechzoo python=3.10 -y``
 
