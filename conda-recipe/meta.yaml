@@ -1,5 +1,5 @@
 package:
-  name: biomechzoo
+  name: biomechzoo_python
   version: "0.1.0"
 
 source:
@@ -20,7 +20,7 @@ requirements:
     - matplotlib
 
 about:
-  home: https://github.com/yourusername/biomechzoo
+  home: https://github.com/mcgillmotionlab/biomechzoo_python
   license: MIT
   license_file: LICENSE
   summary: "Python port of the BiomechZoo biomechanics toolbox"
