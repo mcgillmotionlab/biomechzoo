@@ -1,7 +1,7 @@
 import os
 
 
-def engine(root_folder, extension, subfolders=None, name_contains=None):
+def engine(root_folder, extension, subfolders=None, name_contains=None, verbose=False):
     """
     Recursively search for files with a given extension, optionally filtering by
     specific subfolders and substrings in filenames.
@@ -24,7 +24,7 @@ def engine(root_folder, extension, subfolders=None, name_contains=None):
             If None, search all subfolders.
         name_contains (str, optional): Substring that must be present in the filename
             (case-insensitive). If None, no substring filtering is applied.
-
+        verbose (bool, optional): If true, displays additional information to user
     Returns:
         list of str: List of full file paths matching the criteria.
     """
@@ -50,6 +50,11 @@ def engine(root_folder, extension, subfolders=None, name_contains=None):
                 continue
             matched_files.append(os.path.join(dirpath, file))
 
+    if verbose:
+        print("Found {} {} files in subfolders named {} with substring {}:".format(len(matched_files), extension, subfolders, name_contains))
+        for f in matched_files:
+            print(" - {}".format(f))
+
     return matched_files
 
 
@@ -60,7 +65,4 @@ if __name__ == '__main__':
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
     sample_dir = os.path.join(project_root, 'data', 'sample_study', 'raw c3d files')
-    c3d_files = engine(sample_dir, '.c3d', subfolders=['Straight'], name_contains='HC03')
-    print("Found {} .c3d files in subfolders named 'Straight':".format(len(c3d_files)))
-    for f in c3d_files:
-        print(" - {}".format(f))
+    c3d_files = engine(sample_dir, '.c3d', subfolders=['Straight'], name_contains='HC03', verbose=True)
