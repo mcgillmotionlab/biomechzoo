@@ -1,25 +1,3 @@
-from biomechzoo.engine import engine
-from biomechzoo.utils.zload import zload
-from biomechzoo.utils.zsave import zsave
-
-
-def removechannel(fld, channels, mode='remove'):
-    """
-    Batch processing: Remove or keep specified channels in all zoo files in the folder.
-
-    Parameters:
-    - fld (str): Path to folder containing zoo files
-    - channels (list of str): List of channels to remove or keep
-    - mode (str): 'remove' (default) or 'keep'
-    """
-    fl = engine(fld)
-    for f in fl:
-        data = zload(f)
-        print('removing channels for file {}'.format(f))
-        data_new = removechannel_data(data, channels, mode)
-        zsave(f, data_new)
-
-
 def removechannel_data(data, channels, mode='remove'):
     """
     File-level processing: Remove or keep specified channels in a single zoo dictionary.
