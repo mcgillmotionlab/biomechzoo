@@ -1,55 +1,26 @@
-
 from scipy.io import savemat
+import inspect
 
 
 def zsave(fl, data):
-    savemat(out_path, data)
+    # Get the caller function name dynamically
+    caller_name = inspect.stack()[1].function
 
-# def zsave(fl, data, message=None):
-#     """
-#     Save the dictionary as a special .zoo (MAT) file.
-#
-#     Parameters:
-#     fl (str): The full path where the .zoo file will be saved.
-#     data (dict): The data to save as a .zoo file.
-#     """
-#
-#     # Determine which function called zsave
-#     stack = inspect.stack()
-#     if len(stack) > 1:
-#         process = stack[1].function
-#     else:
-#         process = 'process'
-#
-#     # Add additional processing info
-#     if not message:
-#         message = ''
-#
-#     process = '{} ({})'.format(process, datetime.now().strftime('%Y-%m-%d'))
-#
-#     # Write processing step to zoosystem
-#     if 'Processing' not in data['zoosystem']:
-#         data['zoosystem']['Processing'] = [process]
-#     else:
-#         # Ensure 'Processing' is a list before appending
-#         if isinstance(data['zoosystem']['Processing'], list):
-#             data['zoosystem']['Processing'].append(process)
-#         else:
-#             # If it is not a list, convert it to a list
-#             data['zoosystem']['Processing'] = [data['zoosystem']['Processing'], process]
-#
-#     # Ensure the file has a .zoo extension
-#     directory, filename, ext = fileparts(fl)
-#     if ext is None:
-#         fl += '.zoo'
-#     if not fl.endswith('.zoo'):
-#         fl = os.path.join(directory, filename, '.zoo')
-#
-#     # Create the .mat file
-#     mat_file_path = fl.replace('.zoo', '.mat')
-#
-#     # Save the dictionary as a .mat file
-#     scipy.io.savemat(mat_file_path, data)
-#
-#     # Rename the .mat file to .zoo
-#     os.rename(mat_file_path, fl)
+    # Initialize zoosystem.Processing if it doesn't exist
+    zoosystem = data.get('zoosystem', {})
+
+    # If Processing field exists, append; else create new list
+    processing = zoosystem.get('Processing', [])
+
+    if not isinstance(processing, list):
+        # Defensive: if Processing is a single string, make it a list
+        processing = [processing]
+
+    processing.append(caller_name)
+
+    # Update the data dict
+    zoosystem['Processing'] = processing
+    data['zoosystem'] = zoosystem
+
+    # Save the data
+    savemat(fl, data)

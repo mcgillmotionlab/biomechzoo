@@ -14,10 +14,15 @@ def c3d2zoo(fld):
         fld (str): Path to folder containing .c3d files
     """
     # todo: add line and event subdicts to match biomechzoo convention
-    if not os.path.isdir(fld):
-        raise NotADirectoryError('{} is not a valid directory'.format(fld))
 
-    fl = engine(fld, extension='.c3d')
+    # check if we are processing a single file or folder
+    if '.' in fld:
+        fl = [fld]
+    else:
+        if not os.path.isdir(fld):
+            raise NotADirectoryError('{} is not a valid directory'.format(fld))
+        fl = engine(fld, extension='.c3d')
+
     if not fl:
         print('No C3D files found in {}'.format(fld))
         return
@@ -39,6 +44,22 @@ def c3d2zoo(fld):
         # Save as .zoo (MATLAB-style)
         out_path = os.path.join(fld, f.replace(".c3d", ".zoo"))
 
-        # todo: update savemat to zsave
-        savemat(out_path, data)
+        zsave(out_path, data)
         print('Saved zoo file to: {}'.format(out_path))
+
+
+if __name__ == '__main__':
+    """ testing: convert a c3d file to zoo and delete after"""
+    from biomechzoo.utils.zload import zload
+    # -------TESTING--------
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)
+    fl = os.path.join(project_root, 'data', 'other', 'HC038A27.c3d')
+    c3d2zoo(fl)
+
+    # load the created file
+    fl_zoo = fl.replace('.c3d', '.zoo')
+    data = zload(fl_zoo)
+    # get rid of the created file
+    os.remove(fl_zoo)
+    
