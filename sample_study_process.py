@@ -2,9 +2,8 @@ import os
 import shutil
 import biomechzoo as bmech
 from biomechzoo.utils.copy_files import copy_files
-from biomechzoo.engine import engine
-from biomechzoo.utils.zload import zload
 
+# todo: turn this into a python notebook
 
 # Here we demonstrate capabilities of the biomechzoo python
 # implementation using the sample study data
@@ -21,22 +20,9 @@ shutil.copytree(fld0, fld1, dirs_exist_ok=True)
 copy_files(fld0, fld1)
 bmech.conversion.c3d2zoo(fld1)
 
-# Step 2: remove uncessary channels
-ch = {'LFHD', 'LBHD', 'RFHD', 'RBHD', 'C7', 'T10', 'T12', 'RBAK', 'CLAV', 'STRN', ... % PiG markers
-      'LSHO', 'LELB', 'LWRA', 'LWRB', 'LFIN', 'RSHO', 'RELB', 'RWRA', 'RWRB', ...
-      'RFIN', 'SACR', 'RASI', 'LASI', 'LTHI', 'LTIB', 'LKNE', 'LANK', 'LHEE', ...
-      'LTOE', 'RTHI', 'RTIB', 'RKNE', 'RANK', 'RHEE', 'RTOE', ...
-      'LHeadAngles', 'RHeadAngles', 'LThoraxAngles', 'RThoraxAngles', ...
-      'LPelvisAngles', 'LHipAngles', 'LKneeAngles', 'LAnkleAngles', ... % PiG kinemat
-      'RPelvisAngles', 'RHipAngles', 'RKneeAngles', 'RAnkleAngles', ...
-      'LHipForce', 'LKneeForce', 'LAnkleForce', 'LHipMoment', 'LKneeMoment', ... % PiG kinetics
-      'LAnkleMoment', 'LHipPower', 'LKneePower', 'LAnklePower', 'RHipForce', ...
-      'RKneeForce', 'RAnkleForce', 'RHipMoment', 'RKneeMoment', ...
-      'RAnkleMoment', 'RHipPower', 'RKneePower', 'RAnklePower', ...
-      'LGroundReactionForce', 'LGroundReactionMoment', ... % PiG proc GRF
-      'RGroundReactionForce', 'RGroundReactionMoment', ...
-      'ForceFx1', 'ForceFy1', 'ForceFz1', 'MomentMx1', 'MomentMy1', ... % raw GRF
-      'MomentMz1', 'ForceFx2', 'ForceFy2', 'ForceFz2', 'MomentMx2', ...
-      'MomentMy2', 'MomentMz2'};
-
-# bmech_removechannel(fld, ch, 'keep')
+# Step 2: remove some channels
+ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
+fld2 = fld1.replace('1-c3d2zoo', '2-remove_channels')
+shutil.copytree(fld1, fld2, dirs_exist_ok=True)
+copy_files(fld1, fld2)
+bmech.processing.removechannel(fld2, channels=ch, mode='keep')

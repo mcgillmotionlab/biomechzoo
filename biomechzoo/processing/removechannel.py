@@ -1,52 +1,55 @@
-import scipy.io
+from biomechzoo.engine import engine
+from biomechzoo.utils.zload import zload
+from biomechzoo.utils.zsave import zsave
 
 
-def remove_channel(zoo_path, channel_name, output_path=None):
+def removechannel(fld, channels, mode='remove'):
     """
-    Remove a channel (variable) from a .zoo (MATLAB .mat) file.
+    Batch processing: Remove or keep specified channels in all zoo files in the folder.
 
-    Arguments:
-        zoo_path (str): Path to input .zoo file.
-        channel_name (str): Name of the channel/variable to remove.
-        output_path (str, optional): Path to save modified .zoo file.
-            If None, overwrite original file.
+    Parameters:
+    - fld (str): Path to folder containing zoo files
+    - channels (list of str): List of channels to remove or keep
+    - mode (str): 'remove' (default) or 'keep'
+    """
+    fl = engine(fld)
+    for f in fl:
+        data = zload(f)
+        print('removing channels for file {}'.format(f))
+        data_new = removechannel_data(data, channels, mode)
+        zsave(f, data_new)
+
+
+def removechannel_data(data, channels, mode='remove'):
+    """
+    File-level processing: Remove or keep specified channels in a single zoo dictionary.
+
+    Parameters:
+    - data (dict): Zoo data loaded from a file
+    - channels (list of str): List of channels to remove or keep
+    - mode (str): 'remove' or 'keep'
 
     Returns:
-        None
+    - dict: Modified zoo dictionary with updated channels
     """
+    zoosystem = data.get('zoosystem', {})
+    all_channels = [ch for ch in data if ch != 'zoosystem']
 
-    # todo create a zload function to replace this call?
-    data = scipy.io.loadmat(zoo_path, squeeze_me=True, struct_as_record=False)
+    # Check for missing channels
+    missing = [ch for ch in channels if ch not in all_channels]
+    if missing:
+        print('Warning: the following channels were not found {}'.format(missing))
 
-    # MATLAB .mat files have metadata keys starting with '__', ignore them
-    keys_to_remove = [k for k in data.keys() if k.startswith('__')]
-    for k in keys_to_remove:
-        data.pop(k, None)
+    if mode == 'remove':
+        keep_channels = [ch for ch in all_channels if ch not in channels]
+    elif mode == 'keep':
+        keep_channels = [ch for ch in all_channels if ch in channels]
+    else:
+        raise ValueError("Mode must be 'remove' or 'keep'.")
 
-    if channel_name not in data:
-        print(f"Channel '{channel_name}' not found in {zoo_path}")
-        return
+    # Build new zoo dictionary
+    data_new = {'zoosystem': zoosystem}
+    for ch in keep_channels:
+        data_new[ch] = data[ch]
 
-    data.pop(channel_name)  # Remove the channel
-
-    save_path = output_path if output_path else zoo_path
-    scipy.io.savemat(save_path, data)
-    print('Saved modified zoo file to {}'.format(save_path))
-
-
-if __name__ == '__main__':
-    import os
-     """ testing: test removing channels from an existing zoo file 
-     """
-     # -------TESTING--------
-     # get path to file and load it
-     current_dir = os.path.dirname(os.path.abspath(__file__))
-     project_root = os.path.dirname(current_dir)
-     fl = os.path.join(project_root, 'data', 'other', 'HC002D006.zoo')
-     data = zload(fl)
-
-# select channels to remove as list and remove
-     chn_rm = ['RKneeAngles', 'LASI']
-     remove_channel(data, channel_name=chn_rm)
-
-
+    return data_new

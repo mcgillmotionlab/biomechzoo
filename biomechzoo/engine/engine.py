@@ -1,7 +1,7 @@
 import os
 
 
-def engine(root_folder, extension, subfolders=None, name_contains=None, verbose=False):
+def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, verbose=False):
     """
     Recursively search for files with a given extension, optionally filtering by
     specific subfolders and substrings in filenames.
@@ -18,7 +18,7 @@ def engine(root_folder, extension, subfolders=None, name_contains=None, verbose=
 
     Arguments:
         root_folder (str): The root directory path where the search begins.
-        extension (str): File extension to search for (e.g., '.zoo', '.c3d').
+        extension (str): File extension to search for (e.g., '.zoo', '.c3d'). Default .zoo
         subfolders (list of str, optional): List of folder names to restrict the search to.
             Only files inside these folders (or their subfolders) are included.
             If None, search all subfolders.
