@@ -62,4 +62,3 @@ if __name__ == '__main__':
     data = zload(fl_zoo)
     # get rid of the created file
     os.remove(fl_zoo)
-    
