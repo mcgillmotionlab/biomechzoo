@@ -49,4 +49,4 @@ if __name__ == '__main__':
      chn_rm = ['RKneeAngles', 'LASI']
      remove_channel(data, channel_name=chn_rm)
 
-    
+

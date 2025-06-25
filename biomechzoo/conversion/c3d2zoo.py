@@ -2,7 +2,8 @@ import os
 from ezc3d import c3d
 from scipy.io import savemat
 
-from bmech.engine import engine
+from biomechzoo.engine import engine
+from biomechzoo.utils.zsave import zsave
 
 
 def c3d2zoo(fld):
@@ -12,11 +13,11 @@ def c3d2zoo(fld):
     Args:
         fld (str): Path to folder containing .c3d files
     """
+    # todo: add line and event subdicts to match biomechzoo convention
     if not os.path.isdir(fld):
         raise NotADirectoryError('{} is not a valid directory'.format(fld))
 
-    fl = engine(fld)
-    fl = [f for f in os.listdir(fld) if f.lower().endswith(".c3d")]
+    fl = engine(fld, extension='.c3d')
     if not fl:
         print('No C3D files found in {}'.format(fld))
         return
@@ -28,7 +29,7 @@ def c3d2zoo(fld):
         c3d_obj = c3d(c3d_path)
         data = {}
 
-        # Example: extract marker data (you can expand this to forces, analog, etc.)
+        # todo: expand this to forces, analog, etc.
         if 'points' in c3d_obj['data']:
             points = c3d_obj['data']['points']
             labels = c3d_obj['parameters']['POINT']['LABELS']['value']
@@ -37,5 +38,7 @@ def c3d2zoo(fld):
 
         # Save as .zoo (MATLAB-style)
         out_path = os.path.join(fld, f.replace(".c3d", ".zoo"))
+
+        # todo: update savemat to zsave
         savemat(out_path, data)
-        print(f"Saved zoo file: {out_path}")
+        print('Saved zoo file to: {}'.format(out_path))
