@@ -38,10 +38,13 @@ def zsave(fl, data, inplace=True, out_folder=None, root_folder=None):
             root_folder = os.path.dirname(fl)
 
         root_path = os.path.dirname(root_folder)
+        in_folder = os.path.basename(root_folder)
         out_dir = os.path.join(root_path, out_folder)
         os.makedirs(out_dir, exist_ok=True)
-        save_path = os.path.join(out_dir, filename)
+        fl_new = fl.replace(in_folder, out_folder)
+        save_folder = os.path.dirname(fl_new)
+        os.makedirs(save_folder, exist_ok=True)
 
     # Save the .zoo file
-    savemat(save_path, data)
+    savemat(fl_new, data)
 
