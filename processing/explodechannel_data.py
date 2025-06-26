@@ -37,8 +37,6 @@ def explodechannel_data(data, channels=None):
             continue
 
         x, y, z = ch_data[:, 0], ch_data[:, 1], ch_data[:, 2]
-
-        # Copy original channel event data
         for axis, line in zip(['_x', '_y', '_z'], [x, y, z]):
             key = ch + axis
             data_new[key] = {

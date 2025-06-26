@@ -5,6 +5,7 @@ from utils.zload import zload
 from utils.zsave import zsave
 from processing.removechannel_data import removechannel_data
 from processing.explodechannel_data import explodechannel_data
+from processing.normalize_data import normalize_data
 from conversion.c3d2zoo_data import c3d2zoo_data
 
 
@@ -86,6 +87,24 @@ class BiomechZoo:
                 print('removing channels for {}'.format(f))
             data = zload(f)
             data = explodechannel_data(data)
+            zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def normalize(self, nlen=101, out_folder=None, inplace=None):
+        """ time normalizes all channels to length nlen """
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder)
+        for f in fl:
+            if verbose:
+                print('normalizing channels to length {} for {}'.format(nlen, f))
+            data = zload(f)
+            data = normalize_data(data, nlen)
             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
 
         # Update self.folder after  processing

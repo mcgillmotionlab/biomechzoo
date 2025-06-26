@@ -12,8 +12,11 @@ bmech = BiomechZoo(fld_raw_data, verbose=True, inplace=False)
 bmech.c3d2zoo(out_folder='1-c3d2zoo')
 
 # step 2: cleaning
-ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles']
+ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
 bmech.removechannel(ch, mode='keep', out_folder='2-removechannel')
 
 # step 3: explode channels
 bmech.explodechannel(out_folder='3-explodechannels')
+
+# step 4: normalize data
+bmech.normalize(nlen=101, out_folder='4-normalize')

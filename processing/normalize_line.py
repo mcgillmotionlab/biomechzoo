@@ -1,27 +1,27 @@
 import numpy as np
 from scipy.interpolate import interp1d
 
-def normalize_line(channel_data, target_length):
-    '''
+
+def normalize_line(channel_data, nlength=101):
+    """
     Channel-level: interpolate channel data to target length.
     Assumes channel_data is a 1D or 2D numpy array.
-    '''
-    arr = np.asarray(channel_data)
-    original_length = arr.shape[0]
+    """
+    original_length = channel_data.shape[0]
 
-    if original_length == target_length:
-        return arr
+    if original_length == nlength:
+        return channel_data
 
     x_original = np.linspace(0, 1, original_length)
-    x_target = np.linspace(0, 1, target_length)
+    x_target = np.linspace(0, 1, nlength)
 
-    if arr.ndim == 1:
-        f = interp1d(x_original, arr, kind='linear')
-        arr_new = f(x_target)
+    if channel_data.ndim == 1:
+        f = interp1d(x_original, channel_data, kind='linear')
+        channel_data_norm = f(x_target)
     else:
-        arr_new = np.zeros((target_length, arr.shape[1]))
-        for i in range(arr.shape[1]):
-            f = interp1d(x_original, arr[:, i], kind='linear')
-            arr_new[:, i] = f(x_target)
+        channel_data_norm = np.zeros((nlength, channel_data.shape[1]))
+        for i in range(channel_data.shape[1]):
+            f = interp1d(x_original, channel_data[:, i], kind='linear')
+            channel_data_norm[:, i] = f(x_target)
 
-    return arr_new
+    return channel_data_norm
