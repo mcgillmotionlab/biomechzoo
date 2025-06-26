@@ -10,6 +10,9 @@ def removechannel_data(data, channels, mode='remove'):
     Returns:
     - dict: Modified zoo dictionary with updated channels
     """
+    if mode not in ['remove', 'keep']:
+        raise ValueError("mode must be 'remove' or 'keep'.")
+
     zoosystem = data.get('zoosystem', {})
     all_channels = [ch for ch in data if ch != 'zoosystem']
 
