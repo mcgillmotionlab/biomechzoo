@@ -6,6 +6,7 @@ from utils.zsave import zsave
 from processing.removechannel_data import removechannel_data
 from processing.explodechannel_data import explodechannel_data
 from processing.normalize_data import normalize_data
+from processing.addeven_data import addevent_data
 from conversion.c3d2zoo_data import c3d2zoo_data
 
 
@@ -105,6 +106,43 @@ class BiomechZoo:
                 print('normalizing channels to length {} for {}'.format(nlen, f))
             data = zload(f)
             data = normalize_data(data, nlen)
+            zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def addevent(self, ch, evt_type, evt_name, out_folder=None, inplace=None):
+        """ adds events of type evt_type with name evt_name to channel ch """
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder)
+        for f in fl:
+            if verbose:
+                print('adding event {} to channel {} for {}'.format(evt_type, ch, f))
+            data = zload(f)
+            data = addevent_data(data, ch, evt_type, evt_name)
+            zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+
+    def partition(self, evt_start, evt_end, out_folder=None, inplace=None):
+        """ partitions data between events evt_start and evt_end """
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder)
+        for f in fl:
+            if verbose:
+                print('partitioning data between events {} and {} for {}'.format(evt_start, evt_end, f))
+            data = zload(f)
+            data = partition_data(data, evt_start, evt_end)
             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
 
         # Update self.folder after  processing

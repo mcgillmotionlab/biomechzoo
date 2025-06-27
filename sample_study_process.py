@@ -18,5 +18,11 @@ bmech.removechannel(ch, mode='keep', out_folder='2-removechannel')
 # step 3: explode channels
 bmech.explodechannel(out_folder='3-explodechannels')
 
+# step 4: add Right foot strike event
+bmech.addevent(out_folder='4-addevent')
+
+# step 5: partition from right foot strike 1 to right foot strike 2
+bmech.partition(out_folder='5-partition')
+
 # step 4: normalize data
 bmech.normalize(nlen=101, out_folder='4-normalize')
