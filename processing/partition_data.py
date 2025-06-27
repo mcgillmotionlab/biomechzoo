@@ -1,6 +1,7 @@
 from utils.findfield import findfield
 import warnings
 
+
 def partition_data(data, evt_start, evt_end):
     """ partition data for all channels between events evt_start and evt_end"""
 
@@ -38,12 +39,12 @@ def _partition_line(arr, evt_start, evt_end):
     return arr_new
 
 def _partition_event(event_dict, evt_start, evt_end, arr_len):
-
-    event_dict_new = {}
-    for event, event_val in event_dict:
-        event_val_new =
-        event_dict_new[event] =
-
-
-
-    return event_dict_new
+    raise NotImplementedError
+    # event_dict_new = {}
+    # for event, event_val in event_dict:
+    #     event_val_new =
+    #     event_dict_new[event] =
+    #
+    #
+    #
+    # return event_dict_new
