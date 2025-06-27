@@ -3,30 +3,32 @@ from ezc3d import c3d
 from utils.engine import engine  # assumes this returns .zoo files in folder
 from utils.zload import zload
 from utils.zsave import zsave
+from utils.batchdisp import batchdisp
 from processing.removechannel_data import removechannel_data
 from processing.explodechannel_data import explodechannel_data
 from processing.normalize_data import normalize_data
-from processing.addeven_data import addevent_data
+from processing.addevent_data import addevent_data
 from conversion.c3d2zoo_data import c3d2zoo_data
 
 
 class BiomechZoo:
-    def __init__(self, in_folder, inplace=False, verbose=False):
+    def __init__(self, in_folder, inplace=False, verbose=0):
+        self.verbose = verbose
         self.in_folder = in_folder
         self.verbose = verbose
         self.inplace = inplace  # choice to save processed files to new folder
 
-        if self.verbose:
-            print('BiomechZoo initialized')
-            print('processing folder set to: {}'.format(self.in_folder))
-            if inplace:
-                print('each processing step will be applied to same folder (no backups per step)')
-            else:
-                print('each processing step will be applied to a new folder')
+        batchdisp('BiomechZoo initialized', level=1, verbose=verbose)
+        batchdisp('verbosity set to: {}'.format(verbose), level=1, verbose=verbose)
+        batchdisp('processing folder set to: {}'.format(self.in_folder), level=1, verbose=verbose)
+        if inplace:
+            batchdisp('each processing step will be applied to same folder', level=1, verbose=verbose)
+        else:
+            batchdisp('each processing step will be applied to a new folder', level=1, verbose=verbose)
 
     def _update_folder(self, out_folder, inplace, in_folder):
         """
-        Utility to update self.folder if not inplace.
+        Utility to update self.in_folder if not inplace.
 
         Parameters:
         - out_folder (str or None): The output folder provided by user
@@ -47,12 +49,12 @@ class BiomechZoo:
 
         fl = engine(in_folder, extension='.c3d')
         for f in fl:
-            if verbose:
-                print('converting c3d to zoo for {}'.format(f))
+            batchdisp('converting c3d to zoo for {}'.format(f), level=2, verbose=verbose)
             c3d_obj = c3d(f)
             data = c3d2zoo_data(c3d_obj)
             f_zoo = f.replace('.c3d', '.zoo')
             zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        batchdisp('c3d to zoo conversion complete', level=1, verbose=verbose)
 
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
@@ -66,11 +68,11 @@ class BiomechZoo:
 
         fl = engine(in_folder)
         for f in fl:
-            if verbose:
-                print('removing channels for {}'.format(f))
+            batchdisp('removing channels for {}'.format(f), level=2, verbose=verbose)
             data = zload(f)
             data = removechannel_data(data, ch, mode)
             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+        batchdisp('remove channel complete', level=1, verbose=verbose)
 
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
@@ -85,10 +87,11 @@ class BiomechZoo:
         fl = engine(in_folder)
         for f in fl:
             if verbose:
-                print('removing channels for {}'.format(f))
+                batchdisp('removing channels for {}'.format(f), level=2, verbose=verbose)
             data = zload(f)
             data = explodechannel_data(data)
             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+        batchdisp('explode channel complete', level=1, verbose=verbose)
 
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
@@ -103,10 +106,11 @@ class BiomechZoo:
         fl = engine(in_folder)
         for f in fl:
             if verbose:
-                print('normalizing channels to length {} for {}'.format(nlen, f))
+                batchdisp('normalizing channels to length {} for {}'.format(nlen, f), level=2, verbose=verbose)
             data = zload(f)
             data = normalize_data(data, nlen)
             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+        batchdisp('normalization complete', level=1, verbose=verbose)
 
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
@@ -121,14 +125,14 @@ class BiomechZoo:
         fl = engine(in_folder)
         for f in fl:
             if verbose:
-                print('adding event {} to channel {} for {}'.format(evt_type, ch, f))
+                batchdisp('adding event {} to channel {} for {}'.format(evt_type, ch, f), level=2, verbose=verbose)
             data = zload(f)
             data = addevent_data(data, ch, evt_type, evt_name)
             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+        batchdisp('add event complete', level=1, verbose=verbose)
 
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
-
 
     def partition(self, evt_start, evt_end, out_folder=None, inplace=None):
         """ partitions data between events evt_start and evt_end """
@@ -140,10 +144,10 @@ class BiomechZoo:
         fl = engine(in_folder)
         for f in fl:
             if verbose:
-                print('partitioning data between events {} and {} for {}'.format(evt_start, evt_end, f))
+                batchdisp('partitioning data between events {} and {} for {}'.format(evt_start, evt_end, f), level=2, verbose=verbose)
             data = zload(f)
             data = partition_data(data, evt_start, evt_end)
             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
-
+        batchdisp('partition complete', level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
