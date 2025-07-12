@@ -4,11 +4,14 @@ from utils.engine import engine  # assumes this returns .zoo files in folder
 from utils.zload import zload
 from utils.zsave import zsave
 from utils.batchdisp import batchdisp
+from conversion.c3d2zoo_data import c3d2zoo_data
+from conversion.df2zoo_data import df2zoo
 from processing.removechannel_data import removechannel_data
 from processing.explodechannel_data import explodechannel_data
-from processing.normalize_data import normalize_data
 from processing.addevent_data import addevent_data
-from conversion.c3d2zoo_data import c3d2zoo_data
+from processing.partition_data import partition_data
+from biomech_ops.normalize_data import normalize_data
+# from biomech_ops.filter_data import filter_data
 
 
 class BiomechZoo:
@@ -22,9 +25,9 @@ class BiomechZoo:
         batchdisp('verbosity set to: {}'.format(verbose), level=1, verbose=verbose)
         batchdisp('processing folder set to: {}'.format(self.in_folder), level=1, verbose=verbose)
         if inplace:
-            batchdisp('each processing step will be applied to same folder', level=1, verbose=verbose)
+            batchdisp('Processing mode: overwrite (each step will be applied to same folder)', level=1, verbose=verbose)
         else:
-            batchdisp('each processing step will be applied to a new folder', level=1, verbose=verbose)
+            batchdisp('Processing mode: backup (each step will be applied to a new folder)', level=1, verbose=verbose)
 
     def _update_folder(self, out_folder, inplace, in_folder):
         """
@@ -58,6 +61,30 @@ class BiomechZoo:
 
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
+
+    def csv2zoo(self, out_folder=None, inplace=None):
+        """ Converts generic .csv file in the folder to .zoo format """
+        raise NotImplementedError
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder, extension='.c3d')
+        for f in fl:
+            batchdisp('converting csv to zoo for {}'.format(f), level=2, verbose=verbose)
+            df = pd.read_csv(f)
+            data = df2zoo(df)
+            f_zoo = f.replace('.csv', '.zoo')
+            zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        batchdisp('csv to zoo conversion complete', level=1, verbose=verbose)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def xls2zoo(self, out_folder=None, inplace=None):
+        """ Converts generic .xls file in the folder to .zoo format """
+        raise NotImplementedError
 
     def removechannel(self, ch, mode='remove', out_folder=None, inplace=None):
         """ removes channels from zoo files """
@@ -151,3 +178,30 @@ class BiomechZoo:
         batchdisp('partition complete', level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
+
+    def filter(self, ch, filt=None, out_folder=None, inplace=None):
+
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        # set filter type
+        if filt is None:
+            filt = {'type': 'butterworth',
+                    'order': 3,
+                    'pass': 'lowpass'}
+
+        fl = engine(in_folder)
+        for f in fl:
+            batchdisp('filtering data in channels {} for {}'.format(ch, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = filter_data(data, ch, filt)
+            zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+        batchdisp('filter data complete', level=1, verbose=verbose)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+
+

@@ -21,8 +21,11 @@ bmech.explodechannel(out_folder='3-explodechannels')
 # step 4: add Right foot strike event
 bmech.addevent(out_folder='4-addevent')
 
-# step 5: partition from right foot strike 1 to right foot strike 2
-bmech.partition(out_folder='5-partition')
+# step 5 filter data
+bmech.filter(out_folder='5-filter')
 
-# step 4: normalize data
-bmech.normalize(nlen=101, out_folder='4-normalize')
+# step 6: partition from right foot strike 1 to right foot strike 2
+bmech.partition(out_folder='6-partition')
+
+# step 7: normalize data
+bmech.normalize(nlen=101, out_folder='7-normalize')

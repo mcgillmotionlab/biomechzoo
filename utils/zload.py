@@ -29,12 +29,11 @@ def zload(filepath):
 
 
 if __name__ == '__main__':
-    from biomechzoo.engine import engine
     """ testing: load a single zoo file from the other subfolder in data"""
     # -------TESTING--------
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
-    fl = os.path.join(project_root, 'data', 'other', 'HC002D06.zoo')
+    fl = os.path.join(project_root, 'data', 'other', 'HC030A05.zoo')
     data = zload(fl)
     # todo: solve the data.data problem in the same was as Matlab
     data = data['data']
