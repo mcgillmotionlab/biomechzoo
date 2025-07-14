@@ -2,36 +2,46 @@ import matplotlib.pyplot as plt
 
 
 def zplot(data, ch, xlabel='frames', ylabel='angles (deg)'):
-    """ helper function to plot a single channel of a zoo file, along with
-    any existing events
+    """
+    Plot a single channel of a zoo file, along with any existing events.
 
-    Arguments
-        data: dict, loaded zoo file
-        ch: str, name of branch of a zoo file. e.g. 'RkneeAngles'
-        xlabel: str, label for xaxis. Default 'frames'
-        ylabel: str, label for yaxis. Default 'angles (deg)'
+    Parameters
+    ----------
+    data : dict
+        Loaded zoo file.
+    ch : str
+        Name of the channel to plot, e.g., 'RkneeAngles'.
+    xlabel : str
+        Label for x-axis. Default is 'frames'.
+    ylabel : str
+        Label for y-axis. Default is 'angles (deg)'.
 
     Returns
-        None
+    -------
+    None
     """
-    # todo: complete plotting of events
 
-    # plot line data
-    array_to_plot = data[ch]['line']
-    plt.figure()
-    plt.plot(array_to_plot)
+    if ch not in data:
+        raise KeyError(f"Channel '{ch}' not found in data.")
+
+    y = data[ch]['line']
+    x = range(len(y))
+
+    plt.figure(figsize=(10, 4))
+    plt.plot(x, y, label='Signal', linewidth=2)
     plt.title(ch)
     plt.xlabel(xlabel)
     plt.ylabel(ylabel)
     plt.grid(True)
 
-    # plot event data (if any)
-    events_to_plot = data[ch]['event']
-    for eventname in events_to_plot:
-        evtx = events_to_plot[eventname][0]
-        evty = events_to_plot[eventname][1]
-        plt.plot(evtx, evty)
+    # Plot events if available
+    events = data[ch].get('event', {})
+    for name, coords in events.items():
+        evtx, evty = coords[0], coords[1]
+        plt.plot(evtx, evty, 'ro')
+        plt.text(evtx, evty, name, fontsize=8, color='red', ha='left', va='bottom')
 
+    plt.tight_layout()
     plt.show()
 
 
@@ -47,6 +57,5 @@ if __name__ == '__main__':
 
     # load  zoo file
     data = zload(fl)
-    data = data['data']
     ch = 'SACR'
     zplot(data, ch)

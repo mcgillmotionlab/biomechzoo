@@ -24,8 +24,9 @@ def zload(filepath):
             return [mat_struct_to_dict(item) for item in obj]
         else:
             return obj
-
-    return {k: mat_struct_to_dict(v) for k, v in mat_data.items()}
+    data = {k: mat_struct_to_dict(v) for k, v in mat_data.items()}
+    zdata = data['data']
+    return zdata
 
 
 if __name__ == '__main__':
@@ -35,8 +36,6 @@ if __name__ == '__main__':
     project_root = os.path.dirname(current_dir)
     fl = os.path.join(project_root, 'data', 'other', 'HC030A05.zoo')
     data = zload(fl)
-    # todo: solve the data.data problem in the same was as Matlab
-    data = data['data']
     channels = [k for k in data.keys()]
     print('{} channels found'.format(len(channels)))
     for ch in channels:

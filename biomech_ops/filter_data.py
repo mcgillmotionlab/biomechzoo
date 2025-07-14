@@ -31,9 +31,24 @@ def filter_data(data, ch, filt=None):
     if isinstance(ch, str):
         ch = [ch]
 
+    analog_channels = data['zoosystem']['Analog']['Channels']
+    if analog_channels:
+        analog_freq = data['zoosystem']['Analog']['Freq']
+    video_channels = data['zoosystem']['Video']['Channels']
+    if video_channels:
+        video_freq = data['zoosystem']['Video']['Freq']
+
     for c in ch:
         if c not in data:
             raise KeyError('Channel {} not found in data'.format(c))
+
+        if 'fs' not in filt:
+            if c in analog_channels:
+                filt['fs'] = analog_freq
+            elif c in video_freq:
+                filt['fs'] = video_freq
+            else:
+                raise ValueError('frequency not provided and cannot be inferred from zoosystem for channel'.format(c))
 
         signal_raw = data[c]['line']
         signal_filtered = filter_line(signal_raw, filt)
