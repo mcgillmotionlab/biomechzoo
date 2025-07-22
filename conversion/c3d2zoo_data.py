@@ -18,7 +18,7 @@ def c3d2zoo_data(c3d_obj):
                 'event': {}  # empty for now
             }
 
-    # You can optionally add empty zoosystem metadata
+    # todo add relevant meta data to zoosystem
     data['zoosystem'] = {}
 
     return data

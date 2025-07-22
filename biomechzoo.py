@@ -5,7 +5,7 @@ from utils.zload import zload
 from utils.zsave import zsave
 from utils.batchdisp import batchdisp
 from conversion.c3d2zoo_data import c3d2zoo_data
-from conversion.df2zoo_data import df2zoo
+from conversion.csv2zoo_data import csv2zoo_data
 from processing.removechannel_data import removechannel_data
 from processing.explodechannel_data import explodechannel_data
 from processing.addevent_data import addevent_data
@@ -64,7 +64,6 @@ class BiomechZoo:
 
     def csv2zoo(self, out_folder=None, inplace=None):
         """ Converts generic .csv file in the folder to .zoo format """
-        raise NotImplementedError
         verbose = self.verbose
         in_folder = self.in_folder
         if inplace is None:
@@ -73,8 +72,7 @@ class BiomechZoo:
         fl = engine(in_folder, extension='.c3d')
         for f in fl:
             batchdisp('converting csv to zoo for {}'.format(f), level=2, verbose=verbose)
-            df = pd.read_csv(f)
-            data = df2zoo(df)
+            data = csv2zoo_data(f)
             f_zoo = f.replace('.csv', '.zoo')
             zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         batchdisp('csv to zoo conversion complete', level=1, verbose=verbose)
