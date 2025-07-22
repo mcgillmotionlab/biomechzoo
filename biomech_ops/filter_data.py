@@ -1,4 +1,3 @@
-import numpy as np
 from filter_line import filter_line
 
 
