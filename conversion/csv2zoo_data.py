@@ -12,10 +12,8 @@ def csv2zoo_data(csv_path, header_len=10):
     header_lines = []
     with open(csv_path, 'r') as f:
         for line in f:
-            print(f"Line read: '{line.rstrip()}'")  # Show exactly what is read
             header_lines.append(line.strip())
             if line.strip().lower() == 'endheader':
-                print("Found endheader, stopping header read.")
                 break
 
     # Parse metadata

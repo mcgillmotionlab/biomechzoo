@@ -69,7 +69,7 @@ class BiomechZoo:
         if inplace is None:
             inplace = self.inplace
 
-        fl = engine(in_folder, extension='.c3d')
+        fl = engine(in_folder, extension='.csv')
         for f in fl:
             batchdisp('converting csv to zoo for {}'.format(f), level=2, verbose=verbose)
             data = csv2zoo_data(f)
