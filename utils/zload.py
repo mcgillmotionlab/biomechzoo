@@ -25,8 +25,7 @@ def zload(filepath):
         else:
             return obj
     data = {k: mat_struct_to_dict(v) for k, v in mat_data.items()}
-    zdata = data['data']
-    return zdata
+    return data
 
 
 if __name__ == '__main__':

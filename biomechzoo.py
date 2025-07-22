@@ -25,9 +25,9 @@ class BiomechZoo:
         batchdisp('verbosity set to: {}'.format(verbose), level=1, verbose=verbose)
         batchdisp('processing folder set to: {}'.format(self.in_folder), level=1, verbose=verbose)
         if inplace:
-            batchdisp('Processing mode: overwrite (each step will be applied to same folder)', level=1, verbose=verbose)
+            batchdisp('Processing mode: overwrite (inplace=True) (each step will be applied to same folder)', level=1, verbose=verbose)
         else:
-            batchdisp('Processing mode: backup (each step will be applied to a new folder)', level=1, verbose=verbose)
+            batchdisp('Processing mode: backup (inplace=False)(each step will be applied to a new folder)', level=1, verbose=verbose)
 
     def _update_folder(self, out_folder, inplace, in_folder):
         """
