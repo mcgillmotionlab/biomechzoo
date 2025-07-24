@@ -6,11 +6,13 @@ from utils.zsave import zsave
 from utils.batchdisp import batchdisp
 from conversion.c3d2zoo_data import c3d2zoo_data
 from conversion.csv2zoo_data import csv2zoo_data
+from conversion.mvnx2zoo_data import mvnx2zoo_data
 from processing.removechannel_data import removechannel_data
 from processing.explodechannel_data import explodechannel_data
 from processing.addevent_data import addevent_data
 from processing.partition_data import partition_data
 from biomech_ops.normalize_data import normalize_data
+from biomech_ops.phaseangle_data import phaseangle_data
 # from biomech_ops.filter_data import filter_data
 
 
@@ -42,6 +44,25 @@ class BiomechZoo:
             # get full path for out_folder
             in_folder_path = os.path.dirname(in_folder)
             self.in_folder = os.path.join(in_folder_path, out_folder)
+
+
+    def mvnx2zoo(self, out_folder=None, inplace=False):
+        """ Converts all .mvnx files in the folder to .zoo format """
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder, extension='.mvnx')
+        for f in fl:
+            batchdisp('converting mvnx to zoo for {}'.format(f), level=2, verbose=verbose)
+            data = mvnx2zoo_data(f)
+            f_zoo = f.replace('.mvnx', '.zoo')
+            zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        batchdisp('mvnx to zoo conversion complete', level=1, verbose=verbose)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
 
     def c3d2zoo(self, out_folder=None, inplace=None):
         """ Converts all .c3d files in the folder to .zoo format """
@@ -83,6 +104,46 @@ class BiomechZoo:
     def xls2zoo(self, out_folder=None, inplace=None):
         """ Converts generic .xls file in the folder to .zoo format """
         raise NotImplementedError
+
+
+    def phaseangle(self, ch, out_folder=None, inplace=None):
+        """ computes phase angles"""
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder)
+        for f in fl:
+            if verbose:
+                batchdisp('computing phase angles for {}'.format(f), level=2, verbose=verbose)
+            data = zload(f)
+            data = phaseangle_data(data, ch)
+            zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+        batchdisp('phase angle computation complete', level=1, verbose=verbose)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def crp(self, ch_prox, ch_dist, out_folder=None, inplace=None):
+        """ computes CRP angles"""
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder)
+        for f in fl:
+            if verbose:
+                batchdisp('computing CRP angles between channel {} (prox) and {} (dist) for {}'.format(ch_prox, ch_dist, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = crp_data(data, ch_prox, ch_dist)
+            zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+        batchdisp('CRP computation complete', level=1, verbose=verbose)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
 
     def removechannel(self, ch, mode='remove', out_folder=None, inplace=None):
         """ removes channels from zoo files """
