@@ -5,6 +5,7 @@ conda activate test-bmz
 # building
 cd to biomechzoo-conda where the recipe files are
 conda build recipe -c conda-forge
+pip install mvnx
 conda install --use-local biomechzoo -c conda-forge
 
 # test installation

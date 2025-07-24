@@ -1,4 +1,4 @@
-from phaseangle_line import phase_angle_line
+from phase_angle_line import phase_angle_line
 
 def phase_angle_data(data, channels):
     """ compute phase angle using Hilbert Transform"""

@@ -12,7 +12,7 @@ from processing.explodechannel_data import explodechannel_data
 from processing.addevent_data import addevent_data
 from processing.partition_data import partition_data
 from biomech_ops.normalize_data import normalize_data
-from biomech_ops.phaseangle_data import phase_angle_data
+from biomech_ops.phase_angle_data import phase_angle_data
 from biomech_ops.crp_data import crp_data
 # from biomech_ops.filter_data import filter_data
 
