@@ -1,0 +1,34 @@
+package:
+  name: biomechzoo
+  version: "0.1.0"
+
+source:
+  path: ..
+
+build:
+  noarch: python
+  script: |
+    python -m pip install --no-deps --ignore-installed .
+    python -m pip install mvnx
+
+requirements:
+  host:
+    - python >=3.10
+    - pip
+    - numpy
+    - scipy
+    - matplotlib
+    - ezc3d
+    - pandas
+  run:
+    - python >=3.10
+    - numpy
+    - scipy
+    - matplotlib
+    - ezc3d
+    - pandas
+
+about:
+  home: https://github.com/mcgillmotionlab/biomechzoo
+  license: MIT
+  summary: "Biomechanical data processing toolkit"
