@@ -1,4 +1,4 @@
-from crp_line import crp_line
+from biomech_ops.crp_line import crp_line
 
 
 def crp_data(data, ch_prox, ch_dist):
