@@ -10,6 +10,5 @@ setup(
         "matplotlib",
         "ezc3d",
         "pandas",
-        "mvnx",
     ],
 )
