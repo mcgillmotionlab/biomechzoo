@@ -1,5 +1,6 @@
 from crp_line import crp_line
 
+
 def crp_data(data, ch_prox, ch_dist):
     data_new = data.copy()
     prox = data[ch_prox]['line']

@@ -12,7 +12,8 @@ from processing.explodechannel_data import explodechannel_data
 from processing.addevent_data import addevent_data
 from processing.partition_data import partition_data
 from biomech_ops.normalize_data import normalize_data
-from biomech_ops.phaseangle_data import phaseangle_data
+from biomech_ops.phaseangle_data import phase_angle_data
+from biomech_ops.crp_data import crp_data
 # from biomech_ops.filter_data import filter_data
 
 
@@ -106,7 +107,7 @@ class BiomechZoo:
         raise NotImplementedError
 
 
-    def phaseangle(self, ch, out_folder=None, inplace=None):
+    def phase_angle(self, ch, out_folder=None, inplace=None):
         """ computes phase angles"""
         verbose = self.verbose
         in_folder = self.in_folder
@@ -118,14 +119,14 @@ class BiomechZoo:
             if verbose:
                 batchdisp('computing phase angles for {}'.format(f), level=2, verbose=verbose)
             data = zload(f)
-            data = phaseangle_data(data, ch)
+            data = phase_angle_data(data, ch)
             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
         batchdisp('phase angle computation complete', level=1, verbose=verbose)
 
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def crp(self, ch_prox, ch_dist, out_folder=None, inplace=None):
+    def continuous_relative_phase(self, ch_prox, ch_dist, out_folder=None, inplace=None):
         """ computes CRP angles"""
         verbose = self.verbose
         in_folder = self.in_folder
