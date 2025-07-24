@@ -9,8 +9,8 @@ build:
   noarch: python
   script: |
     python -m pip install --no-deps --ignore-installed .
-    python -m pip install mvnx
-
+    python -m pip install --no-cache-dir mvnx
+    
 requirements:
   host:
     - python >=3.10
