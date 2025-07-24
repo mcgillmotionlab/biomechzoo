@@ -1,5 +1,4 @@
 import pandas as pd
-import scipy.io
 import os
 import re
 
