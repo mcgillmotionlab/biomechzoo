@@ -3,6 +3,11 @@ from processing.add_channel_data import add_channel_data
 
 
 def continuous_relative_phase_data(data, ch_dist, ch_prox):
+    """ This function determines the CRP on a 0-180 scale, correcting for
+           discontinuity in the signals >180.
+    See Also phase_angle_data.py and phase_angle_line.py
+    """
+
     data_new = data.copy()
     prox = data[ch_prox]['line']
     dist = data[ch_dist]['line']
@@ -16,6 +21,7 @@ if __name__ == '__main__':
     import os
     from utils.zload import zload
     from utils.zplot import zplot
+    # note: crp should be computed on phase angle data. Here we just demonstrate that it works.
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
     fl = os.path.join(project_root, 'data', 'other', 'HC032A18_exploded.zoo')
