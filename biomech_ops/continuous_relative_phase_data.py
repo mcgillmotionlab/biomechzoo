@@ -23,4 +23,3 @@ if __name__ == '__main__':
     data = data['data']
     data = continuous_relative_phase_data(data, ch_dist='RKneeAngles_x', ch_prox='RHipAngles_x')
     zplot(data, 'RKneeAngles_x_RHipAngles_x_crp')
-    

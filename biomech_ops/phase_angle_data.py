@@ -1,12 +1,19 @@
 from biomech_ops.phase_angle_line import phase_angle_line
 from processing.add_channel_data import add_channel_data
 
+
 def phase_angle_data(data, channels):
-    """Compute phase angle using Hilbert Transform."""
+    """Compute phase angle using Hilbert Transform.
+    Arguments
+        data: dict, zoo data to operate on
+        channels, list. Channel names on which to apply calculations
+    Returns:
+        data: dict, zoo data with calculations appended to new channel(s)
+    """
     data_new = data.copy()
     for ch in channels:
         if ch not in data_new:
-            raise ValueError(f'Channel "{ch}" not in data. Available keys: {list(data_new.keys())}')
+            raise ValueError('Channel {} not in data. Available keys: {}'.format(ch, list(data_new.keys())))
         r = data_new[ch]['line']
         phase_angle = phase_angle_line(r)
         ch_new = ch + '_phase_angle'
@@ -19,17 +26,14 @@ if __name__ == '__main__':
     import os
     from utils.zload import zload
     from utils.zplot import zplot
-    from processing.explodechannel_data import explodechannel_data
     # get path to sample zoo file
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
-    fl = os.path.join(project_root, 'data', 'other', 'HC030A05.zoo')
+    fl = os.path.join(project_root, 'data', 'other', 'HC032A18_exploded.zoo')
 
     # load  zoo file
     data = zload(fl)
     data = data['data']
-    data = explodechannel_data(data)
-    ch = ['RKneeAngles_x']
-    data=phase_angle_data(data, ch)
+    data = phase_angle_data(data, channels=['RKneeAngles_x', 'RHipAngles_x'])
     zplot(data, 'RKneeAngles_x_phase_angle')
 

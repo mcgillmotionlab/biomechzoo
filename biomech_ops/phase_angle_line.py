@@ -1,6 +1,6 @@
 import numpy as np
 from scipy.signal import hilbert
-from numpy import rad2deg
+
 
 def phase_angle_line(r):
     """
@@ -20,7 +20,7 @@ def phase_angle_line(r):
     """
 
     # Step 1: Center the data around zero as per Lamb and Stöckl eq. 11
-    #cdata = r - np.min(r) - (np.max(r) - np.min(r)) / 2
+    # cdata = r - np.min(r) - (np.max(r) - np.min(r)) / 2  #todo : why is this commented
     r = np.asarray(r)
     cdata = r - np.mean(r)
     # Step 2: Hilbert transform
