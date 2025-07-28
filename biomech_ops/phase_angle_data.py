@@ -1,5 +1,5 @@
 from biomech_ops.phase_angle_line import phase_angle_line
-from utils.add_channel_data import add_channel_data
+from processing.add_channel_data import add_channel_data
 
 def phase_angle_data(data, channels):
     """Compute phase angle using Hilbert Transform."""
@@ -10,7 +10,7 @@ def phase_angle_data(data, channels):
         r = data_new[ch]['line']
         phase_angle = phase_angle_line(r)
         ch_new = ch + '_phase_angle'
-        data_new = add_channel_data(data_new, ch=ch_new, ndata=phase_angle)
+        data_new = add_channel_data(data_new, ch_new_name=ch_new, ch_new_data=phase_angle)
     return data_new
 
 

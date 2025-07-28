@@ -1,7 +1,7 @@
 import numpy as np
 
 
-def add_channel_data(data, ch, ndata, section='Video'):
+def add_channel_data(data, ch_new_name, ch_new_data, section='Video'):
     """
     Add a new channel to zoo data.
 
@@ -9,9 +9,9 @@ def add_channel_data(data, ch, ndata, section='Video'):
     ----------
     data : dict
         Zoo file data.
-    ch : str
+    ch_new_name : str
         Name of the new channel.
-    ndata : array-like
+    ch_new_data : array-like
         New data to be added to the channel (should be n x 1 or n x 3).
     section : str
         Section of zoo data ('Video' or 'Analog').
@@ -28,12 +28,12 @@ def add_channel_data(data, ch, ndata, section='Video'):
     """
 
     # Warn if overwriting
-    if ch in data:
-        print(f"Warning: channel '{ch}' already exists, overwriting...")
+    if ch_new_name in data:
+        print('Warning: channel {} already exists, overwriting...'.format(ch_new_name))
 
 # Assign channel data
-    data[ch] = {
-        'line': ndata,
+    data[ch_new_name] = {
+        'line': ch_new_data,
         'event': {}
     }
 
@@ -45,8 +45,8 @@ def add_channel_data(data, ch, ndata, section='Video'):
         ch_list = ch_list.tolist()
 
     # Ensure it's a flat list of strings
-    if isinstance(ch_list, list) and ch not in ch_list:
-        ch_list.append(ch)
+    if isinstance(ch_list, list) and ch_new_name not in ch_list:
+        ch_list.append(ch_new_name)
         data['zoosystem'][section]['Channels'] = ch_list
 
     return data
@@ -66,6 +66,6 @@ if __name__ == '__main__':
     data = zload(fl)
     data = data['data']
     r = data['RKneeAngles']['line']*3
-    data=add_channel_data(data, ch='blah', ndata=r)
+    data= add_channel_data(data, ch_new_name='blah', ch_new_data=r)
     zplot(data, 'blah')
 

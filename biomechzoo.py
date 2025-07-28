@@ -13,7 +13,7 @@ from processing.addevent_data import addevent_data
 from processing.partition_data import partition_data
 from biomech_ops.normalize_data import normalize_data
 from biomech_ops.phase_angle_data import phase_angle_data
-from biomech_ops.crp_data import crp_data
+from biomech_ops.continuous_relative_phase_data import continuous_relative_phase_data
 # from biomech_ops.filter_data import filter_data
 
 
@@ -138,7 +138,7 @@ class BiomechZoo:
             if verbose:
                 batchdisp('computing CRP angles between channel {} (prox) and {} (dist) for {}'.format(ch_prox, ch_dist, f), level=2, verbose=verbose)
             data = zload(f)
-            data = crp_data(data, ch_prox, ch_dist)
+            data = continuous_relative_phase_data(data, ch_dist, ch_prox)
             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
         batchdisp('CRP computation complete', level=1, verbose=verbose)
 
