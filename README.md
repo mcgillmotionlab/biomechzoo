@@ -1,24 +1,14 @@
 # Repository for the Python version of biomechZoo
 
-### suggested structure
-biomechzoo/
-├── __init__.py
-├── biomechzoo.py           # Contains BiomechZoo class (batch public methods)
-├── processing/
-│   ├── __init__.py
-│   ├── normalize_data.py   # File-level processing function
-│   └── normalize_line.py   # Channel-level processing function
-└── utils/
-    ├── __init__.py
-    └── engine.py           # engine function to list files
+## How to install
+- open the terminal or command window
+- create an environment for your research project as ``conda create -n name python=3.10 -c conda-forge``, where name is of your choice 
+- activate the new environemnt ``conda activate name``
+- cd to root of bimechzoo repo
+- install biomechzoo python in your environment ``pip install .``
+- install additional pip requirements ``pip install mvnx==0.2``
+- cd to your project and continue coding
 
 
-## Environment
 
-cd to the root folder of the repository in the terminal or command window, and run the following commands:
 
-``conda create -n biomechzoo python=3.9 -y``
-
-``conda activate biomechzoo``
-
-``conda install -r requirements.txt``

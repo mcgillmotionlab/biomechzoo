@@ -6,9 +6,9 @@ source:
   path: ..
 
 build:
-  noarch: python
-  script: |
-    python -m pip install --no-deps --ignore-installed .
+  number: 0
+  script: "{{ PYTHON }} setup.py install --single-version-externally-managed --record=record.txt"
+
 
 requirements:
   host:
@@ -17,15 +17,15 @@ requirements:
     - numpy
     - scipy
     - matplotlib
-    - ezc3d
     - pandas
+    - ezc3d
   run:
     - python >=3.10
     - numpy
     - scipy
     - matplotlib
-    - ezc3d
     - pandas
+    - ezc3d
 
 about:
   home: https://github.com/mcgillmotionlab/biomechzoo

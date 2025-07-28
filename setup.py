@@ -8,7 +8,6 @@ setup(
         "numpy",
         "scipy",
         "matplotlib",
-        "ezc3d",
         "pandas",
     ],
 )
