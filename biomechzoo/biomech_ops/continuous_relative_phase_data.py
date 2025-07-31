@@ -26,6 +26,5 @@ if __name__ == '__main__':
     project_root = os.path.dirname(current_dir)
     fl = os.path.join(project_root, 'data', 'other', 'HC032A18_exploded.zoo')
     data = zload(fl)
-    data = data['data']
     data = continuous_relative_phase_data(data, ch_dist='RKneeAngles_x', ch_prox='RHipAngles_x')
     zplot(data, 'RKneeAngles_x_RHipAngles_x_crp')

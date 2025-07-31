@@ -8,7 +8,7 @@ def phase_angle_line(r):
 
     Parameters:
     r : array_like
-        1D array of kinematic data (e.g., joint or segment angle)
+        (n, 1) array of kinematic data (e.g., joint or segment angle)
 
     Returns:
     PA_data : ndarray
@@ -20,15 +20,28 @@ def phase_angle_line(r):
     """
 
     # Step 1: Center the data around zero as per Lamb and Stöckl eq. 11
-    # cdata = r - np.min(r) - (np.max(r) - np.min(r)) / 2  #todo : why is this commented
-    r = np.asarray(r)
-    cdata = r - np.mean(r)
+    cdata = r - np.min(r) - (np.max(r) - np.min(r)) / 2
+
     # Step 2: Hilbert transform
     X = hilbert(cdata)
 
     # Step 3: Phase angle calculation
     PA = np.rad2deg(np.arctan2(np.imag(X), np.real(X)))
 
-    #phase_percent = 100 * (PA_data - PA_data[0]) / (PA_data[-1] - PA_data[0])
-
     return PA
+
+
+if __name__ == '__main__':
+    # -------TESTING--------
+    import os
+    from biomechzoo.utils.zload import zload
+    from matplotlib import pyplot as plt
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(current_dir)
+    fl = os.path.join(project_root, 'data', 'other', 'HC032A18_exploded.zoo')
+    data = zload(fl)
+    r = data['RKneeAngles_x']['line']
+    phase_angle = phase_angle_line(r)
+    plt.plot(phase_angle)
+    plt.show()
+
