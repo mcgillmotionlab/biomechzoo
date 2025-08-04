@@ -1,5 +1,4 @@
 import os
-from ezc3d import c3d
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
@@ -14,6 +13,7 @@ from biomechzoo.processing.partition_data import partition_data
 from biomechzoo.biomech_ops.normalize_data import normalize_data
 from biomechzoo.biomech_ops.phase_angle_data import phase_angle_data
 from biomechzoo.biomech_ops.continuous_relative_phase_data import continuous_relative_phase_data
+from biomechzoo.conversion.opencap2zoo_data import opencap2zoo_data
 # from biomech_ops.filter_data import filter_data
 
 
@@ -65,8 +65,10 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
+
     def c3d2zoo(self, out_folder=None, inplace=None):
         """ Converts all .c3d files in the folder to .zoo format """
+        from ezc3d import c3d
         verbose = self.verbose
         in_folder = self.in_folder
         if inplace is None:
@@ -262,6 +264,5 @@ class BiomechZoo:
 
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
-
 
 
