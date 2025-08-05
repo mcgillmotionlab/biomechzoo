@@ -49,7 +49,7 @@ def mvnx2zoo_data(fl):
         # add meta information
     data['zoosystem'] = {}
     data['zoosystem']['Video'] = {}
-    data['zoosystem']['Video']['Freq'] = np.int(mvnx_file.frameRate)
+    data['zoosystem']['Video']['Freq'] = int(mvnx_file.frameRate)
     return data
 
 
