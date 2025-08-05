@@ -1,9 +1,9 @@
-import mvnx
 import numpy as np
 
 
 def mvnx2zoo_data(fl):
     """ insert kai's code"""
+    import mvnx
 
     mvnx_file = mvnx.load(fl)
 
