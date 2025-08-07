@@ -12,6 +12,7 @@ from biomechzoo.processing.removechannel_data import removechannel_data
 from biomechzoo.processing.explodechannel_data import explodechannel_data
 from biomechzoo.processing.addevent_data import addevent_data
 from biomechzoo.processing.partition_data import partition_data
+from biomechzoo.processing.renameevent_data import renameevent_data
 from biomechzoo.biomech_ops.normalize_data import normalize_data
 from biomechzoo.biomech_ops.phase_angle_data import phase_angle_data
 from biomechzoo.biomech_ops.continuous_relative_phase_data import continuous_relative_phase_data
@@ -193,6 +194,23 @@ class BiomechZoo:
     #
     #     # Update self.folder after  processing
     #     self._update_folder(out_folder, inplace, in_folder)
+    def renameevent(self, evt, nevt, out_folder=None, inplace=None):
+        """ renames event evt to nevt in all zoo files """
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder)
+        for f in fl:
+            batchdisp('renaming events from {} to {} for {}'.format(evt, nevt ,f), level=2, verbose=verbose)
+            data = zload(f)
+            data = renameevent_data(data, evt, nevt)
+            zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+        batchdisp('rename event complete', level=1, verbose=verbose)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
 
     def removechannel(self, ch, mode='remove', out_folder=None, inplace=None):
         """ removes channels from zoo files """

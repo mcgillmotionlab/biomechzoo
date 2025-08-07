@@ -6,12 +6,16 @@ def get_split_events(data, first_event_name):
 
     # find all events, events should follow style name1, name2, etc..
     split_events = []
-    i = 1
     _, channel_name = findfield(data, first_event_name)
     if channel_name is None:
         return None
 
     event_name_root = first_event_name[0:-1]
+    first_event_number = int(first_event_name[-1])
+    i = 1
+    if first_event_number > 1:
+        i = first_event_number
+
     while True:
         key = f"{event_name_root}{i}"
         if key in data[channel_name]['event']:

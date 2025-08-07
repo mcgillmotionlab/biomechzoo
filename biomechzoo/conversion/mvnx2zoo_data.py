@@ -41,9 +41,9 @@ def mvnx2zoo_data(fl):
     # add to zoo
     data['jL5S1']['event'] = {}
     for i, right_contact_frame in enumerate(right_contact_frames):
-        data['jL5S1']['event']['RFS'+str(i+1)] = [right_contact_frame, 0, 0]
+        data['jL5S1']['event']['R_FS'+str(i+1)] = [right_contact_frame, 0, 0]
     for i, left_contact_frame in enumerate(left_contact_frames):
-        data['jL5S1']['event']['LFS' + str(i + 1)] = [left_contact_frame, 0, 0]
+        data['jL5S1']['event']['L_FS' + str(i + 1)] = [left_contact_frame, 0, 0]
 
     # add meta information
     # todo: add more, see mvnx_file object
