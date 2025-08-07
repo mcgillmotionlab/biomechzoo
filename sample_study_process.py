@@ -12,11 +12,14 @@ bmech = BiomechZoo(fld_raw_data, verbose='all', inplace=False)
 bmech.c3d2zoo(out_folder='1-c3d2zoo')
 
 # step 2: cleaning
-ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
-bmech.removechannel(ch, mode='keep', out_folder='2-removechannel')
+# ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
+# bmech.removechannel(ch, mode='keep', out_folder='2-removechannel')
+#
+# # step 3: explode channels
+# bmech.explodechannel(out_folder='3-explodechannels')
 
-# step 3: explode channels
-bmech.explodechannel(out_folder='3-explodechannels')
+# Split trials u pby gait cycle
+bmech.split_trial_by_gait_cycle(first_event_name='Right_FootStrike1', out_folder='4-split_by_cycle')
 
 # step 4: add Right foot strike event
 bmech.addevent(out_folder='4-addevent')
