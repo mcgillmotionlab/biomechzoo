@@ -148,6 +148,25 @@ class BiomechZoo:
         self._update_folder(out_folder, inplace, in_folder)
 
 
+    def partition_trial_by_gait_cycle(self, out_folder=None, inplace=None):
+    def marp_dp(self, channels, out_folder=None, inplace=None):
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder)
+        for f in fl:
+            for channel in channels:
+            batchdisp('collecting trials for marp and dp for {}'.format(f), level=2, verbose=verbose)
+            data = zload(f)
+            data = removechannel_data(data, ch, mode)
+            zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+        batchdisp('remove channel complete', level=1, verbose=verbose)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
     def removechannel(self, ch, mode='remove', out_folder=None, inplace=None):
         """ removes channels from zoo files """
         verbose = self.verbose

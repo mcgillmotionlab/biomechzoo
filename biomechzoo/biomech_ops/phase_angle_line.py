@@ -43,7 +43,6 @@ if __name__ == '__main__':
     print(data)
     r = data['RKneeAngles_x']['line']
     phase_angle = phase_angle_line(r)
-    print(phase_angle)
     plt.plot(phase_angle)
     plt.show()
 
