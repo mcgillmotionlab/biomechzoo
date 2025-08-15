@@ -2,7 +2,7 @@ import numpy as np
 
 
 def mvnx2zoo_data(fl):
-    """ insert kai's code"""
+    """ loads mvnx file from xsens"""
     import mvnx
 
     mvnx_file = mvnx.load(fl)
@@ -22,7 +22,6 @@ def mvnx2zoo_data(fl):
             'line': angles,
             'event': {}
         }
-
     # get foot strike events
     # Index 0: Left Heel contact (1 for contact, 0 for no contact)
     # Index 1: Left Toe contact (1 for contact, 0 for no contact)
@@ -42,14 +41,18 @@ def mvnx2zoo_data(fl):
     # add to zoo
     data['jL5S1']['event'] = {}
     for i, right_contact_frame in enumerate(right_contact_frames):
-        data['jL5S1']['event']['RFS'+str(i+1)] = [right_contact_frame, 0, 0]
+        data['jL5S1']['event']['R_FS'+str(i+1)] = [right_contact_frame, 0, 0]
     for i, left_contact_frame in enumerate(left_contact_frames):
-        data['jL5S1']['event']['LFS' + str(i + 1)] = [left_contact_frame, 0, 0]
+        data['jL5S1']['event']['L_FS' + str(i + 1)] = [left_contact_frame, 0, 0]
 
-        # add meta information
+    # add meta information
+    # todo: add more, see mvnx_file object
     data['zoosystem'] = {}
     data['zoosystem']['Video'] = {}
-    data['zoosystem']['Video']['Freq'] = np.int(mvnx_file.frameRate)
+    data['zoosystem']['Video']['Freq'] = int(mvnx_file.frameRate)
+    data['zoosystem']['Version'] = mvnx_file.version
+    data['zoosystem']['configuration'] = mvnx_file.configuration
+    data['zoosystem']['recording_date'] = mvnx_file.recordingDate
     return data
 
 

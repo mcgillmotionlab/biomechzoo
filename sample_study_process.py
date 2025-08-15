@@ -8,15 +8,23 @@ fld_raw_data = os.path.join(project_root, 'biomechzoo/data', 'sample_study', 'ra
 # step 0: initialize object that is an instance of biomechZoo class
 bmech = BiomechZoo(fld_raw_data, verbose='all', inplace=False)
 
-# step 1: convert c3d to zoo
+# convert c3d to zoo
 bmech.c3d2zoo(out_folder='1-c3d2zoo')
 
 # step 2: cleaning
-ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
-bmech.removechannel(ch, mode='keep', out_folder='2-removechannel')
+# ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
+# bmech.removechannel(ch, mode='keep', out_folder='2-removechannel')
+#
+# # step 3: explode channels
+# bmech.explodechannel(out_folder='3-explodechannels')
 
-# step 3: explode channels
-bmech.explodechannel(out_folder='3-explodechannels')
+# rename events
+bmech.renameevent(evt='Right_FootStrike1', nevt='RFS1', out_folder='rename event')
+
+# Split trials by gait cycle
+bmech.split_trial_by_gait_cycle(first_event_name='Right_FootStrike1', out_folder='4-split_by_cycle')
+
+
 
 # step 4: add Right foot strike event
 bmech.addevent(out_folder='4-addevent')

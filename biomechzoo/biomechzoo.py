@@ -3,6 +3,8 @@ from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
 from biomechzoo.utils.batchdisp import batchdisp
+from biomechzoo.utils.get_split_events import get_split_events
+from biomechzoo.utils.split_trial import split_trial
 from biomechzoo.conversion.c3d2zoo_data import c3d2zoo_data
 from biomechzoo.conversion.csv2zoo_data import csv2zoo_data
 from biomechzoo.conversion.mvnx2zoo_data import mvnx2zoo_data
@@ -10,6 +12,7 @@ from biomechzoo.processing.removechannel_data import removechannel_data
 from biomechzoo.processing.explodechannel_data import explodechannel_data
 from biomechzoo.processing.addevent_data import addevent_data
 from biomechzoo.processing.partition_data import partition_data
+from biomechzoo.processing.renameevent_data import renameevent_data
 from biomechzoo.biomech_ops.normalize_data import normalize_data
 from biomechzoo.biomech_ops.phase_angle_data import phase_angle_data
 from biomechzoo.biomech_ops.continuous_relative_phase_data import continuous_relative_phase_data
@@ -46,7 +49,6 @@ class BiomechZoo:
             in_folder_path = os.path.dirname(in_folder)
             self.in_folder = os.path.join(in_folder_path, out_folder)
 
-
     def mvnx2zoo(self, out_folder=None, inplace=False):
         """ Converts all .mvnx files in the folder to .zoo format """
         verbose = self.verbose
@@ -64,7 +66,6 @@ class BiomechZoo:
 
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
-
 
     def c3d2zoo(self, out_folder=None, inplace=None):
         """ Converts all .c3d files in the folder to .zoo format """
@@ -108,7 +109,6 @@ class BiomechZoo:
         """ Converts generic .xls file in the folder to .zoo format """
         raise NotImplementedError
 
-
     def phase_angle(self, ch, out_folder=None, inplace=None):
         """ computes phase angles"""
         verbose = self.verbose
@@ -147,6 +147,70 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
+    def split_trial_by_gait_cycle(self, first_event_name, out_folder=None, inplace=None):
+        """ split by gait cycle according to event_name"""
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder)
+        for f in fl:
+            f_name = os.path.splitext(os.path.basename(f))[0]
+            batchdisp('splitting by gait cycle  for {} by {}'.format(f, first_event_name), level=2, verbose=verbose)
+            data = zload(f)
+            split_events = get_split_events(data, first_event_name)
+            if split_events is None:
+                print('no event {} found, saving original file'.format(first_event_name))
+                zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+            else:
+                for i, _ in enumerate(split_events[0:-1]):
+                    fl_new = f.replace(f_name, f_name + '_' + str(i + 1))
+                    start = split_events[i]
+                    end = split_events[i + 1]
+                    data_new = split_trial(data, start, end)
+                    zsave(fl_new, data_new, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+
+        batchdisp('splitting by gait cycle complete', level=1, verbose=verbose)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+
+    # def mean_absolute_relative_phase_deviation_phase(self, channels, out_folder=None, inplace=None):
+    #     verbose = self.verbose
+    #     in_folder = self.in_folder
+    #     if inplace is None:
+    #         inplace = self.inplace
+    #
+    #     fl = engine(in_folder)
+    #     for f in fl:
+    #         for channel in channels:
+    #             batchdisp('collecting trials for marp and dp for {}'.format(f), level=2, verbose=verbose)
+    #             data = zload(f)
+    #             data = removechannel_data(data, ch, mode)
+    #             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+    #             batchdisp('remove channel complete', level=1, verbose=verbose)
+    #
+    #     # Update self.folder after  processing
+    #     self._update_folder(out_folder, inplace, in_folder)
+    def renameevent(self, evt, nevt, out_folder=None, inplace=None):
+        """ renames event evt to nevt in all zoo files """
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder)
+        for f in fl:
+            batchdisp('renaming events from {} to {} for {}'.format(evt, nevt ,f), level=2, verbose=verbose)
+            data = zload(f)
+            data = renameevent_data(data, evt, nevt)
+            zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+        batchdisp('rename event complete', level=1, verbose=verbose)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
 
     def removechannel(self, ch, mode='remove', out_folder=None, inplace=None):
         """ removes channels from zoo files """

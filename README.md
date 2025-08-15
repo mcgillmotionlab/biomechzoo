@@ -14,7 +14,7 @@ code_root/student_code/       ← where your scripts or notebooks live
 - activate your new environment: ``conda activate name``
 - navigate to parent directory where biomechzoo was cloned. e.g. ``code_root``
 - install biomechzoo: ``pip install -e biomechzoo``
-- navigate to biomechzoo root, install additional requirements: ``pip install -r requirements.txt``
+- install additional requirements: ``pip install -r biomechzoo/pip_requirements.txt``
 
 ## Updates (not tested)
 - If updates are made to biomechzoo, simply pull the latest version 

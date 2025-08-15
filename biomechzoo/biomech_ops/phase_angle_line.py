@@ -40,6 +40,7 @@ if __name__ == '__main__':
     project_root = os.path.dirname(current_dir)
     fl = os.path.join(project_root, 'data', 'other', 'HC032A18_exploded.zoo')
     data = zload(fl)
+    print(data)
     r = data['RKneeAngles_x']['line']
     phase_angle = phase_angle_line(r)
     plt.plot(phase_angle)
