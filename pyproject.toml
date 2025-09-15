@@ -23,3 +23,9 @@ biomechzoo = "main:main"
 [build-system]
 requires = ["setuptools>=78.1.0", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
+
+[[tool.uv.index]]
+name = "testbiomechzoo"
+url = "https://test.pypi.org/simple/"
+publish-url = "https://test.pypi.org/legacy/"
+explicit = true
