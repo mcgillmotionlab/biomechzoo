@@ -9,7 +9,6 @@ from biomechzoo.conversion.c3d2zoo_data import c3d2zoo_data
 from biomechzoo.conversion.csv2zoo_data import csv2zoo_data
 from biomechzoo.conversion.mvnx2zoo_data import mvnx2zoo_data
 from biomechzoo.processing.removechannel_data import removechannel_data
-from biomechzoo.processing.renamechannel_data import renamechannel_data
 from biomechzoo.processing.explodechannel_data import explodechannel_data
 from biomechzoo.processing.addevent_data import addevent_data
 from biomechzoo.processing.partition_data import partition_data
@@ -209,24 +208,6 @@ class BiomechZoo:
             data = renameevent_data(data, evt, nevt)
             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
         batchdisp('rename event complete', level=1, verbose=verbose)
-
-        # Update self.folder after  processing
-        self._update_folder(out_folder, inplace, in_folder)
-
-    def renamechannnel(self, ch, ch_new, out_folder=None, inplace=None):
-        """ renames channels from ch to ch_new in all zoo files """
-        verbose = self.verbose
-        in_folder = self.in_folder
-        if inplace is None:
-            inplace = self.inplace
-
-        fl = engine(in_folder)
-        for f in fl:
-            batchdisp('renaming channels from {} to {} for {}'.format(ch, ch_new ,f), level=2, verbose=verbose)
-            data = zload(f)
-            data = renamechannel_data(data, ch, ch_new)
-            zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
-        batchdisp('rename channels complete', level=1, verbose=verbose)
 
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)

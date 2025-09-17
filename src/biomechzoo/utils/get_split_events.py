@@ -19,7 +19,7 @@ def get_split_events(data, first_event_name):
     while True:
         key = f"{event_name_root}{i}"
         if key in data[channel_name]['event']:
-            split_events.append(key)
+            split_events.append(data[channel_name]['event'][key][0])
             i += 1
         else:
             break

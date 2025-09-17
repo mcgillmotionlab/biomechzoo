@@ -1,5 +1,5 @@
 from biomechzoo.biomech_ops.continuous_relative_phase_line import continuous_relative_phase_line
-from biomechzoo.processing.addchannel_data import addchannel_data
+from biomechzoo.processing.add_channel_data import add_channel_data
 
 
 def continuous_relative_phase_data(data, ch_dist, ch_prox):
@@ -12,7 +12,7 @@ def continuous_relative_phase_data(data, ch_dist, ch_prox):
     prox = data[ch_prox]['line']
     dist = data[ch_dist]['line']
     crp = continuous_relative_phase_line(dist, prox)
-    data_new = addchannel_data(data_new, ch_new_name=ch_dist + '_' + ch_prox + '_' + 'crp', ch_new_data=crp)
+    data_new = add_channel_data(data_new, ch_new_name=ch_dist + '_' + ch_prox + '_' + 'crp', ch_new_data=crp)
     return data_new
 
 

@@ -1,5 +1,5 @@
 from biomechzoo.biomech_ops.phase_angle_line import phase_angle_line
-from biomechzoo.processing.addchannel_data import addchannel_data
+from biomechzoo.processing.add_channel_data import add_channel_data
 
 
 def phase_angle_data(data, channels):
@@ -17,7 +17,7 @@ def phase_angle_data(data, channels):
         r = data_new[ch]['line']
         phase_angle = phase_angle_line(r)
         ch_new = ch + '_phase_angle'
-        data_new = addchannel_data(data_new, ch_new_name=ch_new, ch_new_data=phase_angle)
+        data_new = add_channel_data(data_new, ch_new_name=ch_new, ch_new_data=phase_angle)
     return data_new
 
 
