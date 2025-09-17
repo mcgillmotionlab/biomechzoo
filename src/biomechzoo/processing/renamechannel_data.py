@@ -61,7 +61,7 @@ def renamechannel_data(data, ch_old_names, ch_new_names, section='Video'):
 if __name__ == '__main__':
     # -------TESTING--------
     import os
-    from biomechzoo.utils.zload import zload
+    from src.biomechzoo.utils.zload import zload
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
     fl = os.path.join(project_root, 'data', 'other', 'HC030A05.zoo')

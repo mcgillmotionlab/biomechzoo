@@ -1,8 +1,8 @@
 import numpy as np
 import os
 import scipy.io as sio
-from biomechzoo.utils.findfield import findfield
-from biomechzoo.utils.zsave import zsave
+from src.biomechzoo.utils.findfield import findfield
+
 
 def split_trial_by_gait_cycle(fl, event_name):
     """ splits lengthy trials containing n cycles into n trials based on side"""
@@ -39,14 +39,13 @@ def split_trial_by_gait_cycle(fl, event_name):
         fl_new = os.path.join(fld, fl_name + '_' + str(i+1) + '.zoo')
         data_new = _split_trial(fld, fl_new, start, end)
 
-
-
-
+def _split_trial(fld, fl_new, start, end):
+    raise NotImplementedError
 
 if __name__ == '__main__':
     """ testing: load a single zoo file from the other subfolder in data"""
     # -------TESTING--------
-    from biomechzoo.utils.zload import zload
+    from src.biomechzoo.utils.zload import zload
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
     fl = os.path.join(project_root, 'data', 'other', 'HC030A05.zoo')

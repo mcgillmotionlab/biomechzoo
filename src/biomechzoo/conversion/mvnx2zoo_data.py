@@ -1,11 +1,11 @@
 import numpy as np
+from src.biomechzoo.mvn.load_mvnx import load_mvnx
 
 
 def mvnx2zoo_data(fl):
     """ loads mvnx file from xsens"""
-    import mvnx
 
-    mvnx_file = mvnx.load(fl)
+    mvnx_file = load_mvnx(fl)
 
     # create zoo data dict
     data = {}
@@ -59,7 +59,7 @@ def mvnx2zoo_data(fl):
 if __name__ == '__main__':
     """ testing """
     import os
-    from biomechzoo.utils.zplot import zplot
+    from src.biomechzoo.utils.zplot import zplot
     # -------TESTING--------
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)

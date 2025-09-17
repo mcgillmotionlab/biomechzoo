@@ -46,7 +46,7 @@ def renameevent_data(data, evt, nevt):
 if __name__ == '__main__':
     # -------TESTING--------
     import os
-    from biomechzoo.utils.zload import zload
+    from src.biomechzoo.utils.zload import zload
     # get path to sample zoo file
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)

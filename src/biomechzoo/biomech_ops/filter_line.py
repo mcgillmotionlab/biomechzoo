@@ -58,7 +58,7 @@ if __name__ == '__main__':
     """ -------TESTING--------"""
     import os
     import matplotlib.pyplot as plt
-    from biomechzoo.utils.zload import zload
+    from src.biomechzoo.utils.zload import zload
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)
     fl = os.path.join(project_root, 'data', 'other', 'HC030A05.zoo')

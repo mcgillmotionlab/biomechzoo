@@ -1,5 +1,5 @@
 import warnings
-from biomechzoo.biomech_ops.normalize_line import normalize_line
+from src.biomechzoo.biomech_ops.normalize_line import normalize_line
 
 
 def normalize_data(data, nlength=101):

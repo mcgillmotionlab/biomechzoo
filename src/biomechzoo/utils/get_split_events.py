@@ -1,4 +1,4 @@
-from biomechzoo.utils.findfield import findfield
+from src.biomechzoo.utils.findfield import findfield
 
 
 def get_split_events(data, first_event_name):

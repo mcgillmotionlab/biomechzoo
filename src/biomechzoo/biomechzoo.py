@@ -1,24 +1,22 @@
 import os
-from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
-from biomechzoo.utils.zload import zload
-from biomechzoo.utils.zsave import zsave
-from biomechzoo.utils.batchdisp import batchdisp
-from biomechzoo.utils.get_split_events import get_split_events
-from biomechzoo.utils.split_trial import split_trial
-from biomechzoo.conversion.c3d2zoo_data import c3d2zoo_data
-from biomechzoo.conversion.csv2zoo_data import csv2zoo_data
-from biomechzoo.conversion.mvnx2zoo_data import mvnx2zoo_data
-from biomechzoo.processing.removechannel_data import removechannel_data
-from biomechzoo.processing.renamechannel_data import renamechannel_data
-from biomechzoo.processing.explodechannel_data import explodechannel_data
-from biomechzoo.processing.addevent_data import addevent_data
-from biomechzoo.processing.partition_data import partition_data
-from biomechzoo.processing.renameevent_data import renameevent_data
-from biomechzoo.biomech_ops.normalize_data import normalize_data
-from biomechzoo.biomech_ops.phase_angle_data import phase_angle_data
-from biomechzoo.biomech_ops.continuous_relative_phase_data import continuous_relative_phase_data
-from biomechzoo.conversion.opencap2zoo_data import opencap2zoo_data
-# from biomech_ops.filter_data import filter_data
+from src.biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
+from src.biomechzoo.utils.zload import zload
+from src.biomechzoo.utils.zsave import zsave
+from src.biomechzoo.utils.batchdisp import batchdisp
+from src.biomechzoo.utils.get_split_events import get_split_events
+from src.biomechzoo.utils.split_trial import split_trial
+from src.biomechzoo.conversion.c3d2zoo_data import c3d2zoo_data
+from src.biomechzoo.conversion.csv2zoo_data import csv2zoo_data
+from src.biomechzoo.conversion.mvnx2zoo_data import mvnx2zoo_data
+from src.biomechzoo.processing.removechannel_data import removechannel_data
+from src.biomechzoo.processing.renamechannel_data import renamechannel_data
+from src.biomechzoo.processing.explodechannel_data import explodechannel_data
+from src.biomechzoo.processing.addevent_data import addevent_data
+from src.biomechzoo.processing.partition_data import partition_data
+from src.biomechzoo.processing.renameevent_data import renameevent_data
+from src.biomechzoo.biomech_ops.normalize_data import normalize_data
+from src.biomechzoo.biomech_ops.phase_angle_data import phase_angle_data
+from src.biomechzoo.biomech_ops.continuous_relative_phase_data import continuous_relative_phase_data
 
 
 class BiomechZoo:
@@ -325,27 +323,27 @@ class BiomechZoo:
         self._update_folder(out_folder, inplace, in_folder)
 
     def filter(self, ch, filt=None, out_folder=None, inplace=None):
-
-        verbose = self.verbose
-        in_folder = self.in_folder
-        if inplace is None:
-            inplace = self.inplace
-
-        # set filter type
-        if filt is None:
-            filt = {'type': 'butterworth',
-                    'order': 3,
-                    'pass': 'lowpass'}
-
-        fl = engine(in_folder)
-        for f in fl:
-            batchdisp('filtering data in channels {} for {}'.format(ch, f), level=2, verbose=verbose)
-            data = zload(f)
-            data = filter_data(data, ch, filt)
-            zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
-        batchdisp('filter data complete', level=1, verbose=verbose)
-
-        # Update self.folder after  processing
-        self._update_folder(out_folder, inplace, in_folder)
+        raise NotImplementedError
+        # verbose = self.verbose
+        # in_folder = self.in_folder
+        # if inplace is None:
+        #     inplace = self.inplace
+        #
+        # # set filter type
+        # if filt is None:
+        #     filt = {'type': 'butterworth',
+        #             'order': 3,
+        #             'pass': 'lowpass'}
+        #
+        # fl = engine(in_folder)
+        # for f in fl:
+        #     batchdisp('filtering data in channels {} for {}'.format(ch, f), level=2, verbose=verbose)
+        #     data = zload(f)
+        #     data = filter_data(data, ch, filt)
+        #     zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
+        # batchdisp('filter data complete', level=1, verbose=verbose)
+        #
+        # # Update self.folder after  processing
+        # self._update_folder(out_folder, inplace, in_folder)
 
 

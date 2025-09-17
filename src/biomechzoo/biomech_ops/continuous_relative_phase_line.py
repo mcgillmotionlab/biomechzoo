@@ -19,8 +19,8 @@ def continuous_relative_phase_line(dist, prox):
 if __name__ == '__main__':
     # -------TESTING--------
     import os
-    from biomechzoo.utils.zload import zload
-    from biomechzoo.biomech_ops.phase_angle_line import phase_angle_line
+    from src.biomechzoo.utils.zload import zload
+    from src.biomechzoo.biomech_ops.phase_angle_line import phase_angle_line
     from matplotlib import pyplot as plt
     # note: crp should be computed on phase angle data. Here we just demonstrate that it works.
     current_dir = os.path.dirname(os.path.abspath(__file__))

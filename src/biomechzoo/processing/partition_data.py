@@ -1,4 +1,4 @@
-from biomechzoo.utils.findfield import findfield
+from src.biomechzoo.utils.findfield import findfield
 import warnings
 
 
@@ -37,6 +37,7 @@ def partition_data(data, evt_start, evt_end):
 def _partition_line(arr, evt_start, evt_end):
     arr_new = arr[evt_start:evt_end, :]
     return arr_new
+
 
 def _partition_event(event_dict, evt_start, evt_end, arr_len):
     raise NotImplementedError

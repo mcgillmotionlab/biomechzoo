@@ -1,5 +1,5 @@
-from biomechzoo.biomech_ops.continuous_relative_phase_line import continuous_relative_phase_line
-from biomechzoo.processing.addchannel_data import addchannel_data
+from src.biomechzoo.biomech_ops.continuous_relative_phase_line import continuous_relative_phase_line
+from src.biomechzoo.processing.addchannel_data import addchannel_data
 
 
 def continuous_relative_phase_data(data, ch_dist, ch_prox):
@@ -19,8 +19,8 @@ def continuous_relative_phase_data(data, ch_dist, ch_prox):
 if __name__ == '__main__':
     # -------TESTING--------
     import os
-    from biomechzoo.utils.zload import zload
-    from biomechzoo.utils.zplot import zplot
+    from src.biomechzoo.utils.zload import zload
+    from src.biomechzoo.utils.zplot import zplot
     # note: crp should be computed on phase angle data. Here we just demonstrate that it works.
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)

@@ -55,8 +55,8 @@ def addchannel_data(data, ch_new_name, ch_new_data, section='Video'):
 if __name__ == '__main__':
     # -------TESTING--------
     import os
-    from biomechzoo.utils.zload import zload
-    from biomechzoo.utils.zplot import zplot
+    from src.biomechzoo.utils.zload import zload
+    from src.biomechzoo.utils.zplot import zplot
     # get path to sample zoo file
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)

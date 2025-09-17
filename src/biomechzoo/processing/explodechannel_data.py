@@ -1,6 +1,3 @@
-import numpy as np
-
-
 def explodechannel_data(data, channels=None):
     """ Explodes 3D channels (n x 3 arrays) into separate X, Y, Z channels.
 
