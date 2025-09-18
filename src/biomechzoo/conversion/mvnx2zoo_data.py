@@ -4,14 +4,14 @@ from src.biomechzoo.mvn.load_mvnx import load_mvnx
 
 def mvnx2zoo_data(fl):
     """ loads mvnx file from xsens"""
-
+    #todo: needs to be updated for the new version of mvnx direcly loaded in biomechzoo
     mvnx_file = load_mvnx(fl)
 
     # create zoo data dict
     data = {}
 
     # Accessing joint data :
-    joint_angle_data = mvnx_file.jointAngle
+    joint_angle_data = mvnx_file.get_joint_angle()
     joint_names = mvnx_file.joints
     for i, joint in enumerate(joint_names):
         start = i * 3
@@ -49,10 +49,14 @@ def mvnx2zoo_data(fl):
     # todo: add more, see mvnx_file object
     data['zoosystem'] = {}
     data['zoosystem']['Video'] = {}
-    data['zoosystem']['Video']['Freq'] = int(mvnx_file.frameRate)
+    data['zoosystem']['Video']['Freq'] = int(mvnx_file.frame_rate)
     data['zoosystem']['Version'] = mvnx_file.version
     data['zoosystem']['configuration'] = mvnx_file.configuration
-    data['zoosystem']['recording_date'] = mvnx_file.recordingDate
+    data['zoosystem']['recording_date'] = mvnx_file.recording_date
+    data['zoosystem']['original_file_name'] = mvnx_file.original_file_name
+    data['zoosystem']['frame_count'] = mvnx_file.frame_count
+    data['zoosystem']['comments'] = mvnx_file.comments
+
     return data
 
 
@@ -61,8 +65,7 @@ if __name__ == '__main__':
     import os
     from src.biomechzoo.utils.zplot import zplot
     # -------TESTING--------
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(current_dir)
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     fl = os.path.join(project_root, 'data', 'other', 'Flat-001.mvnx')
     data = mvnx2zoo_data(fl)
     zplot(data, 'jRightKnee')

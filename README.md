@@ -10,7 +10,7 @@ code_root/biomechzoo/         ← the repo with the actual package
 code_root/student_code/       ← where your scripts or notebooks live
     
 - open terminal or command window
-- create an environment for your research project: ``conda create -n name python=3.11 -c conda-forge``, where name is of your choice
+- create an environment for your research project: ``conda create -n name python=3.13 -c conda-forge``, where name is of your choice
 - activate your new environment: ``conda activate name``
 - navigate to parent directory where biomechzoo was cloned. e.g. ``code_root``
 - install biomechzoo: ``pip install -e biomechzoo``
