@@ -6,8 +6,8 @@ Script to load an mvnx
 import xml.etree.ElementTree as ET
 import collections
 import numpy as np
-from src.biomechzoo.mvn.mvnx_file_accessor import MvnxFileAccessor
-from src.biomechzoo.mvn import mvn
+from biomechzoo.mvn.mvnx_file_accessor import MvnxFileAccessor
+from biomechzoo.mvn import mvn
 
 # Xml namespace for mvnx files
 ns = {'mvn': 'http://www.xsens.com/mvn/mvnx'}

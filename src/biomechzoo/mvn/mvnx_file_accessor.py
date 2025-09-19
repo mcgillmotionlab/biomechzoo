@@ -1,4 +1,4 @@
-from src.biomechzoo.mvn import mvn
+from biomechzoo.mvn import mvn
 import warnings
 
 

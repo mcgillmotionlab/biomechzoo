@@ -34,7 +34,7 @@ def phase_angle_line(r):
 if __name__ == '__main__':
     # -------TESTING--------
     import os
-    from src.biomechzoo.utils.zload import zload
+    from biomechzoo.utils.zload import zload
     from matplotlib import pyplot as plt
     current_dir = os.path.dirname(os.path.abspath(__file__))
     project_root = os.path.dirname(current_dir)

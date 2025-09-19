@@ -1,4 +1,4 @@
-from src.biomechzoo.utils.findfield import findfield
+from biomechzoo.utils.findfield import findfield
 import warnings
 
 
