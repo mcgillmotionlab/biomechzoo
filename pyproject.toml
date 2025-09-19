@@ -1,6 +1,6 @@
 [project]
 name = "biomechzoo"
-version = "0.1.1b1"
+version = "0.1.1"
 description = "Python implementation of the biomechZoo Matlab toolbox"
 readme = "README.md"
 requires-python = ">=3.13"
