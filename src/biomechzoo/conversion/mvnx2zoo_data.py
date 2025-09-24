@@ -1,5 +1,5 @@
 import numpy as np
-from src.biomechzoo.mvn.load_mvnx import load_mvnx
+from biomechzoo.mvn.load_mvnx import load_mvnx
 
 
 def mvnx2zoo_data(fl):

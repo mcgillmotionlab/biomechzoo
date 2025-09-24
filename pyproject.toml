@@ -1,14 +1,14 @@
 [project]
 name = "biomechzoo"
-version = "0.1.0"
+version = "0.1.1"
 description = "Python implementation of the biomechZoo Matlab toolbox"
 readme = "README.md"
 requires-python = ">=3.13"
 license = "MIT"
 license-files = ["LICEN[CS]E*"]
 dependencies = [
+    "ezc3d>=1.5.19",
     "matplotlib>=3.10.6",
-    "mvnx>=0.2",
     "numpy>=2.3.3",
     "pandas>=2.3.2",
     "scipy>=1.16.2",

@@ -2,7 +2,7 @@ import pandas as pd
 import os
 import re
 
-from src.biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_rate_from_time
+from biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_rate_from_time
 
 
 def csv2zoo_data(csv_path, header_len=10):

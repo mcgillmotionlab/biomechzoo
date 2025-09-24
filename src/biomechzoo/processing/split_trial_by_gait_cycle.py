@@ -1,7 +1,7 @@
 import numpy as np
 import os
 import scipy.io as sio
-from src.biomechzoo.utils.findfield import findfield
+from biomechzoo.utils.findfield import findfield
 
 
 def split_trial_by_gait_cycle(fl, event_name):

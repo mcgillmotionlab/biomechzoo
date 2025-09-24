@@ -1,4 +1,4 @@
-from filter_line import filter_line
+from biomechzoo.biomech_ops.filter_line import filter_line
 
 
 def filter_data(data, ch, filt=None):

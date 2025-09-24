@@ -3,21 +3,12 @@ revision = 3
 requires-python = ">=3.13"
 
 [[package]]
-name = "argparse"
-version = "1.4.0"
-source = { registry = "https://pypi.org/simple" }
-sdist = { url = "https://files.pythonhosted.org/packages/18/dd/e617cfc3f6210ae183374cd9f6a26b20514bbb5a792af97949c5aacddf0f/argparse-1.4.0.tar.gz", hash = "sha256:62b089a55be1d8949cd2bc7e0df0bddb9e028faefc8c32038cc84862aefdd6e4", size = 70508, upload-time = "2015-09-12T20:22:16.217Z" }
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/f2/94/3af39d34be01a24a6e65433d19e107099374224905f1e0cc6bbe1fd22a2f/argparse-1.4.0-py2.py3-none-any.whl", hash = "sha256:c31647edb69fd3d465a847ea3157d37bed1f95f19760b11a47aa91c04b666314", size = 23000, upload-time = "2015-09-14T16:03:16.137Z" },
-]
-
-[[package]]
 name = "biomechzoo"
-version = "0.1.0"
-source = { virtual = "." }
+version = "0.1.1"
+source = { editable = "." }
 dependencies = [
+    { name = "ezc3d" },
     { name = "matplotlib" },
-    { name = "mvnx" },
     { name = "numpy" },
     { name = "pandas" },
     { name = "scipy" },
@@ -25,8 +16,8 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
+    { name = "ezc3d", specifier = ">=1.5.19" },
     { name = "matplotlib", specifier = ">=3.10.6" },
-    { name = "mvnx", specifier = ">=0.2" },
     { name = "numpy", specifier = ">=2.3.3" },
     { name = "pandas", specifier = ">=2.3.2" },
     { name = "scipy", specifier = ">=1.16.2" },
@@ -94,6 +85,25 @@ source = { registry = "https://pypi.org/simple" }
 sdist = { url = "https://files.pythonhosted.org/packages/a9/95/a3dbbb5028f35eafb79008e7522a75244477d2838f38cbb722248dabc2a8/cycler-0.12.1.tar.gz", hash = "sha256:88bb128f02ba341da8ef447245a9e138fae777f6a23943da4540077d3601eb1c", size = 7615, upload-time = "2023-10-07T05:32:18.335Z" }
 wheels = [
     { url = "https://files.pythonhosted.org/packages/e7/05/c19819d5e3d95294a6f5947fb9b9629efb316b96de511b418c53d245aae6/cycler-0.12.1-py3-none-any.whl", hash = "sha256:85cef7cff222d8644161529808465972e51340599459b8ac3ccbac5a854e0d30", size = 8321, upload-time = "2023-10-07T05:32:16.783Z" },
+]
+
+[[package]]
+name = "ezc3d"
+version = "1.5.19"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "numpy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/62/70/16f3ede2ee106ef1c099ef5da9c41f9eb82280a3b7b0ec76ae8c49f237ce/ezc3d-1.5.19.tar.gz", hash = "sha256:dced6b6bc8ce6dbabd3fb1a58459609e424379b42eb09a2df4b82ad38ff656c5", size = 153115, upload-time = "2025-06-17T23:03:49.789Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/b8/4e/6631bbd96df4f6906d293236c71b7908b15f8c500ad427a21687ad5f43b3/ezc3d-1.5.19-cp313-cp313-macosx_10_13_x86_64.whl", hash = "sha256:f298f75688ccfd2f0c78972baef3f445242ed82bec820df544daa39adfc4b586", size = 1028613, upload-time = "2025-06-17T23:03:27.103Z" },
+    { url = "https://files.pythonhosted.org/packages/23/03/31ad766f6f80298adc053bf7b089d4d5b5babbb0bf43413b8a4481c908a7/ezc3d-1.5.19-cp313-cp313-macosx_11_0_arm64.whl", hash = "sha256:acb67f9500f9e710fdaf5283784a725c23d6f5c067ac074946abe6854998be37", size = 911447, upload-time = "2025-06-17T23:03:29.296Z" },
+    { url = "https://files.pythonhosted.org/packages/ce/c9/13841cb4ef6b9eeb6b0e98a3ffce2ee2f6c79151cc3dde8ff62c4e4a6804/ezc3d-1.5.19-cp313-cp313-manylinux_2_17_i686.manylinux2014_i686.whl", hash = "sha256:60baa6a75be7508e318d5ecbecb74c683f300a1f045815439c7198d94d807f9e", size = 1253952, upload-time = "2025-06-17T23:03:30.909Z" },
+    { url = "https://files.pythonhosted.org/packages/24/ce/281c93fec072df4ecfe74df76de4f62dd57b5ab73e8e71d9aa1b5e2d0852/ezc3d-1.5.19-cp313-cp313-manylinux_2_17_x86_64.manylinux2014_x86_64.whl", hash = "sha256:3ce2ea49bd2d27dd64149d332bd2b5d18ed6147035f393dc5e50c1331b4190fa", size = 1224598, upload-time = "2025-06-17T23:03:33.404Z" },
+    { url = "https://files.pythonhosted.org/packages/92/54/ff5061e6526e26394486b613576e0f8d15e41903b6bd3147c9206f9bf7de/ezc3d-1.5.19-cp313-cp313-musllinux_1_2_i686.whl", hash = "sha256:c962db6493fe7538e4ed1c956377c66695cf4b291ba5e57f21416aa13d0e3411", size = 2315384, upload-time = "2025-06-17T23:03:35.276Z" },
+    { url = "https://files.pythonhosted.org/packages/eb/6b/2d0dfc0f5d94526d2c6c250cc3fd2f8eefde38672edafda7101abacdaeab/ezc3d-1.5.19-cp313-cp313-musllinux_1_2_x86_64.whl", hash = "sha256:5f9d97d78a566b27128a7fa690c79d65812966ddab40fd5c06a876d51c606891", size = 2183778, upload-time = "2025-06-17T23:03:36.864Z" },
+    { url = "https://files.pythonhosted.org/packages/e6/fc/b3fe244b8df71cd199b9520fa9ca72048bf74ac6d856d832835b0b457f55/ezc3d-1.5.19-cp313-cp313-win32.whl", hash = "sha256:4daa2eb2614cb64372b1c068d43718dbb9dfb0023d8b2850c59e7bdc4e40d0a0", size = 677510, upload-time = "2025-06-17T23:03:38.669Z" },
+    { url = "https://files.pythonhosted.org/packages/48/7e/c2dc353a3e7f47eb473bfa5fdcedc08c709daa47d54373396b091d1b19a7/ezc3d-1.5.19-cp313-cp313-win_amd64.whl", hash = "sha256:7aed022622f85eb1b323c05e34c11619f8fb8f69a4220d98428a477bbb6d784e", size = 750378, upload-time = "2025-06-17T23:03:41.074Z" },
 ]
 
 [[package]]
@@ -233,18 +243,6 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/c7/b0/40fb2b3a1ab9381bb39a952e8390357c8be3bdadcf6d5055d9c31e1b35ae/matplotlib-3.10.6-cp314-cp314t-musllinux_1_2_x86_64.whl", hash = "sha256:83847b47f6524c34b4f2d3ce726bb0541c48c8e7692729865c3df75bfa0f495a", size = 9594077, upload-time = "2025-08-30T00:14:07.012Z" },
     { url = "https://files.pythonhosted.org/packages/76/34/c4b71b69edf5b06e635eee1ed10bfc73cf8df058b66e63e30e6a55e231d5/matplotlib-3.10.6-cp314-cp314t-win_amd64.whl", hash = "sha256:c7e0518e0d223683532a07f4b512e2e0729b62674f1b3a1a69869f98e6b1c7e3", size = 8342822, upload-time = "2025-08-30T00:14:09.041Z" },
     { url = "https://files.pythonhosted.org/packages/e8/62/aeabeef1a842b6226a30d49dd13e8a7a1e81e9ec98212c0b5169f0a12d83/matplotlib-3.10.6-cp314-cp314t-win_arm64.whl", hash = "sha256:4dd83e029f5b4801eeb87c64efd80e732452781c16a9cf7415b7b63ec8f374d7", size = 8172588, upload-time = "2025-08-30T00:14:11.166Z" },
-]
-
-[[package]]
-name = "mvnx"
-version = "0.2"
-source = { registry = "https://pypi.org/simple" }
-dependencies = [
-    { name = "argparse" },
-    { name = "numpy" },
-]
-wheels = [
-    { url = "https://files.pythonhosted.org/packages/e3/59/5eea623e32eb0610fbcefc62e5c1bf0324dd4a6361f8c3f2a6d7a8d307a7/mvnx-0.2-py3-none-any.whl", hash = "sha256:5a5c7a600924a90b16adc36c15f265a0711073a7d813cf730e466b0f422d4eb8", size = 10668, upload-time = "2021-12-02T21:13:27.674Z" },
 ]
 
 [[package]]
