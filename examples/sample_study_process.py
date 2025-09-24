@@ -24,6 +24,7 @@ bmech.renameevent(evt='Right_FootStrike1', nevt='RFS1', out_folder='rename event
 # normalize data
 bmech.normalize(nlen=101, out_folder='normalize')
 
+
 # Commented methods not yet tested
 
 # Split trials by gait cycle
