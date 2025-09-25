@@ -9,4 +9,8 @@ This is a development version of the biomechzoo toolbox for python.
 - If you need to install a specific version, run ``pip install biomechzoo==x.x.x`` where x.x.x is the version number. 
 - If you need to update biomechzoo to the latest version in your env, run ``pip install biomechzoo --upgrade``
 
+## Dependencies notes
+- We use Python 3.11 for compatibility with https://github.com/stanfordnmbl/opencap-processing
+- We use Numpy 2.2.6 for compatibility with https://pypi.org/project/numba/
+
 See also http://www.github.com/mcgillmotionlab/biomechzoo or http://www.biomechzoo.com for more information
