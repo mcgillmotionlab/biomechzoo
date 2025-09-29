@@ -1,2 +1,6 @@
 src/biomechzoo.egg-info/*
 __pycache__
+biomechzoo.egg-info/dependency_links.txt
+biomechzoo.egg-info/PKG-INFO
+biomechzoo.egg-info/requires.txt
+/biomechzoo.egg-info
