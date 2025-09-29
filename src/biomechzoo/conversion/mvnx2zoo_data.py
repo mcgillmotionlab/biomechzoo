@@ -10,22 +10,52 @@ def mvnx2zoo_data(fl):
     # create zoo data dict
     data = {}
 
-    # extract joint angle data
+    # extract joint angle data (All JOINTS may not exist in a given dataset)
     for key, val in JOINTS.items():
-        data[val] = {
-            'line': mvnx_file.get_joint_angle(joint=key),
-            'event': {}
-        }
+        try:
+            r = mvnx_file.get_joint_angle(joint=key)
+            data[val] = {
+                'line': r,
+                'event': {}
+            }
+        except KeyError:
+            print('joint {} does not exist, skipping'.format(val))
 
-    # extract segment orientations
-    # todo: add segment orientations to zoo file
-    # for key, val in SEGMENTS.items():
-    #     data[val] = {
-    #         'line': mvnx_file.get_sensor_ori(segment=key),
-    #         'event': {}
-    #     }
+    # extract segment orientations (All SEGMENTS may not exist in a given dataset)
+    for key, val in SEGMENTS.items():
+        try:
+            r = mvnx_file.get_sensor_ori(segment=key)
+            data[val] = {
+                'line': r,
+                'event': {}
+            }
+        except KeyError:
+            print('segment {} does not exist, skipping'.format(val))
 
     # get foot strike events
+    data = _get_foot_strike_events(mvnx_file, data)
+
+    # add meta information
+    data = _get_meta_info(mvnx_file, data)
+
+    return data
+
+
+def _get_meta_info(mvnx_file, data):
+    # todo: add more, see mvnx_file object
+    data['zoosystem'] = {}
+    data['zoosystem']['Video'] = {}
+    data['zoosystem']['Video']['Freq'] = int(mvnx_file.frame_rate)
+    data['zoosystem']['Version'] = mvnx_file.version
+    data['zoosystem']['configuration'] = mvnx_file.configuration
+    data['zoosystem']['recording_date'] = mvnx_file.recording_date
+    data['zoosystem']['original_file_name'] = mvnx_file.original_file_name
+    data['zoosystem']['frame_count'] = mvnx_file.frame_count
+    data['zoosystem']['comments'] = mvnx_file.comments
+    return data
+
+
+def _get_foot_strike_events(mvnx_file, data):
     RHeel = np.zeros(mvnx_file.frame_count)
     LHeel = np.zeros(mvnx_file.frame_count)
 
@@ -45,24 +75,18 @@ def mvnx2zoo_data(fl):
         if LHeel[i - 1] == 0 and LHeel[i] == 1:
             hs_l.append(i)
 
-    # add to zoo
-    data['jL5S1']['event'] = {}
-    for i, rHS in enumerate(hs_r):
-        data['jL5S1']['event']['R_FS'+str(i+1)] = [rHS, 0, 0]
-    for i, lHS in enumerate(hs_l):
-        data['jL5S1']['event']['L_FS' + str(i + 1)] = [lHS, 0, 0]
+        # add to event branch of any channel
+    if 'jL5S1' in data:
+        ch = 'jL5S1'
+    else:
+        ch = next(iter(data))
 
-    # add meta information
-    # todo: add more, see mvnx_file object
-    data['zoosystem'] = {}
-    data['zoosystem']['Video'] = {}
-    data['zoosystem']['Video']['Freq'] = int(mvnx_file.frame_rate)
-    data['zoosystem']['Version'] = mvnx_file.version
-    data['zoosystem']['configuration'] = mvnx_file.configuration
-    data['zoosystem']['recording_date'] = mvnx_file.recording_date
-    data['zoosystem']['original_file_name'] = mvnx_file.original_file_name
-    data['zoosystem']['frame_count'] = mvnx_file.frame_count
-    data['zoosystem']['comments'] = mvnx_file.comments
+    if hs_r:
+        for i, rHS in enumerate(hs_r):
+            data[ch]['event']['R_FS' + str(i + 1)] = [rHS, 0, 0]
+    if hs_l:
+        for i, lHS in enumerate(hs_l):
+            data[ch]['event']['L_FS' + str(i + 1)] = [lHS, 0, 0]
 
     return data
 
