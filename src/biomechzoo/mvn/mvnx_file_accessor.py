@@ -1,4 +1,4 @@
-from biomechzoo.mvn import mvn
+from src.biomechzoo.mvn import mvn
 import warnings
 
 
@@ -405,8 +405,9 @@ class MvnxFileAccessor:
         :return: The contacts
         """
         frame, is_single_frame = self.frame_to_mapped_slice(frame)
-        return_values = self.file_data['frames']['footContacts'][frame]
+        return_values = self.file_data['frames']['contacts_data'][frame] #edited Phil Dixon
         return return_values[0] if is_single_frame else return_values
+
 
     def has_foot_contact(self, frame, foot_contact_flags=0):
         """
