@@ -1,7 +1,7 @@
 import os
 import argparse
 import matplotlib.pyplot as plt
-from src.biomechzoo.mvn.load_mvnx import load_mvnx
+from biomechzoo.mvn.load_mvnx import load_mvnx
 
 
 # Convert mvnx file to python data

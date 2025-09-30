@@ -1,6 +1,6 @@
 import numpy as np
-from src.biomechzoo.mvn.load_mvnx import load_mvnx
-from src.biomechzoo.mvn.mvn import JOINTS, SEGMENTS
+from biomechzoo.mvn.load_mvnx import load_mvnx
+from biomechzoo.mvn.mvn import JOINTS, SEGMENTS
 
 def mvnx2zoo_data(fl):
     """ loads mvnx file from xsens"""
@@ -15,7 +15,7 @@ def mvnx2zoo_data(fl):
         try:
             r = mvnx_file.get_joint_angle(joint=key)
             data[val] = {
-                'line': r,
+                'line': np.array(r),
                 'event': {}
             }
         except KeyError:
@@ -25,8 +25,9 @@ def mvnx2zoo_data(fl):
     for key, val in SEGMENTS.items():
         try:
             r = mvnx_file.get_sensor_ori(segment=key)
+
             data[val] = {
-                'line': r,
+                'line': np.array(r),
                 'event': {}
             }
         except KeyError:
@@ -40,6 +41,17 @@ def mvnx2zoo_data(fl):
 
     return data
 
+def is_valid_for_zoo(val):
+    """
+    Returns True if the value is valid for a MATLAB-compatible zoo structure.
+    """
+    if val is None:
+        return False
+    if isinstance(val, list) and len(val) == 0:
+        return False
+    if isinstance(val, np.ndarray) and val.size == 0:
+        return False
+    return True
 
 def _get_meta_info(mvnx_file, data):
     # todo: add more, see mvnx_file object
@@ -51,7 +63,6 @@ def _get_meta_info(mvnx_file, data):
     data['zoosystem']['recording_date'] = mvnx_file.recording_date
     data['zoosystem']['original_file_name'] = mvnx_file.original_file_name
     data['zoosystem']['frame_count'] = mvnx_file.frame_count
-    data['zoosystem']['comments'] = mvnx_file.comments
     return data
 
 
@@ -75,7 +86,7 @@ def _get_foot_strike_events(mvnx_file, data):
         if LHeel[i - 1] == 0 and LHeel[i] == 1:
             hs_l.append(i)
 
-        # add to event branch of any channel
+    # add to event branch of any channel
     if 'jL5S1' in data:
         ch = 'jL5S1'
     else:
@@ -97,6 +108,6 @@ if __name__ == '__main__':
     from src.biomechzoo.utils.zplot import zplot
     # -------TESTING--------
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-    fl = os.path.join(project_root, 'data', 'other', 'Flat-001.mvnx')
+    fl = os.path.join(project_root, 'data', 'other', 'Flat001.mvnx')
     data = mvnx2zoo_data(fl)
     zplot(data, 'jRightKnee')

@@ -4,3 +4,12 @@ biomechzoo.egg-info/dependency_links.txt
 biomechzoo.egg-info/PKG-INFO
 biomechzoo.egg-info/requires.txt
 /biomechzoo.egg-info
+
+# Ignore everything in sample_study
+data/sample_study/*
+
+# But keep raw_c3d_files and its contents
+!sample_study/raw_c3d_files/
+!sample_study/raw_c3d_files/**
+data/mvnx2zoo/Flat001.zoo
+data/mvnx2zoo/Flat002.zoo

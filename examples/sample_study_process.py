@@ -1,15 +1,30 @@
 import os
 from src.biomechzoo.biomechzoo import BiomechZoo
 
+
+# get raw data folder
+project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
+fld_data = os.path.join(project_root, 'data')
+
+
+#### Testing conversion functions #############
+
+# mvnx2zoo
+fld_data_mvnx = os.path.join(fld_data, 'other')
+bmech = BiomechZoo(fld_data_mvnx, verbose='all', inplace=False)
+bmech.mvnx2zoo(out_folder='mvnx2zoo')
+
+# c3d2zoo
+fld_data_c3d = os.path.join(project_root, 'data', 'sample_study', 'raw c3d files')
+bmech = BiomechZoo(fld_data_c3d, verbose='all', inplace=False)
+bmech.c3d2zoo(out_folder='c3d2zoo')
+
+
 # get raw data folder
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 fld_raw_data = os.path.join(project_root, 'data', 'sample_study', 'raw c3d files')
 
-# step 0: initialize object that is an instance of biomechZoo class
-bmech = BiomechZoo(fld_raw_data, verbose='all', inplace=False)
 
-# convert c3d to zoo
-bmech.c3d2zoo(out_folder='1-c3d2zoo')
 
 # step 2: cleaning
 ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
