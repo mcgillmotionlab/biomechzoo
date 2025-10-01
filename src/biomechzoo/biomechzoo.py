@@ -156,7 +156,6 @@ class BiomechZoo:
         fl = engine(in_folder)
         for f in fl:
             f_name = os.path.splitext(os.path.basename(f))[0]
-            batchdisp('splitting by gait cycle  for {} by {}'.format(f, first_event_name), level=2, verbose=verbose)
             data = zload(f)
             split_events = get_split_events(data, first_event_name)
             if split_events is None:
@@ -167,6 +166,8 @@ class BiomechZoo:
                     fl_new = f.replace(f_name, f_name + '_' + str(i + 1))
                     start = split_events[i]
                     end = split_events[i + 1]
+                    batchdisp('splitting by gait cycle from {} to {} for {}'.format(start, end, f), level=2,
+                              verbose=verbose)
                     data_new = split_trial(data, start, end)
                     zsave(fl_new, data_new, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
 
