@@ -5,17 +5,20 @@ import re
 from biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_rate_from_time
 
 
-def csv2zoo_data(csv_path, type='csv',skip_rows=0):
+def csv2zoo_data(csv_path, type='csv',skip_rows=0, freq=None):
     # todo: check calculation for sampling rate
 
-    # Read the metadata rows (if any)
+    # Read header lines until 'endheader'
     metadata = {}
-    if skip_rows > 0 and type == 'csv':
-        meta_df = pd.read_csv(csv_path, header=None, nrows=skip_rows, dtype=str)
-        for i in meta_df.index:
-            # Drop NaN and whitespace-only entries
-            row_data = [x for x in meta_df.iloc[i].tolist() if pd.notna(x) and str(x).strip() != ""]
-            metadata[f"row_{i}"] = row_data
+    if type == 'csv' and skip_rows > 0:
+        header_lines = []
+        with open(csv_path, 'r') as f:
+            for line in f:
+                header_lines.append(line.strip())
+                if line.strip().lower() == 'endheader':
+                    break
+        # Parse metadata
+        metadata = _parse_metadata(header_lines)
 
     if type == 'csv':
         df = pd.read_csv(csv_path, skiprows=skip_rows)
@@ -35,13 +38,26 @@ def csv2zoo_data(csv_path, type='csv',skip_rows=0):
             'event': []
         }
 
-    # compute sampling rate
-    fsamp = compute_sampling_rate_from_time(time)
+    # try to find frequency in metadata
+    if freq is None:
+        if 'freq' in metadata:
+            freq = metadata['freq']
+        elif 'sampling_rate' in metadata:
+            freq = metadata['sampling_rate']
+        else:
+            freq = None  # or raise an error
+
+    # now try to calculate freq from a time column
+    if freq is None:
+        time_col = [col for col in df.columns if 'time' in col.lower()]
+        if time_col is not None:
+            time_data = df[time_col].to_numpy()[:,0]
+            freq = compute_sampling_rate_from_time(time_data)
 
     # add metadata
     # todo update zoosystem to match biomechzoo requirements
     zoo_data['zoosystem'] = metadata
-    zoo_data['zoosystem']['Freq'] = fsamp
+    zoo_data['zoosystem']['Freq'] = freq
 
     return zoo_data
 
