@@ -2,8 +2,10 @@ from scipy.io import savemat
 import inspect
 import os
 
+from biomechzoo.utils.batchdisp import batchdisp
 
-def zsave(fl, data, inplace=True, out_folder=None, root_folder=None):
+
+def zsave(fl, data, inplace=True, out_folder=None, root_folder=None, verbose=False):
     """
     Save zoo data to .zoo file (MAT format)
 
@@ -28,9 +30,9 @@ def zsave(fl, data, inplace=True, out_folder=None, root_folder=None):
 
     # Determine save path
     if inplace:
-        save_path = fl
+        fl_new = fl
+        out_dir = os.path.dirname(fl)
     else:
-        filename = os.path.basename(fl)
         if out_folder is None:
             out_folder = 'processed'
 
@@ -47,4 +49,6 @@ def zsave(fl, data, inplace=True, out_folder=None, root_folder=None):
 
     # Save the .zoo file
     savemat(fl_new, data)
+    batchdisp('all files saved to ' + out_dir, level=1, verbose=verbose)
+
 
