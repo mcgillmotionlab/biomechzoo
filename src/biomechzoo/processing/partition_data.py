@@ -6,14 +6,14 @@ def partition_data(data, evt_start, evt_end):
     """ partition data for all channels between events evt_start and evt_end"""
 
     # extract event values
-    e1, _ = findfield(data,evt_start)
-    e2, _ = findfield(data,evt_end)
+    e1, _ = findfield(data, evt_start)
+    e2, _ = findfield(data, evt_end)
 
     data_new = data.copy()
     for ch_name, ch_data in data_new.items():
         if ch_name != 'zoosystem':
             try:
-                data_new[ch_name]['line'] = ch_data[e1[0]:e2[0], :]
+                data_new[ch_name]['line'] = ch_data[e1[0]:e2[0],]
             except (IndexError, ValueError) as e:
                 # IndexError: if e1[0]:e2[0] goes beyond the available indices
                 # ValueError: less likely, but may arise with shape mismatches

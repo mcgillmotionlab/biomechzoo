@@ -19,7 +19,7 @@ def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, v
     Arguments:
         root_folder (str): The root directory path where the search begins.
         extension (str): File extension to search for (e.g., '.zoo', '.c3d'). Default .zoo
-        subfolders (list of str, optional): List of folder names to restrict the search to.
+        subfolders (list or str, optional): List of folder names to restrict the search to.
             Only files inside these folders (or their subfolders) are included.
             If None, search all subfolders.
         name_contains (str, optional): Substring that must be present in the filename
@@ -28,6 +28,11 @@ def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, v
     Returns:
         list of str: List of full file paths matching the criteria.
     """
+    # check format of subfolder (string or list)
+    if subfolders is not None:
+        if type(subfolders) is str:
+            subfolders = [subfolders]
+
     matched_files = []
 
     subfolders_set = set(subfolders) if subfolders else None

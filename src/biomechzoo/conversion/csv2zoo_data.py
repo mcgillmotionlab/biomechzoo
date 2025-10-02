@@ -5,25 +5,29 @@ import re
 from biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_rate_from_time
 
 
-def csv2zoo_data(csv_path, header_len=10):
+def csv2zoo_data(csv_path, type='csv',skip_rows=0):
+    # todo: check calculation for sampling rate
 
-    # Read header lines until 'endheader'
-    header_lines = []
-    with open(csv_path, 'r') as f:
-        for line in f:
-            header_lines.append(line.strip())
-            if line.strip().lower() == 'endheader':
-                break
+    # Read the metadata rows (if any)
+    metadata = {}
+    if skip_rows > 0 and type == 'csv':
+        meta_df = pd.read_csv(csv_path, header=None, nrows=skip_rows, dtype=str)
+        for i in meta_df.index:
+            # Drop NaN and whitespace-only entries
+            row_data = [x for x in meta_df.iloc[i].tolist() if pd.notna(x) and str(x).strip() != ""]
+            metadata[f"row_{i}"] = row_data
 
-    # Parse metadata
-    metadata = _parse_metadata(header_lines)
+    if type == 'csv':
+        df = pd.read_csv(csv_path, skiprows=skip_rows)
+    elif type =='parquet':
+        df = pd.read_parquet(csv_path)
+    else:
+        raise ValueError('type must be csv or parquet')
 
-    # Step 3: Load data
-    df = pd.read_csv(csv_path, skiprows=header_len)
-    time = df.iloc[:, 0].values  # first column is Time
-    data = df.iloc[:, 1:]
+    # Use all columns
+    data = df.iloc[:, 0:]
 
-    # S Assemble zoo data
+    # assemble zoo data
     zoo_data = {}
     for ch in data.columns:
         zoo_data[ch] = {

@@ -1,6 +1,5 @@
 import os
-from src.biomechzoo.biomechzoo import BiomechZoo
-
+from biomechzoo.biomechzoo import BiomechZoo
 
 # get raw data folder
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
@@ -9,14 +8,25 @@ fld_data = os.path.join(project_root, 'data')
 
 #### Testing conversion functions #############
 
+# parquet2zoo for all files in fld_data_parquet containing the word Subject in the file name
+# fld_data_parquet = os.path.join(fld_data, 'other')
+# bmech = BiomechZoo(fld_data_parquet, inplace=False, verbose='all', name_contains='Subject')
+# bmech.parquet2zoo(out_folder='parquet2zoo')
+
+
+# csv2zoo for opencap for all subfolders called opencap_csv within fld_data_csv (only 1 file should process)
+fld_data_csv = os.path.join(fld_data, 'other')
+bmech = BiomechZoo(fld_data_csv, inplace=False, verbose='all', subfolders='opencap_csv')
+bmech.csv2zoo(out_folder='csv2zoo', skip_rows=10)  # this csv has 10 header rows
+
 # mvnx2zoo
 fld_data_mvnx = os.path.join(fld_data, 'other')
-bmech = BiomechZoo(fld_data_mvnx, verbose='all', inplace=False)
+bmech = BiomechZoo(fld_data_mvnx, inplace=False, verbose='all')
 bmech.mvnx2zoo(out_folder='mvnx2zoo')
 
 # c3d2zoo
 fld_data_c3d = os.path.join(project_root, 'data', 'sample_study', 'raw c3d files')
-bmech = BiomechZoo(fld_data_c3d, verbose='all', inplace=False)
+bmech = BiomechZoo(fld_data_c3d, inplace=False, verbose='all')
 bmech.c3d2zoo(out_folder='c3d2zoo')
 
 
