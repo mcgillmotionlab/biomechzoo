@@ -1,3 +1,5 @@
+import copy
+
 def explodechannel_data(data, channels=None):
     """ Explodes 3D channels (n x 3 arrays) into separate X, Y, Z channels.
 
@@ -10,8 +12,7 @@ def explodechannel_data(data, channels=None):
         data_new (dict): Modified zoo dictionary with exploded channels.
     """
 
-    data_new = data.copy()
-
+    data_new = copy.deepcopy(data)
     # Find default channels if none provided
     if channels is None:
         channels = []

@@ -14,3 +14,15 @@ This is a development version of the biomechzoo toolbox for python.
 - We use Numpy 2.2.6 for compatibility with https://pypi.org/project/numba/
 
 See also http://www.github.com/mcgillmotionlab/biomechzoo or http://www.biomechzoo.com for more information
+
+## Developer notes
+
+### Installing a dev environment
+conda create -n biomechzoo-dev python=3.11
+conda activate biomechzoo-dev
+pip install -e ".[dev]"
+
+### import issues
+if using PyCharm: 
+- Right-click on src/.
+- Select Mark Directory as → Sources Root.

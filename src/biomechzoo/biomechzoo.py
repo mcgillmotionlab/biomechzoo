@@ -20,7 +20,6 @@ from biomechzoo.biomech_ops.normalize_data import normalize_data
 from biomechzoo.biomech_ops.phase_angle_data import phase_angle_data
 from biomechzoo.biomech_ops.continuous_relative_phase_data import continuous_relative_phase_data
 
-
 class BiomechZoo:
     def __init__(self, in_folder, inplace=False, subfolders=None, name_contains=None, verbose=0):
         self.verbose = verbose

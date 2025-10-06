@@ -1,6 +1,5 @@
 import os
 from biomechzoo.biomechzoo import BiomechZoo
-
 # get raw data folder
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 fld_data = os.path.join(project_root, 'data')
@@ -28,11 +27,12 @@ fld_data = os.path.join(project_root, 'data')
 # bmech.c3d2zoo(out_folder='c3d2zoo')
 
 
-#### Testing processing functions (done on converted c3d files) #############
+#### Testing processing functions (assumes c3d files converted above ) #############
 
 # set up new bmech object to work on c3d2zoo on 3 subfolders for speed
 bmech = BiomechZoo(fld_data, inplace=False, verbose='all', subfolders=['HC002D', 'HC030A', 'HC036A'])
 bmech.in_folder = os.path.join(fld_data, 'sample_study', 'c3d2zoo')
+
 
 # cleaning
 ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
@@ -43,6 +43,10 @@ bmech.explodechannel(out_folder='explodechannels')
 
 # rename events
 bmech.renameevent(evt='Right_FootStrike1', nevt='RFS1', out_folder='rename event')
+bmech.renameevent(evt='Right_FootStrike2', nevt='RFS2', out_folder='rename event')
+
+# partition from right foot strike 1 to right foot strike 2
+bmech.partition(out_folder='partition', evt_start='RFS1', evt_end='RFS2')
 
 # normalize data
 bmech.normalize(nlen=101, out_folder='normalize')

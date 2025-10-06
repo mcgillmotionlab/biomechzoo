@@ -1,5 +1,6 @@
 from biomechzoo.utils.findfield import findfield
 import warnings
+import copy
 
 
 def partition_data(data, evt_start, evt_end):
@@ -9,7 +10,7 @@ def partition_data(data, evt_start, evt_end):
     e1, _ = findfield(data, evt_start)
     e2, _ = findfield(data, evt_end)
 
-    data_new = data.copy()
+    data_new = copy.deepcopy(data)
     for ch_name, ch_data in data_new.items():
         if ch_name != 'zoosystem':
             try:
@@ -29,6 +30,7 @@ def partition_data(data, evt_start, evt_end):
                     continue  # do not change outlier markers
                 else:
                     new_frame = original_frame - e1[0] + 1
+                    print(new_frame)
                     data_new[ch_name]['event'][event_name][0] = new_frame
 
     return data_new
