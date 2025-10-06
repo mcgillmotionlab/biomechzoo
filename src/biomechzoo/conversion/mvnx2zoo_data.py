@@ -1,6 +1,7 @@
 import numpy as np
 from biomechzoo.mvn.load_mvnx import load_mvnx
 from biomechzoo.mvn.mvn import JOINTS, SEGMENTS
+from biomechzoo.utils.set_zoosystem import set_zoosystem
 
 def mvnx2zoo_data(fl):
     """ loads mvnx file from xsens"""
@@ -37,9 +38,10 @@ def mvnx2zoo_data(fl):
     data = _get_foot_strike_events(mvnx_file, data)
 
     # add meta information
-    data = _get_meta_info(mvnx_file, data)
+    data = _get_meta_info(fl, mvnx_file, data)
 
     return data
+
 
 def is_valid_for_zoo(val):
     """
@@ -53,13 +55,13 @@ def is_valid_for_zoo(val):
         return False
     return True
 
-def _get_meta_info(mvnx_file, data):
+
+def _get_meta_info(fl, mvnx_file, data):
     # todo: add more, see mvnx_file object
-    data['zoosystem'] = {}
-    data['zoosystem']['Video'] = {}
+    data['zoosystem'] = set_zoosystem(fl)
     data['zoosystem']['Video']['Freq'] = int(mvnx_file.frame_rate)
-    data['zoosystem']['Version'] = mvnx_file.version
-    data['zoosystem']['configuration'] = mvnx_file.configuration
+    data['zoosystem']['mvnx_version'] = mvnx_file.version
+    data['zoosystem']['mvnx_configuration'] = mvnx_file.configuration
     data['zoosystem']['recording_date'] = mvnx_file.recording_date
     data['zoosystem']['original_file_name'] = mvnx_file.original_file_name
     data['zoosystem']['frame_count'] = mvnx_file.frame_count

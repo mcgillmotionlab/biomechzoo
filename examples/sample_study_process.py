@@ -16,15 +16,15 @@ fld_data = os.path.join(project_root, 'data')
 # bmech = BiomechZoo(fld_data_csv, inplace=False, verbose='all', subfolders='opencap_csv')
 # bmech.csv2zoo(out_folder='csv2zoo', skip_rows=10)  # this csv has 10 header rows
 #
-# # mvnx2zoo
+# mvnx2zoo
 # fld_data_mvnx = os.path.join(fld_data, 'other')
 # bmech = BiomechZoo(fld_data_mvnx, inplace=False, verbose='all')
 # bmech.mvnx2zoo(out_folder='mvnx2zoo')
-#
+
 # # c3d2zoo
-# fld_data_c3d = os.path.join(project_root, 'data', 'sample_study', 'raw c3d files')
-# bmech = BiomechZoo(fld_data_c3d, inplace=False, verbose='all')
-# bmech.c3d2zoo(out_folder='c3d2zoo')
+fld_data_c3d = os.path.join(project_root, 'data', 'sample_study', 'raw c3d files')
+bmech = BiomechZoo(fld_data_c3d, inplace=False, verbose='all')
+bmech.c3d2zoo(out_folder='c3d2zoo')
 
 
 #### Testing processing functions (assumes c3d files converted above ) #############
@@ -35,17 +35,18 @@ bmech.in_folder = os.path.join(fld_data, 'sample_study', 'c3d2zoo')
 
 
 # cleaning
-ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
-bmech.removechannel(ch, mode='keep', out_folder='removechannel')
+# ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
+# bmech.removechannel(ch, mode='keep', out_folder='removechannel')
 #
 # explode channels
-bmech.explodechannel(out_folder='explodechannels')
+# bmech.explodechannel(out_folder='explodechannels')
 
 # rename events
 bmech.renameevent(evt='Right_FootStrike1', nevt='RFS1', out_folder='rename event')
 bmech.renameevent(evt='Right_FootStrike2', nevt='RFS2', out_folder='rename event')
 
 # partition from right foot strike 1 to right foot strike 2
+bmech.name_contains = ['Straight', 'Turn']  # do not partition static trials
 bmech.partition(out_folder='partition', evt_start='RFS1', evt_end='RFS2')
 
 # normalize data

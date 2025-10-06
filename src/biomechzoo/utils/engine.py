@@ -22,7 +22,7 @@ def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, v
         subfolders (list or str, optional): List of folder names to restrict the search to.
             Only files inside these folders (or their subfolders) are included.
             If None, search all subfolders.
-        name_contains (str, optional): Substring that must be present in the filename
+        name_contains (str, or list; optional): Substring that must be present in the filename
             (case-insensitive). If None, no substring filtering is applied.
         verbose (bool, optional): If true, displays additional information to user
     Returns:
@@ -33,10 +33,14 @@ def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, v
         if type(subfolders) is str:
             subfolders = [subfolders]
 
+    # check format of name_contants (str or list)
+    if name_contains is not None:
+        if type(name_contains) is str:
+            name_contains = [name_contains]
+
     matched_files = []
 
     subfolders_set = set(subfolders) if subfolders else None
-
     for dirpath, _, filenames in os.walk(root_folder):
         if subfolders_set is not None:
             rel_path = os.path.relpath(dirpath, root_folder)
@@ -51,9 +55,16 @@ def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, v
         for file in filenames:
             if not file.lower().endswith(extension.lower()):
                 continue
-            if name_contains and name_contains.lower() not in file.lower():
-                continue
-            matched_files.append(os.path.join(dirpath, file))
+            full_path = os.path.join(dirpath, file)
+            if name_contains is not None:
+                match = False
+                for name_contain in name_contains:
+                    if name_contain and name_contain.lower() in full_path.lower():  # <-- check full path
+                        match = True
+                        break
+                if not match:
+                    continue
+            matched_files.append(full_path)
 
     if verbose:
         print("Found {} {} files in subfolders named {} with substring {}:".format(len(matched_files), extension, subfolders, name_contains))

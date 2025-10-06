@@ -10,12 +10,16 @@ def partition_data(data, evt_start, evt_end):
     e1, _ = findfield(data, evt_start)
     e2, _ = findfield(data, evt_end)
 
+    if e1 is None or e2 is None or len(e1) == 0 or len(e2) == 0:
+        raise ValueError(f"Event not found: evt_start='{evt_start}' returned {e1}, evt_end='{evt_end}' returned {e2}")
+
     data_new = copy.deepcopy(data)
     for ch_name, ch_data in data_new.items():
         if ch_name != 'zoosystem':
+            print(ch_name)
             line = ch_data['line']
             try:
-                if line.ndim ==1:
+                if line.ndim == 1:
                     data_new[ch_name]['line'] = line[e1[0]:e2[0]]
                 else:
                     data_new[ch_name]['line'] = line[e1[0]:e2[0], :]
@@ -28,9 +32,7 @@ def partition_data(data, evt_start, evt_end):
             events = ch_data['event']
             for event_name, value in events.items():
                 original_frame = value[0]
-                if original_frame == 1:
-                    continue  # leave index 1 as is (per MATLAB version)
-                elif original_frame == 999:
+                if original_frame == 999:
                     continue  # do not change outlier markers
                 else:
                     new_frame = original_frame - e1[0] + 1

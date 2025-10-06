@@ -1,3 +1,5 @@
+from biomechzoo.utils.set_zoosystem import set_zoosystem
+
 def c3d2zoo_data(c3d_obj):
     """
     Converts an ezc3d C3D object to zoo format.
@@ -21,7 +23,7 @@ def c3d2zoo_data(c3d_obj):
         video_freq = c3d_obj['parameters']['POINT']['RATE']['value'][0]
         if 'EVENT' in params and 'TIMES' in params['EVENT']:
             times_array = params['EVENT']['TIMES']['value']
-            frames = times_array[1]  # second row = frames (or time, depending on C3D file)
+            frames = times_array[1]  # should be time depending on C3D file
 
             # Extract sides, types, subjects
             contexts = params['EVENT']['CONTEXTS']['value'] if 'CONTEXTS' in params['EVENT'] else ['']
@@ -55,11 +57,12 @@ def c3d2zoo_data(c3d_obj):
 
                     # Place in correct channel
                     if 'SACR' in data:
-                        data['SACR']['event'][key_name] = [frame, 0, 0]
+                        data['SACR']['event'][key_name] = [frame-1, 0, 0]       # remove 1 to follow python
                     else:
-                        data[labels[0]]['event'][key_name] = [frame, 0, 0]
+                        data[labels[0]]['event'][key_name] = [frame-1, 0, 0]    # remove 1 to follow python
 
     # todo add relevant meta data to zoosystem
-    data['zoosystem'] = params['EVENT']
+    data['zoosystem'] = set_zoosystem()
+    data['zoosystem']['Analog']['Freq'] = int(params['ANALOG']['RATE']['value'][0])
 
     return data

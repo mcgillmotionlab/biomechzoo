@@ -2,10 +2,11 @@ import pandas as pd
 import os
 import re
 
+from biomechzoo.utils.set_zoosystem import set_zoosystem
 from biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_rate_from_time
 
 
-def csv2zoo_data(csv_path, type='csv',skip_rows=0, freq=None):
+def csv2zoo_data(csv_path, type='csv', skip_rows=0, freq=None):
     # todo: check calculation for sampling rate
 
     # Read header lines until 'endheader'
@@ -51,13 +52,16 @@ def csv2zoo_data(csv_path, type='csv',skip_rows=0, freq=None):
     if freq is None:
         time_col = [col for col in df.columns if 'time' in col.lower()]
         if time_col is not None:
-            time_data = df[time_col].to_numpy()[:,0]
+            time_data = df[time_col].to_numpy()[:, 0]
             freq = compute_sampling_rate_from_time(time_data)
 
     # add metadata
     # todo update zoosystem to match biomechzoo requirements
-    zoo_data['zoosystem'] = metadata
-    zoo_data['zoosystem']['Freq'] = freq
+    zoo_data['zoosystem'] = set_zoosystem(csv_path)
+    zoo_data['zoosystem']['Video']['Freq'] = freq
+    zoo_data['zoosystem']['Analog']['Freq'] = 'None'
+    if 'version' in metadata:
+        zoo_data['zoosystem']['collection_system_version'] = metadata['version']
 
     return zoo_data
 
