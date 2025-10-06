@@ -13,8 +13,12 @@ def partition_data(data, evt_start, evt_end):
     data_new = copy.deepcopy(data)
     for ch_name, ch_data in data_new.items():
         if ch_name != 'zoosystem':
+            line = ch_data['line']
             try:
-                data_new[ch_name]['line'] = ch_data[e1[0]:e2[0],]
+                if line.ndim ==1:
+                    data_new[ch_name]['line'] = line[e1[0]:e2[0]]
+                else:
+                    data_new[ch_name]['line'] = line[e1[0]:e2[0], :]
             except (IndexError, ValueError) as e:
                 # IndexError: if e1[0]:e2[0] goes beyond the available indices
                 # ValueError: less likely, but may arise with shape mismatches
