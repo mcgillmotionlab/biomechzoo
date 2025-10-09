@@ -8,7 +8,7 @@ from biomechzoo.utils.batchdisp import batchdisp
 from biomechzoo.utils.get_split_events import get_split_events
 from biomechzoo.utils.split_trial import split_trial
 from biomechzoo.conversion.c3d2zoo_data import c3d2zoo_data
-from biomechzoo.conversion.table2zoo import table2zoo_data
+from biomechzoo.conversion.table2zoo_data import table2zoo_data
 from biomechzoo.conversion.mvnx2zoo_data import mvnx2zoo_data
 from biomechzoo.processing.removechannel_data import removechannel_data
 from biomechzoo.processing.renamechannel_data import renamechannel_data
@@ -306,7 +306,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def addevent(self, ch, evt_type, evt_name, out_folder=None, inplace=None):
+    def addevent(self, ch, event_type, event_name, out_folder=None, inplace=None):
         """ adds events of type evt_type with name evt_name to channel ch """
         start_time = time.time()
         verbose = self.verbose
@@ -316,9 +316,9 @@ class BiomechZoo:
         fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
         for f in fl:
             if verbose:
-                batchdisp('adding event {} to channel {} for {}'.format(evt_type, ch, f), level=2, verbose=verbose)
+                batchdisp('adding event {} to channel {} for {}'.format(event_type, ch, f), level=2, verbose=verbose)
             data = zload(f)
-            data = addevent_data(data, ch, evt_type, evt_name)
+            data = addevent_data(data, ch, event_type, event_name)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)

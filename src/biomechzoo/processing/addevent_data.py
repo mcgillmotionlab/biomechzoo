@@ -37,6 +37,11 @@ def addevent_data(data, ch, ename, etype):
         elif etype == 'rom':
             eyd = float(np.max(yd) - np.min(yd))
             exd = 0  # dummy index (like MATLAB version)
+        elif etype == 'max_stance':
+            # special event for gait and running
+            exd = max_stance(yd)
+            eyd = float(yd[exd])
+            eyd = float(yd[exd])
         else:
             raise ValueError(f'Unknown event type: {etype}')
 
@@ -44,3 +49,8 @@ def addevent_data(data, ch, ename, etype):
         data[channel]['event'][ename] = [exd, eyd, 0]
 
     return data
+
+def max_stance(yd):
+    """ extracts max from first 40% of the gait cycle"""
+    raise NotImplementedError
+    return exd

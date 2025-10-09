@@ -20,6 +20,7 @@ See also http://www.github.com/mcgillmotionlab/biomechzoo or http://www.biomechz
 ### Installing a dev environment
 conda create -n biomechzoo-dev python=3.11
 conda activate biomechzoo-dev
+cd biomechzoo root folder
 pip install -e ".[dev]"
 
 ### import issues
