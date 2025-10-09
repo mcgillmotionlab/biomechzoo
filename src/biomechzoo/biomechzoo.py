@@ -8,7 +8,7 @@ from biomechzoo.utils.batchdisp import batchdisp
 from biomechzoo.utils.get_split_events import get_split_events
 from biomechzoo.utils.split_trial import split_trial
 from biomechzoo.conversion.c3d2zoo_data import c3d2zoo_data
-from biomechzoo.conversion.csv2zoo_data import csv2zoo_data
+from biomechzoo.conversion.table2zoo import table2zoo_data
 from biomechzoo.conversion.mvnx2zoo_data import mvnx2zoo_data
 from biomechzoo.processing.removechannel_data import removechannel_data
 from biomechzoo.processing.renamechannel_data import renamechannel_data
@@ -99,36 +99,18 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def csv2zoo(self, out_folder=None, inplace=None, skip_rows=0):
+    def table2zoo(self, out_folder=None, inplace=None, skip_rows=0, extension='csv'):
         """ Converts generic .csv file in the folder to .zoo format """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.csv', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension=extension, name_contains=self.name_contains, subfolders=self.subfolders)
         for f in fl:
-            batchdisp('converting csv to zoo for {}'.format(f), level=2, verbose=verbose)
-            data = csv2zoo_data(f, type='csv', skip_rows=skip_rows)
-            f_zoo = f.replace('.csv', '.zoo')
-            zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
-        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
-        # Update self.folder after  processing
-        self._update_folder(out_folder, inplace, in_folder)
-
-    def parquet2zoo(self, out_folder=None, inplace=None):
-        """ Converts generic .csv file in the folder to .zoo format """
-        start_time = time.time()
-        verbose = self.verbose
-        in_folder = self.in_folder
-        if inplace is None:
-            inplace = self.inplace
-        fl = engine(in_folder, extension='.parquet', name_contains=self.name_contains, subfolders=self.subfolders)
-        for f in fl:
-            batchdisp('converting parquet to zoo for {}'.format(f), level=2, verbose=verbose)
-            data = csv2zoo_data(f, type='parquet')
-            f_zoo = f.replace('.parquet', '.zoo')
+            batchdisp('converting {} to zoo for {}'.format(extension, f), level=2, verbose=verbose)
+            data = table2zoo_data(f, type=extension, skip_rows=skip_rows)
+            f_zoo = f.replace(extension, '.zoo')
             zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)

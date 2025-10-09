@@ -6,8 +6,11 @@ from biomechzoo.utils.set_zoosystem import set_zoosystem
 from biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_rate_from_time
 
 
-def csv2zoo_data(csv_path, type='csv', skip_rows=0, freq=None):
+def table2zoo_data(csv_path, type='csv', skip_rows=0, freq=None):
     # todo: check calculation for sampling rate
+
+    if type not in ['csv', 'parquet']:
+        raise NotImplementedError('Only csv and parquet currently supported')
 
     # Read header lines until 'endheader'
     metadata = {}
@@ -99,4 +102,4 @@ if __name__ == '__main__':
     project_root = os.path.dirname(current_dir)
     csv_file = os.path.join(project_root, 'data', 'other', 'opencap_walking1.csv')
 
-    data = csv2zoo_data(csv_file)
+    data = table2zoo_data(csv_file)
