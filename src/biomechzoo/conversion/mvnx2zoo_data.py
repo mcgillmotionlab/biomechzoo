@@ -10,6 +10,7 @@ def mvnx2zoo_data(fl):
 
     # create zoo data dict
     data = {}
+    data['zoosystem'] = set_zoosystem()
 
     # extract joint angle data (All JOINTS may not exist in a given dataset)
     for key, val in JOINTS.items():
@@ -58,7 +59,6 @@ def is_valid_for_zoo(val):
 
 def _get_meta_info(fl, mvnx_file, data):
     # todo: add more, see mvnx_file object
-    data['zoosystem'] = set_zoosystem(fl)
     data['zoosystem']['Video']['Freq'] = int(mvnx_file.frame_rate)
     data['zoosystem']['mvnx_version'] = mvnx_file.version
     data['zoosystem']['mvnx_configuration'] = mvnx_file.configuration

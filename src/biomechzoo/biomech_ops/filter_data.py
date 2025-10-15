@@ -13,10 +13,10 @@ def filter_data(data, ch, filt=None):
         The name(s) of the channel(s) to filter.
     filt : dict, optional
         Dictionary specifying filter parameters. Keys may include:
-        - 'type': 'butter' (default)
+        - 'ftype': 'butter' (default)
         - 'order': filter order (default: 4)
         - 'cutoff': cutoff frequency or tuple (Hz)
-        - 'btype': 'low', 'high', 'bandpass', 'bandstop' (default: 'low')
+        - 'btype': 'low', 'high', 'bandpass', 'bandstop' (default: 'lowpass')
 
     Returns
     -------
@@ -25,32 +25,34 @@ def filter_data(data, ch, filt=None):
     """
 
     if filt is None:
-        filt = {}
+        filt = {'ftype': 'butter',
+                'order': 4,
+                'cutoff': 10,
+                'btype': 'lowpass',
+                'filtfilt': True}
 
     if isinstance(ch, str):
         ch = [ch]
 
-    analog_channels = data['zoosystem']['Analog']['Channels']
-    if analog_channels:
-        analog_freq = data['zoosystem']['Analog']['Freq']
-    video_channels = data['zoosystem']['Video']['Channels']
-    if video_channels:
-        video_freq = data['zoosystem']['Video']['Freq']
-
+    # loop through all channels and filter
     for c in ch:
         if c not in data:
             raise KeyError('Channel {} not found in data'.format(c))
 
         if 'fs' not in filt:
+
+            video_channels = data['zoosystem']['Video']['Channels']
+            analog_channels = data['zoosystem']['Analog']['Channels']
+
             if c in analog_channels:
-                filt['fs'] = analog_freq
-            elif c in video_freq:
-                filt['fs'] = video_freq
+                filt['fs'] = data['zoosystem']['Analog']['Freq']
+            elif c in video_channels:
+                filt['fs'] =  data['zoosystem']['Video']['Freq']
             else:
-                raise ValueError('frequency not provided and cannot be inferred from zoosystem for channel'.format(c))
+                raise ValueError('Channel not analog or video')
 
         signal_raw = data[c]['line']
-        signal_filtered = filter_line(signal_raw, filt)
+        signal_filtered = filter_line(signal_raw=signal_raw, filt=filt)
         data[c]['line'] = signal_filtered
 
     return data

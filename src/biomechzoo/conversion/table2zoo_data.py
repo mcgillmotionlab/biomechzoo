@@ -32,13 +32,15 @@ def table2zoo_data(csv_path, type='csv', skip_rows=0, freq=None):
         raise ValueError('type must be csv or parquet')
 
     # Use all columns
-    data = df.iloc[:, 0:]
+    df_data = df.iloc[:, 0:]
 
     # assemble zoo data
-    zoo_data = {}
-    for ch in data.columns:
-        zoo_data[ch] = {
-            'line': data[ch].values,
+    data = {}
+    data['zoosystem'] = set_zoosystem()
+
+    for ch in df_data.columns:
+        data[ch] = {
+            'line': df_data[ch].values,
             'event': []
         }
 
@@ -59,14 +61,12 @@ def table2zoo_data(csv_path, type='csv', skip_rows=0, freq=None):
             freq = compute_sampling_rate_from_time(time_data)
 
     # add metadata
-    # todo update zoosystem to match biomechzoo requirements
-    zoo_data['zoosystem'] = set_zoosystem(csv_path)
-    zoo_data['zoosystem']['Video']['Freq'] = freq
-    zoo_data['zoosystem']['Analog']['Freq'] = 'None'
+    data['zoosystem']['Video']['Freq'] = freq
+    data['zoosystem']['Analog']['Freq'] = 'None'
     if 'version' in metadata:
-        zoo_data['zoosystem']['collection_system_version'] = metadata['version']
+        data['zoosystem']['collection_system_version'] = metadata['version']
 
-    return zoo_data
+    return data
 
 
 def _parse_metadata(header_lines):

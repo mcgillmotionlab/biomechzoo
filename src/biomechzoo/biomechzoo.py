@@ -19,6 +19,7 @@ from biomechzoo.processing.renameevent_data import renameevent_data
 from biomechzoo.biomech_ops.normalize_data import normalize_data
 from biomechzoo.biomech_ops.phase_angle_data import phase_angle_data
 from biomechzoo.biomech_ops.continuous_relative_phase_data import continuous_relative_phase_data
+from biomechzoo.biomech_ops.filter_data import filter_data
 
 class BiomechZoo:
     def __init__(self, in_folder, inplace=False, subfolders=None, name_contains=None, verbose=0):
@@ -346,28 +347,22 @@ class BiomechZoo:
         self._update_folder(out_folder, inplace, in_folder)
 
     def filter(self, ch, filt=None, out_folder=None, inplace=None):
-        raise NotImplementedError
-        # verbose = self.verbose
-        # in_folder = self.in_folder
-        # if inplace is None:
-        #     inplace = self.inplace
-        #
-        # # set filter type
-        # if filt is None:
-        #     filt = {'type': 'butterworth',
-        #             'order': 3,
-        #             'pass': 'lowpass'}
-        #
-        # fl = engine(in_folder)
-        # for f in fl:
-        #     batchdisp('filtering data in channels {} for {}'.format(ch, f), level=2, verbose=verbose)
-        #     data = zload(f)
-        #     data = filter_data(data, ch, filt)
-        #     zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder, verbose=verbose)
-        # method_name = inspect.currentframe().f_code.co_name
-        # batchdisp('{} computation complete for {} file(s)'.format(method_name, len(fl)), level=1, verbose=verbose)
-        #
-        # # Update self.folder after  processing
-        # self._update_folder(out_folder, inplace, in_folder)
-
+        """ filter data"""
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            if verbose:
+                batchdisp('filtering data for channel {} in {}'.format(ch, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = filter_data(data, ch, filt)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
+            level=1, verbose=verbose)
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
 

@@ -1,88 +1,85 @@
 import numpy as np
-from scipy.signal import butter, filtfilt
+import scipy.signal as sgl
 
 
-def filter_line(signal_raw, filt):
-    """ filter an array
+def filter_line(signal_raw, filt=None, fs=None):
+    """Filter an array using a Butterworth filter."""
+    #todo: verify that filter is working correctly
+    #todo add more filters
+    #todo: consider using kineticstoolkit
 
-    Arguments
-    ----------
-    signal_raw : n, or n x 3 array signal to be filtered
-    filt : dict, optional
-        Dictionary specifying filter parameters. Keys may include:
-        - 'type': 'butter' (default)
-        - 'order': filter order (default: 4)
-        - 'cutoff': cutoff frequency or tuple (Hz)
-        - 'btype': 'low', 'high', 'bandpass', 'bandstop' (default: 'low')
-        - 'fs' frequency
-
-    Returns
-    -------
-    signal_filtered: filtered version of signal_raw"""
-    # todo allow for missing frequency to be obtained from zoosystem metadata
     if filt is None:
-        filt = {}
-    if filt['type'] is 'butterworth':
-        filt['type'] = 'butter'
-    # Set default filter parameters
-    ftype = filt.get('type', 'butter')
-    order = filt.get('order', 4)
-    cutoff = filt.get('cutoff', None)
-    btype = filt.get('btype', 'low')
-    fs = filt.get('fs', None)
+        filt = {'ftype': 'butter',
+                'order': 4,
+                'cutoff': 10,
+                'btype': 'lowpass',
+                'filtfilt': True}
+        if fs is None:
+            raise ValueError('fs is required if no filt is specified')
 
-    if ftype != 'butter':
-        raise NotImplementedError(f"Filter type '{ftype}' not implemented.")
-
-    if fs is None:
-        raise ValueError("Sampling frequency 'fs' must be specified in filt.")
-
-    if cutoff is None:
-        raise ValueError("Cutoff frequency 'cutoff' must be specified in filt.")
-
-    nyq = 0.5 * fs
-    norm_cutoff = np.array(cutoff) / nyq
-
-    b, a = butter(order, norm_cutoff, btype=btype, analog=False)
-
-    if signal_raw.ndim == 1:
-        signal_filtered = filtfilt(b, a, signal_raw)
     else:
-        # Apply filter to each column if multivariate
-        signal_filtered = np.array([filtfilt(b, a, signal_raw[:, i]) for i in range(signal_raw.shape[1])]).T
+        if 'fs' not in filt:
+            raise ValueError('fs is a required key of filt')
+
+    # Normalize filter type strings
+    if filt['ftype'] == 'butterworth':
+        filt['ftype'] = 'butter'
+    if filt['btype'] is 'low':
+        filt['btype'] = 'lowpass'
+    if filt['btype'] is 'high':
+        filt['btype'] = 'highpass'
+
+    # Extract parameters
+    ftype = filt['ftype']
+    order = filt['order']
+    cutoff = filt['cutoff']
+    btype = filt['btype']
+    filtfilt = filt['filtfilt']
+    fs = filt['fs']
+
+    # prepare normalized cutoff(s)
+    nyq = 0.5 * fs
+    norm_cutoff = np.atleast_1d(np.array(cutoff) / nyq)
+
+    if ftype is 'butter':
+        signal_filtered = kt_butter(ts=signal_raw, fc=norm_cutoff, fs=fs, order=order, btype=btype, filtfilt=filtfilt)
+    else:
+        raise NotImplementedError(f"Filter type '{ftype}' not implemented.")
 
     return signal_filtered
 
 
-if __name__ == '__main__':
-    """ -------TESTING--------"""
-    import os
-    import matplotlib.pyplot as plt
-    from src.biomechzoo.utils.zload import zload
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(current_dir)
-    fl = os.path.join(project_root, 'data', 'other', 'HC030A05.zoo')
-    data = zload(fl)
-    data = data['data']
-    signal_raw = data['ForceFz1']['line']
-    filt = {'type': 'butterworth',
-            'order': 3,
-            'cutoff': 20,
-            'btype': 'low',
-            'fs': data['zoosystem']['Analog']['Freq']
-            }
-    signal_filtered = filter_line(signal_raw, filt)
+def kt_butter(ts, fc, fs, order=2, btype='lowpass', filtfilt=True):
+    """
+    Apply a Butterworth filter to data.
 
-    # now plot
-    plt.figure(figsize=(10, 4))
-    plt.plot(signal_raw, label='Raw', alpha=0.6)
-    plt.plot(signal_filtered, label='Filtered', linewidth=2)
-    plt.xlabel('Frame')
-    plt.ylabel('Amplitude')
-    plt.title('Testing filter_line')
-    plt.legend()
-    plt.grid(True)
-    plt.tight_layout()
-    plt.show()
+    Parameters
+    ----------
+    ts, ndarray, 1d.
+    fc, Cut-off frequency in Hz. This is a float for single-frequency filters
+        (lowpass, highpass), or a tuple of two floats (e.g., (10., 13.)
+        for two-frequency filters (bandpass, bandstop)).
+    order, Optional. Order of the filter. Default is 2.
+    btype, Optional. Can be either "lowpass", "highpass", "bandpass" or
+        "bandstop". Default is "lowpass".
+    filtfilt, Optional. If True, the filter is applied two times in reverse direction
+        to eliminate time lag. If False, the filter is applied only in forward
+        direction. Default is True.
 
+    Returns
+    -------
+    ts_f,  A copy of the input data which each data being filtered.
+    
+    Notes: 
+    - This code was adapted from kineticstoolkit Thanks @felxi
+    """
 
+    sos = sgl.butter(order, fc, btype, analog=False, output="sos", fs=fs)
+
+    # Filter
+    if filtfilt:
+        ts_f = sgl.sosfiltfilt(sos, ts, axis=0)
+    else:
+        ts_f = sgl.sosfilt(sos,ts, axis=0)
+
+    return ts_f

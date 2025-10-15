@@ -13,7 +13,6 @@ def removechannel_data(data, channels, mode='remove'):
     if mode not in ['remove', 'keep']:
         raise ValueError("mode must be 'remove' or 'keep'.")
 
-    zoosystem = data.get('zoosystem', {})
     all_channels = [ch for ch in data if ch != 'zoosystem']
 
     # Check for missing channels
@@ -28,9 +27,20 @@ def removechannel_data(data, channels, mode='remove'):
     else:
         raise ValueError("Mode must be 'remove' or 'keep'.")
 
-    # Build new zoo dictionary
-    data_new = {'zoosystem': zoosystem}
-    for ch in keep_channels:
-        data_new[ch] = data[ch]
+    # --- Compute channels to remove ---
+    remove_channels = [ch for ch in all_channels if ch not in keep_channels]
 
-    return data_new
+    if remove_channels:
+        print('Removing channels: {}'.format(remove_channels))
+    else:
+        print('No channels to remove')
+
+    # Remove from main data dict ---
+    for ch in remove_channels:
+        data.pop(ch, None)
+        if ch in data['zoosystem']['Video']['Channels']:
+            data['zoosystem']['Video']['Channels'] = [c for c in data['zoosystem']['Video']['Channels'] if c != ch]
+        if ch in data['zoosystem']['Analog']['Channels']:
+            data['zoosystem']['Analog']['Channels'] = [c for c in data['zoosystem']['Analog']['Channels'] if c != ch]
+
+    return data

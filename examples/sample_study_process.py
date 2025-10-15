@@ -35,22 +35,33 @@ bmech.in_folder = os.path.join(fld_data, 'sample_study', 'c3d2zoo')
 
 
 # cleaning
-# ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
-# bmech.removechannel(ch, mode='keep', out_folder='removechannel')
+ch = ['RHipAngles', 'RKneeAngles', 'RAnkleAngles', 'SACR']
+bmech.removechannel(ch, mode='keep', out_folder='removechannel')
 #
 # explode channels
-# bmech.explodechannel(out_folder='explodechannels')
+bmech.explodechannel(out_folder='explodechannels')
 
 # rename events
 bmech.renameevent(evt='Right_FootStrike1', nevt='RFS1', out_folder='rename event')
 bmech.renameevent(evt='Right_FootStrike2', nevt='RFS2', out_folder='rename event')
 
+# filter data
+filt = {
+    'order': 4,
+    'ftype': 'butter',
+    'cutoff': 10,
+    'btype': 'lowpass',
+    'filtfilt': True}
+bmech.filter(out_folder='filter', ch='RKneeAngles_x', filt=filt)
+
+# normalize data
+bmech.normalize(nlen=101, out_folder='normalize')
+
+
 # partition from right foot strike 1 to right foot strike 2
 bmech.name_contains = ['Straight', 'Turn']  # do not partition static trials
 bmech.partition(out_folder='partition', evt_start='RFS1', evt_end='RFS2')
 
-# normalize data
-bmech.normalize(nlen=101, out_folder='normalize')
 
 
 # Commented methods not yet tested

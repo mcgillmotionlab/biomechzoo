@@ -1,4 +1,5 @@
 import copy
+import numpy as np
 
 def explodechannel_data(data, channels=None):
     """ Explodes 3D channels (n x 3 arrays) into separate X, Y, Z channels.
@@ -6,13 +7,23 @@ def explodechannel_data(data, channels=None):
     Arguments:
         data (dict): Zoo data loaded from a file
         channels (list of str or None): Channels to explode.
-        If None, explode all channels with 'line' shaped (n x 3).
+            If None, explode all channels with 'line' shaped (n x 3).
 
     Returns:
         data_new (dict): Modified zoo dictionary with exploded channels.
     """
-
     data_new = copy.deepcopy(data)
+
+    # Ensure zoosystem channel lists are Python lists
+    for sys in ['Video', 'Analog']:
+        if sys in data_new.get('zoosystem', {}):
+            ch_list = data_new['zoosystem'][sys].get('Channels', [])
+            if isinstance(ch_list, np.ndarray):
+                ch_list = ch_list.tolist()
+            # strip whitespace
+            ch_list = [str(ch).strip() for ch in ch_list]
+            data_new['zoosystem'][sys]['Channels'] = ch_list
+
     # Find default channels if none provided
     if channels is None:
         channels = []
@@ -39,9 +50,20 @@ def explodechannel_data(data, channels=None):
             key = ch + axis
             data_new[key] = {
                 'line': line,
-                'event': data[ch]['event']}
+                'event': data_new[ch]['event']}
 
         # Remove original channel
         del data_new[ch]
+
+        # --- Update zoosystem lists ---
+        for sys in ['Video', 'Analog']:
+            if sys in data_new['zoosystem']:
+                ch_list = data_new['zoosystem'][sys]['Channels']
+                if ch in ch_list:
+                    # Remove original channel
+                    ch_list = [c for c in ch_list if c != ch]
+                    # Add exploded channels
+                    ch_list.extend([ch + '_x', ch + '_y', ch + '_z'])
+                    data_new['zoosystem'][sys]['Channels'] = ch_list
 
     return data_new

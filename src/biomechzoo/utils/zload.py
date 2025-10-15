@@ -1,5 +1,6 @@
 from scipy.io import loadmat
 import os
+import numpy as np
 
 
 def zload(filepath):
@@ -28,6 +29,16 @@ def zload(filepath):
 
     if 'data' in data:
         data = data['data']
+
+    # Convert Video and Analog channel arrays to Python lists
+    for sys in ['Video', 'Analog']:
+        if 'zoosystem' in data and sys in data['zoosystem']:
+            channels = data['zoosystem'][sys].get('Channels', [])
+            # Convert to list and strip spaces
+            if isinstance(channels, np.ndarray):
+                channels = channels.tolist()
+            channels = [str(ch).strip() for ch in channels]
+            data['zoosystem'][sys]['Channels'] = channels
 
     return data
 
