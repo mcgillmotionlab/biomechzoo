@@ -6,43 +6,58 @@ from biomechzoo.utils.set_zoosystem import set_zoosystem
 from biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_rate_from_time
 
 
-def table2zoo_data(csv_path, type='csv', skip_rows=0, freq=None):
-    # todo: check calculation for sampling rate
+def table2zoo_data(fl, extension, skip_rows=0, freq=None):
 
-    if type not in ['csv', 'parquet']:
-        raise NotImplementedError('Only csv and parquet currently supported')
+    if extension == 'csv':
+        df, metadata, freq = _csv2zoo(fl, skip_rows=skip_rows, freq=freq)
 
-    # Read header lines until 'endheader'
-    metadata = {}
-    if type == 'csv' and skip_rows > 0:
-        header_lines = []
-        with open(csv_path, 'r') as f:
-            for line in f:
-                header_lines.append(line.strip())
-                if line.strip().lower() == 'endheader':
-                    break
-        # Parse metadata
-        metadata = _parse_metadata(header_lines)
-
-    if type == 'csv':
-        df = pd.read_csv(csv_path, skiprows=skip_rows)
-    elif type =='parquet':
-        df = pd.read_parquet(csv_path)
+    elif extension == 'parquet':
+        df, metadata, freq = _parquet2zoo(fl, skip_rows=skip_rows, freq=freq)
     else:
-        raise ValueError('type must be csv or parquet')
-
-    # Use all columns
-    df_data = df.iloc[:, 0:]
+        raise ValueError('extension {} not implemented'.format(extension))
 
     # assemble zoo data
-    data = {}
-    data['zoosystem'] = set_zoosystem()
-
-    for ch in df_data.columns:
+    data = {'zoosystem': set_zoosystem()}
+    for ch in df.columns:
         data[ch] = {
-            'line': df_data[ch].values,
+            'line': df[ch].values,
             'event': []
         }
+
+
+    # now try to calculate freq from a time column
+    if freq is None:
+        time_col = [col for col in df.columns if 'time' in col.lower()]
+        if time_col is not None and len(time_col) > 0:
+            time_data = df[time_col].to_numpy()[:, 0]
+            freq = compute_sampling_rate_from_time(time_data)
+        else:
+            raise ValueError('Unable to compute sampling rate for time column, please specify a sampling frequency'
+                             )
+    # add metadata
+    data['zoosystem']['Video']['Freq'] = freq
+    data['zoosystem']['Analog']['Freq'] = 'None'
+
+    if metadata is not None:
+        data['zoosystem']['Other'] = metadata
+
+    return data
+
+
+def _parquet2zoo(fl, skip_rows=0, freq=None):
+    df = pd.read_parquet(fl)
+    metadata = None
+    return df, metadata, freq
+
+def _csv2zoo(fl, skip_rows=0, freq=None):
+    header_lines = []
+    with open(fl, 'r') as f:
+        for line in f:
+            header_lines.append(line.strip())
+            if line.strip().lower() == 'endheader':
+                break
+    # Parse metadata
+    metadata = _parse_metadata(header_lines)
 
     # try to find frequency in metadata
     if freq is None:
@@ -53,20 +68,12 @@ def table2zoo_data(csv_path, type='csv', skip_rows=0, freq=None):
         else:
             freq = None  # or raise an error
 
-    # now try to calculate freq from a time column
-    if freq is None:
-        time_col = [col for col in df.columns if 'time' in col.lower()]
-        if time_col is not None:
-            time_data = df[time_col].to_numpy()[:, 0]
-            freq = compute_sampling_rate_from_time(time_data)
+    # read csv
+    df = pd.read_csv(fl, skiprows=skip_rows)
 
-    # add metadata
-    data['zoosystem']['Video']['Freq'] = freq
-    data['zoosystem']['Analog']['Freq'] = 'None'
-    if 'version' in metadata:
-        data['zoosystem']['collection_system_version'] = metadata['version']
+    return df, metadata, freq
 
-    return data
+
 
 
 def _parse_metadata(header_lines):
@@ -94,6 +101,8 @@ def _parse_metadata(header_lines):
 
             metadata[key] = val_num
     return metadata
+
+
 
 
 if __name__ == '__main__':

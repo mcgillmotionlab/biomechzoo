@@ -9,9 +9,7 @@ def mvnx2zoo_data(fl):
     mvnx_file = load_mvnx(fl)
 
     # create zoo data dict
-    data = {}
-    data['zoosystem'] = set_zoosystem()
-
+    data = {'zoosystem': set_zoosystem()}
     # extract joint angle data (All JOINTS may not exist in a given dataset)
     for key, val in JOINTS.items():
         try:

@@ -1,7 +1,11 @@
 import numpy as np
+import copy
+from biomechzoo.utils.peak_sign import peak_sign
 
+def addevent_data(data, ch, ename, etype, constant=None):
 
-def addevent_data(data, ch, ename, etype):
+    data_new = copy.deepcopy(data)
+
     if isinstance(ch, str):
         ch = [ch]
 
@@ -17,7 +21,7 @@ def addevent_data(data, ch, ename, etype):
             print(f'Channel {channel} does not exist')
             continue
 
-        yd = data[channel]['line']  # 1D array
+        yd = data_new[channel]['line']  # 1D array
         etype = etype.lower()
         if etype == 'absmax':
             exd = int(np.argmax(np.abs(yd)))
@@ -42,13 +46,51 @@ def addevent_data(data, ch, ename, etype):
             exd = max_stance(yd)
             eyd = float(yd[exd])
             eyd = float(yd[exd])
+        elif etype in ['fs_fp', 'fo_fp']:
+            # --- Handle constant ---
+            if constant is None:
+                print('Warning: Force plate threshold not set, defaulting to 0.')
+                constant = 0.0
+
+            # --- Check sampling rates ---
+            AVR = data['zoosystem']['AVR']
+            if AVR != 1:
+                raise ValueError('Video and Analog channels must be at the same sampling rate. Use bmech_resample.')
+
+            # --- Handle units ---
+            units = data['zoosystem']['Units']['Forces']
+            if units == 'N/kg':
+                m = data['zoosystem']['Anthro']['Bodymass']
+            else:
+                m = 1.0
+
+            # --- Extract force signal ---
+            if '_' not in ch:
+                yd = data_new[channel]['line'][:, 2]  # looking for GRF Z
+            else:
+                yd = data_new[channel]['line']
+
+            # --- Determine peak sign ---
+            peak = peak_sign(yd)  # user-defined function
+
+            # --- Find threshold crossing ---
+            threshold_signal = peak * yd * m
+            if 'fs' in etype:
+                exd_array = np.where(threshold_signal > constant)[0]
+                exd = exd_array[0] - 1  # MATLAB indexing correction
+                eyd = yd[exd]
+            else:  # 'FO' type
+                exd_array = np.where(threshold_signal > constant)[0]
+                exd = exd_array[-1] + 1
+                eyd = yd[exd]
+
         else:
             raise ValueError(f'Unknown event type: {etype}')
 
         # Add event to the channel's event dict
-        data[channel]['event'][ename] = [exd, eyd, 0]
+        data_new[channel]['event'][ename] = [exd, eyd, 0]
 
-    return data
+    return data_new
 
 def max_stance(yd):
     """ extracts max from first 40% of the gait cycle"""
