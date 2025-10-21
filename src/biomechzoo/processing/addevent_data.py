@@ -1,25 +1,25 @@
 import numpy as np
 import copy
+import warnings
 from biomechzoo.utils.peak_sign import peak_sign
 
-def addevent_data(data, ch, ename, etype, constant=None):
+def addevent_data(data, channels, ename, etype, constant=None):
 
     data_new = copy.deepcopy(data)
 
-    if isinstance(ch, str):
-        ch = [ch]
+    if isinstance(channels, str):
+        channels = [channels]
 
-    if len(ch) == 1 and ch[0].lower() == 'all':
-        ch = [key for key in data if key != 'zoosystem']
+    if len(channels) == 1 and channels[0].lower() == 'all':
+        channels = [key for key in data if key != 'zoosystem']
 
-    for channel in ch:
+    for channel in channels:
         if ename == '':
             data[channel]['event'] = {}
             continue
 
         if channel not in data:
-            print(f'Channel {channel} does not exist')
-            continue
+            raise KeyError('Channel {} does not exist'.format(channel))
 
         yd = data_new[channel]['line']  # 1D array
         etype = etype.lower()
@@ -55,7 +55,7 @@ def addevent_data(data, ch, ename, etype, constant=None):
             # --- Check sampling rates ---
             AVR = data['zoosystem']['AVR']
             if AVR != 1:
-                raise ValueError('Video and Analog channels must be at the same sampling rate. Use bmech_resample.')
+                warnings.warn('Video and Analog channels must be at the same sampling rate or events will be incorrect.')
 
             # --- Handle units ---
             units = data['zoosystem']['Units']['Forces']
@@ -65,7 +65,7 @@ def addevent_data(data, ch, ename, etype, constant=None):
                 m = 1.0
 
             # --- Extract force signal ---
-            if '_' not in ch:
+            if '_' not in channel:
                 yd = data_new[channel]['line'][:, 2]  # looking for GRF Z
             else:
                 yd = data_new[channel]['line']

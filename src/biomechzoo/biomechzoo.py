@@ -281,7 +281,7 @@ class BiomechZoo:
         self._update_folder(out_folder, inplace, in_folder)
 
 
-    def removeevent(self, event, mode='remove', out_folder=None, inplace=None):
+    def removeevent(self, events, mode='remove', out_folder=None, inplace=None):
         """ removes channels from zoo files """
         start_time = time.time()
         verbose = self.verbose
@@ -290,9 +290,9 @@ class BiomechZoo:
             inplace = self.inplace
         fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
         for f in fl:
-            batchdisp('removing events for {}'.format(f), level=2, verbose=verbose)
+            batchdisp('removing events {} for {}'.format(events, f), level=2, verbose=verbose)
             data = zload(f)
-            data = removeevent_data(data, event, mode)
+            data = removeevent_data(data, events, mode)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)

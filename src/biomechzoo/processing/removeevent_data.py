@@ -1,4 +1,6 @@
 import copy
+import warnings
+from biomechzoo.utils.findfield import findfield
 
 def removeevent_data(data, events, mode='remove'):
     """
@@ -24,9 +26,18 @@ def removeevent_data(data, events, mode='remove'):
     if isinstance(events, str):
         events = [events]
 
-    data_new = copy.deepcopy(data)
-    channels = [ch for ch in data_new if ch != 'zoosystem']
+    # check if any events are not present
+    valid_events = []
+    for evt in events:
+        e, _ = findfield(data, evt)
+        if e is None:
+            warnings.warn('Could not find event {} in zoo file, skipping'.format(evt))
+        else:
+            valid_events.append(evt)
+    events = valid_events
 
+    data_new = copy.deepcopy(data)
+    channels = sorted([ch for ch in data_new if ch != 'zoosystem'])
     for ch in channels:
         event_dict = data_new[ch].get('event', {})
         events_to_remove = []
@@ -39,9 +50,8 @@ def removeevent_data(data, events, mode='remove'):
 
         for evt in events_to_remove:
             event_dict.pop(evt, None)
-            print('Removed event "{}" from channel "{}"'.format(evt, ch))
+            # print('Removed event "{}" from channel "{}"'.format(evt, ch))
 
-        # explicitly assign back — not strictly needed, but clarifies intent
         data_new[ch]['event'] = event_dict
 
     return data_new

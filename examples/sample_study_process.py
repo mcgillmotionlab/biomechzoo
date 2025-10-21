@@ -1,10 +1,13 @@
 import os
 from biomechzoo.biomechzoo import BiomechZoo
+
 # get raw data folder
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
 fld_data = os.path.join(project_root, 'data', 'sample_study', 'raw c3d files')
 
-#### Testing processing functions (assumes c3d files converted above ) #############
+#### Reproduction of the sample_study process in the Matlab version of the biomechzoo toolbox #############
+# todo: Use existing python modules like kieticstoolkit and pycgm for the biomechanical modelling
+
 
 # set up a new 'bmech' object for processing
 bmech = BiomechZoo(fld_data, inplace=False, verbose='all')
@@ -68,46 +71,10 @@ bmech.addevent(ch,evtn2,evtt2, out_folder='4-partition')     # based on Fz
 bmech.partition(evtn1,evtn2, out_folder='4-partition')
 
 
-# explode channels
-bmech.explodechannel(out_folder='explodechannels')
-
-# rename events
-bmech.renameevent(evt='Right_FootStrike1', nevt='RFS1', out_folder='rename event')
-bmech.renameevent(evt='Right_FootStrike2', nevt='RFS2', out_folder='rename event')
-
-evts = ['RFS1' , 'RFS2', 'bob']
-bmech.removeevent(evts, mode='keep', out_folder='removeevent')
-
-# filter data
-filt = {
-    'order': 4,
-    'ftype': 'butter',
-    'cutoff': 10,
-    'btype': 'lowpass',
-    'filtfilt': True}
-bmech.filter(out_folder='filter', ch='RKneeAngles_x', filt=filt)
-
-# normalize data
-bmech.normalize(nlen=101, out_folder='normalize')
-
-# partition from right foot strike 1 to right foot strike 2
-bmech.name_contains = ['Straight', 'Turn']  # do not partition static trials
-bmech.partition(out_folder='partition', evt_start='RFS1', evt_end='RFS2')
+# STEP 5: Computing joint kinematics and kinetics ---------------------------------------
+# - This steps computes ankle, knee, and hip joint kinematics using two approaches:
+#  (1) 'KineMat' toolbox see: http://isbweb.org/software/movanal/kinemat/
+#   2) custom code made to reproduce the PiG outputs
+# - Ankle, knee, and hip joint centres are also computed to supported calculations
 
 
-
-# Commented methods not yet tested
-
-# Split trials by gait cycle
-# bmech.split_trial_by_gait_cycle(first_event_name='Right_FootStrike1', out_folder='4-split_by_cycle')
-#
-# # step 4: add Right foot strike event
-# bmech.addevent(out_folder='4-addevent')
-#
-# # step 5 filter data
-# bmech.filter(out_folder='5-filter')
-#
-# # step 6: partition from right foot strike 1 to right foot strike 2
-# bmech.partition(out_folder='6-partition')
-#
-#

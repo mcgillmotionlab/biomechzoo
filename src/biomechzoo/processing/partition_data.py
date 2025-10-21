@@ -19,15 +19,14 @@ def partition_data(data, evt_start, evt_end):
     e2 = int(e2[0])
 
     data_new = copy.deepcopy(data)
-    for ch_name, ch_data in data_new.items():
+    for ch_name, ch_data in sorted(data_new.items()):
         if ch_name != 'zoosystem':
-            print(ch_name)
-            line = ch_data['line']
+            r = ch_data['line']
             try:
-                if line.ndim == 1:
-                    data_new[ch_name]['line'] = line[e1:e2]
+                if r.ndim == 1:
+                    data_new[ch_name]['line'] = r[e1:e2]
                 else:
-                    data_new[ch_name]['line'] = line[e1:e2, :]
+                    data_new[ch_name]['line'] = r[e1:e2, :]
             except (IndexError, ValueError) as e:
                 # IndexError: if e1[0]:e2[0] goes beyond the available indices
                 # ValueError: less likely, but may arise with shape mismatches
@@ -40,27 +39,8 @@ def partition_data(data, evt_start, evt_end):
                 if original_frame == 999:
                     continue  # do not change outlier markers
                 else:
-                    new_frame = original_frame - e1
-                    # cast array to int32 if needed
                     arr = np.array(data_new[ch_name]['event'][event_name], dtype=np.int32)
-                    arr[0] = new_frame
+                    arr[0] = original_frame - e1
                     data_new[ch_name]['event'][event_name] = arr
 
     return data_new
-
-
-def _partition_line(arr, evt_start, evt_end):
-    arr_new = arr[evt_start:evt_end, :]
-    return arr_new
-
-
-def _partition_event(event_dict, evt_start, evt_end, arr_len):
-    raise NotImplementedError
-    # event_dict_new = {}
-    # for event, event_val in event_dict:
-    #     event_val_new =
-    #     event_dict_new[event] =
-    #
-    #
-    #
-    # return event_dict_new
