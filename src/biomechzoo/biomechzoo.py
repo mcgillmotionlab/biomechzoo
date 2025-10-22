@@ -12,6 +12,7 @@ from biomechzoo.conversion.table2zoo_data import table2zoo_data
 from biomechzoo.conversion.mvnx2zoo_data import mvnx2zoo_data
 from biomechzoo.processing.removechannel_data import removechannel_data
 from biomechzoo.processing.renamechannel_data import renamechannel_data
+from biomechzoo.processing.removeevent_data import removeevent_data
 from biomechzoo.processing.explodechannel_data import explodechannel_data
 from biomechzoo.processing.addevent_data import addevent_data
 from biomechzoo.processing.partition_data import partition_data
@@ -62,6 +63,8 @@ class BiomechZoo:
             in_folder_path = os.path.dirname(in_folder)
             self.in_folder = os.path.join(in_folder_path, out_folder)
 
+        batchdisp('all files saved to: {}'.format(self.in_folder ), level=1, verbose=self.verbose)
+
     def mvnx2zoo(self, out_folder=None, inplace=False):
         """ Converts all .mvnx files in the folder to .zoo format """
         start_time = time.time()
@@ -76,7 +79,7 @@ class BiomechZoo:
             f_zoo = f.replace('.mvnx', '.zoo')
             zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
-        batchdisp('{} conversion complete for {} files'.format(method_name, len(fl)), level=1, verbose=verbose)
+        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
@@ -100,17 +103,21 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def table2zoo(self, out_folder=None, inplace=None, skip_rows=0, extension='csv'):
+    def table2zoo(self, extension, out_folder=None, inplace=None, skip_rows=0, freq=None):
         """ Converts generic .csv file in the folder to .zoo format """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
+
+        if extension.startswith('.'):
+            extension = extension[1:]
+
         if inplace is None:
             inplace = self.inplace
         fl = engine(in_folder, extension=extension, name_contains=self.name_contains, subfolders=self.subfolders)
         for f in fl:
             batchdisp('converting {} to zoo for {}'.format(extension, f), level=2, verbose=verbose)
-            data = table2zoo_data(f, type=extension, skip_rows=skip_rows)
+            data = table2zoo_data(f, extension=extension, skip_rows=skip_rows, freq=freq)
             f_zoo = f.replace(extension, '.zoo')
             zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
@@ -119,8 +126,13 @@ class BiomechZoo:
         self._update_folder(out_folder, inplace, in_folder)
 
     def xls2zoo(self, out_folder=None, inplace=None):
-        """ Converts generic .xls file in the folder to .zoo format """
-        raise NotImplementedError
+        raise NotImplementedError('Use table2zoo instead')
+
+    def csv2zoo(self, out_folder=None, inplace=None):
+        raise NotImplementedError('Use table2zoo instead')
+
+    def parquet2zoo(self, out_folder=None, inplace=None):
+        raise NotImplementedError('Use table2zoo instead')
 
     def phase_angle(self, ch, out_folder=None, inplace=None):
         """ computes phase angles"""
@@ -185,7 +197,8 @@ class BiomechZoo:
                     batchdisp('splitting by gait cycle from {} to {} for {}'.format(start, end, f), level=2,
                               verbose=verbose)
                     data_new = split_trial(data, start, end)
-                    zsave(fl_new, data_new, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+                    if data_new is not None:
+                        zsave(fl_new, data_new, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
@@ -267,6 +280,27 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
+
+    def removeevent(self, events, mode='remove', out_folder=None, inplace=None):
+        """ removes channels from zoo files """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('removing events {} for {}'.format(events, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = removeevent_data(data, events, mode)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
+
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+
     def explodechannel(self, out_folder=None, inplace=None):
         """ explodes all channels in a zoo file """
         start_time = time.time()
@@ -307,7 +341,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def addevent(self, ch, event_type, event_name, out_folder=None, inplace=None):
+    def addevent(self, ch, event_type, event_name, out_folder=None, inplace=None, constant=None):
         """ adds events of type evt_type with name evt_name to channel ch """
         start_time = time.time()
         verbose = self.verbose
@@ -319,7 +353,7 @@ class BiomechZoo:
             if verbose:
                 batchdisp('adding event {} to channel {} for {}'.format(event_type, ch, f), level=2, verbose=verbose)
             data = zload(f)
-            data = addevent_data(data, ch, event_type, event_name)
+            data = addevent_data(data, ch, event_type, event_name, constant)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)

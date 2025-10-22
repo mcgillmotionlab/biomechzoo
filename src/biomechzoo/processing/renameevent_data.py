@@ -28,17 +28,11 @@ def renameevent_data(data, evt, nevt):
     # Get all data channels except 'zoosystem'
     channels = [ch for ch in data if ch != 'zoosystem']
     for old_name, new_name in zip(evt, nevt):
-        eventsRenamed = False
         for ch in channels:
             events = data[ch].get('event', {})
             if old_name in events:
-                print('Renaming event {} in channel {} to {}'.format(old_name, ch, new_name))
                 data[ch]['event'][new_name] = events[old_name]
                 del data[ch]['event'][old_name]
-                eventsRenamed = True
-
-        if not eventsRenamed:
-            print('no event {} found in any channel'.format(old_name))
 
     return data
 

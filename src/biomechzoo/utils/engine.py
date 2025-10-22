@@ -1,4 +1,5 @@
 import os
+import numpy as np
 
 
 def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, verbose=False):
@@ -66,10 +67,13 @@ def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, v
                     continue
             matched_files.append(full_path)
 
+    # sort list
+    matched_files = np.sort(matched_files)
+
     if verbose:
-        print("Found {} {} files in subfolders named {} with substring {}:".format(len(matched_files), extension, subfolders, name_contains))
+        print("Found {} {} files in subfolder(s) named {} with substring {}:".format(len(matched_files), extension, subfolders, name_contains))
         for f in matched_files:
-            print(" - {}".format(f))
+            print('{}'.format(f))
 
     return matched_files
 
@@ -79,6 +83,6 @@ if __name__ == '__main__':
     with extension .c3d in the sample study folder (data)"""
     # -------TESTING--------
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(current_dir)
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
     sample_dir = os.path.join(project_root, 'data', 'sample_study', 'raw c3d files')
     c3d_files = engine(sample_dir, '.c3d', subfolders=['Straight'], name_contains='HC03', verbose=True)
