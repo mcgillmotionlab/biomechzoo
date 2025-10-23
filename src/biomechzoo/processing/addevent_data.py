@@ -2,6 +2,7 @@ import numpy as np
 import copy
 import warnings
 from biomechzoo.utils.peak_sign import peak_sign
+from biomechzoo.biomech_ops.movement_onset import movement_onset
 
 def addevent_data(data, channels, ename, etype, constant=None):
 
@@ -46,6 +47,12 @@ def addevent_data(data, channels, ename, etype, constant=None):
             exd = max_stance(yd)
             eyd = float(yd[exd])
             eyd = float(yd[exd])
+        elif etype == 'movement_onset':
+            exd = movement_onset(yd, constant)
+            eyd = yd[exd]
+        elif etype == 'movement_offset':
+            exd = movement_onset(yd,constant)
+            eyd = yd[exd]
         elif etype in ['fs_fp', 'fo_fp']:
             # --- Handle constant ---
             if constant is None:

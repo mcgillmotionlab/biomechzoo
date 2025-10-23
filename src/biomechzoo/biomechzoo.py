@@ -1,6 +1,8 @@
 import os
 import inspect
 import time
+
+from biomechzoo.imu.tilt_algoirthm import tilt_algorithm_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
@@ -133,6 +135,26 @@ class BiomechZoo:
 
     def parquet2zoo(self, out_folder=None, inplace=None):
         raise NotImplementedError('Use table2zoo instead')
+
+    def tilt_algorithm(self, chname_avert, chname_medlat, chname_antpost, out_folder=None, inplace=False):
+        """ tilt correction for acceleration data """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('tilt correction of acceleration channels for {}'.format(f), level=2, verbose=verbose)
+            data = zload(f)
+            data = tilt_algorithm_data(data, chname_avert, chname_medlat, chname_antpost)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
+            level=1, verbose=verbose)
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
 
     def phase_angle(self, ch, out_folder=None, inplace=None):
         """ computes phase angles"""
