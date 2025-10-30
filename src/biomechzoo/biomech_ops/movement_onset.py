@@ -1,4 +1,4 @@
-def movement_onset(yd, constant, etype=etype):
+def movement_onset(yd, constant):
     """
     Extracts movement onset based on the average and standard deviation of a sliding window
     Standard thresholds for running are mean_thresh=1.2, std_thresh=0.2. For walking mean_thresh=0.6, std_thresh=0.2.
