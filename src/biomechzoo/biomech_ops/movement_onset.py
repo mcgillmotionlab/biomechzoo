@@ -1,3 +1,6 @@
+import numpy as np
+
+
 def movement_onset(yd, constant, etype=etype):
     """
     Extracts movement onset based on the average and standard deviation of a sliding window
@@ -18,6 +21,7 @@ def movement_onset(yd, constant, etype=etype):
     timestamps = []
     window_size = 2 * fs  # windows van 2 seconds
     step_size = 1 * fs  # with an overlap of 1 seconds
+    min_duration = 3 # minimal duration in sec that the thresholds needs to be surpassed
 
     for start in range(0, len(acc_mag) - window_size, step_size):
         segment = acc_mag[start:start + window_size]
@@ -40,12 +44,12 @@ def movement_onset(yd, constant, etype=etype):
         # features, timestamps = self.sliding_window_features(acc_mag)
         movement_flags = (features[:, 0] > mean_thresh) & (features[:, 1] > std_thresh)
         index = None
-        for i in range(len(movement_flags) - int(min_duration * self.fs / 50)):
-            if np.all(movement_flags[i:i + int(min_duration * self.fs / 50)]):
+        for i in range(len(movement_flags) - int(min_duration * fs / 50)):
+            if np.all(movement_flags[i:i + int(min_duration * fs / 50)]):
                 index = i
                 break
 
     if etype == 'movement_offset':
-        index = len(yd) - end_time
+        index = len(yd) - index
 
     return timestamps[index] if index is not None else timestamps[0]
