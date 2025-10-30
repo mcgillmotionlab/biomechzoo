@@ -2,7 +2,7 @@ import os
 import inspect
 import time
 
-from biomechzoo.imu.tilt_algoirthm import tilt_algorithm_data
+from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
