@@ -1,6 +1,7 @@
 import numpy as np
 import copy
 import warnings
+from scipy.signal import find_peaks
 from biomechzoo.utils.peak_sign import peak_sign
 from biomechzoo.biomech_ops.movement_onset import movement_onset
 
@@ -42,10 +43,9 @@ def addevent_data(data, channels, ename, etype, constant=None):
         elif etype == 'rom':
             eyd = float(np.max(yd) - np.min(yd))
             exd = 0  # dummy index (like MATLAB version)
-        elif etype == 'max_stance':
+        elif etype == 'first peak':
             # special event for gait and running
-            exd = max_stance(yd)
-            eyd = float(yd[exd])
+            exd = find_first_peak(yd, constant)
             eyd = float(yd[exd])
         elif etype == 'movement_onset':
             exd = movement_onset(yd, constant, etype=etype)
@@ -100,7 +100,17 @@ def addevent_data(data, channels, ename, etype, constant=None):
 
     return data_new
 
-def max_stance(yd):
-    """ extracts max from first 40% of the gait cycle"""
-    raise NotImplementedError
+def find_first_peak(yd, constant):
+    """ extracts first peak from a series of 2 peaks """
+    # Find peaks above threshold
+    peaks, _ = find_peaks(yd, height=constant)
+
+    if len(peaks) == 0:
+        raise ValueError('No peaks found')
+    elif len(peaks) == 1:
+        raise ValueError('Only 1 peak found')
+    else:
+        # Take the first valid peak
+        exd = peaks[0]
+
     return exd

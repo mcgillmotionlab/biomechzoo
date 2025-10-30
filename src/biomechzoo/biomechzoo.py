@@ -136,6 +136,8 @@ class BiomechZoo:
     def parquet2zoo(self, out_folder=None, inplace=None):
         raise NotImplementedError('Use table2zoo instead')
 
+    def rectify(self):
+        raise NotImplementedError
     def tilt_algorithm(self, chname_avert, chname_medlat, chname_antpost, out_folder=None, inplace=False):
         """ tilt correction for acceleration data """
         start_time = time.time()
