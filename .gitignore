@@ -5,18 +5,14 @@ biomechzoo.egg-info/PKG-INFO
 biomechzoo.egg-info/requires.txt
 /biomechzoo.egg-info
 
-# Ignore everything in sample_study
+# Ignore everything in sample_study but keep raw_c3d_files and its contents
 data/sample_study/*
-
-# But keep raw_c3d_files and its contents
 !sample_study/raw_c3d_files/
 !sample_study/raw_c3d_files/**
-data/mvnx2zoo/Flat001.zoo
-data/mvnx2zoo/Flat002.zoo
-pyproject.toml
-uv.lock
-pyproject.toml
-uv.lock
-.idea/biomechZoo.iml
-.idea/biomechZoo.iml
-.idea/biomechZoo.iml
+
+# ignore all created zoo files
+*.zoo
+
+.idea/*
+
+.DS_Store
