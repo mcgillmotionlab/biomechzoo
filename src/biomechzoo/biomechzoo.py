@@ -8,7 +8,7 @@ from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
 from biomechzoo.utils.batchdisp import batchdisp
 from biomechzoo.utils.get_split_events import get_split_events
-from biomechzoo.utils.split_trial import split_trial
+from biomechzoo.processing.split_trial_data import split_trial_data
 from biomechzoo.conversion.c3d2zoo_data import c3d2zoo_data
 from biomechzoo.conversion.table2zoo_data import table2zoo_data
 from biomechzoo.conversion.mvnx2zoo_data import mvnx2zoo_data
@@ -220,7 +220,7 @@ class BiomechZoo:
                     end = split_events[i + 1]
                     batchdisp('splitting by gait cycle from {} to {} for {}'.format(start, end, f), level=2,
                               verbose=verbose)
-                    data_new = split_trial(data, start, end)
+                    data_new = split_trial_data(data, start, end)
                     if data_new is not None:
                         zsave(fl_new, data_new, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
