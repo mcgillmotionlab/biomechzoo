@@ -33,7 +33,7 @@ def movement_onset(yd, constant, etype=etype):
 
     features = np.array(features)
     timestamps = np.array(timestamps)
-
+    index = None
     # ----Check already moving else find start----
     initial_window = features[:5]  # First few seconds
     if np.all(initial_window[:, 0] > mean_thresh) and np.all(initial_window[:, 1] > std_thresh):
@@ -41,9 +41,7 @@ def movement_onset(yd, constant, etype=etype):
         if etype == 'movement_offset':
             index = 0
     else:
-        # features, timestamps = self.sliding_window_features(acc_mag)
         movement_flags = (features[:, 0] > mean_thresh) & (features[:, 1] > std_thresh)
-        index = None
         for i in range(len(movement_flags) - int(min_duration * fs / 50)):
             if np.all(movement_flags[i:i + int(min_duration * fs / 50)]):
                 index = i
