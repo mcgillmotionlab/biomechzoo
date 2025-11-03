@@ -105,9 +105,9 @@ def _get_foot_strike_events(mvnx_file, data):
 if __name__ == '__main__':
     """ testing """
     import os
-    from src.biomechzoo.utils.zplot import zplot
+    from biomechzoo.processing.split_trial_data import split_trial_data
     # -------TESTING--------
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
     fl = os.path.join(project_root, 'data', 'other', 'Flat001.mvnx')
+    fl_zoo = fl.replace('.mvnx', '.zoo')
     data = mvnx2zoo_data(fl)
-    zplot(data, 'jRightKnee')
