@@ -23,6 +23,7 @@ from biomechzoo.biomech_ops.normalize_data import normalize_data
 from biomechzoo.biomech_ops.phase_angle_data import phase_angle_data
 from biomechzoo.biomech_ops.continuous_relative_phase_data import continuous_relative_phase_data
 from biomechzoo.biomech_ops.filter_data import filter_data
+# from biomechzoo.biomech_ops.compute_magnitude_data import compute_magnude_data
 
 class BiomechZoo:
     def __init__(self, in_folder, inplace=False, subfolders=None, name_contains=None, verbose=0):
@@ -150,6 +151,26 @@ class BiomechZoo:
             batchdisp('tilt correction of acceleration channels for {}'.format(f), level=2, verbose=verbose)
             data = zload(f)
             data = tilt_algorithm_data(data, chname_avert, chname_medlat, chname_antpost)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
+            level=1, verbose=verbose)
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def compute_magnitude(self, chname1, chname2, chname3, out_folder=None, inplace=False):
+        """ tilt correction for acceleration data """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('tilt correction of acceleration channels for {}'.format(f), level=2, verbose=verbose)
+            data = zload(f)
+            data = compute_magntude_data(data, chname1, chname2, chname3)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp(
