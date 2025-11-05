@@ -1,6 +1,6 @@
 [project]
 name = "biomechzoo"
-version = "0.5.4"
+version = "0.5.5"
 description = "Python implementation of the biomechZoo toolbox"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"   # max version for opencap-process tools is 3.11

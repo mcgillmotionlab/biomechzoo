@@ -4,4 +4,7 @@
     <option name="sdkName" value="Python 3.13 (biomechZoo)" />
   </component>
   <component name="ProjectRootManager" version="2" project-jdk-name="$USER_HOME$/miniforge3/envs/biomechzoo-dev" project-jdk-type="Python SDK" />
+  <component name="PyCharmDSProjectLayout">
+    <option name="id" value="JupyterRightHiddenStructureLayout" />
+  </component>
 </project>

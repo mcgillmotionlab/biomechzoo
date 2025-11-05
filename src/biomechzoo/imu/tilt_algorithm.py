@@ -1,7 +1,7 @@
 import numpy as np
 import math
 import pandas as pd
-from biomechzoo.processing.add_channel_data import add_channel_data
+from biomechzoo.processing.addchannel_data import addchannel_data
 
 def tilt_algorithm_data(data,ch_vert, ch_medlat, ch_antpost, plot_or_not=None):
 
@@ -12,9 +12,9 @@ def tilt_algorithm_data(data,ch_vert, ch_medlat, ch_antpost, plot_or_not=None):
 
     _, avert_corr, amedlat_corr, aantpost_corr = tilt_algorithm_line(avert, amedlat, aantpost)
 
-    data = add_channel_data(data, ch_vert + '_tilt_corr', avert_corr)
-    data = add_channel_data(data, ch_medlat + '_tilt_corr', amedlat_corr)
-    data = add_channel_data(data, ch_antpost + '_tilt_corr', aantpost_corr)
+    data = addchannel_data(data, ch_vert + '_tilt_corr', avert_corr)
+    data = addchannel_data(data, ch_medlat + '_tilt_corr', amedlat_corr)
+    data = addchannel_data(data, ch_antpost + '_tilt_corr', aantpost_corr)
 
     return data
 
