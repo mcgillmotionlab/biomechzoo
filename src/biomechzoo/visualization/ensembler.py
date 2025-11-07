@@ -49,6 +49,25 @@ class Ensembler:
         # show plot after all
         self.show()
 
+    def average(self):
+        #Initialize dictionary to store data
+        data_new = {c: {ch: [] for ch in self.channels} for c in self.conditions}
+
+        for fl in self.zoo_files:
+            data = zload(fl)
+            condition = self._get_condition_from_path(fl)
+
+            # Create dataframe from the two conditions.
+            for channel in self.channels:
+                try:
+                    ch_data_line = data[channel]["line"]
+                    data_new[condition][channel].append(ch_data_line)
+                except KeyError:
+                    print(f"Channel {channel} not found in file {fl}")
+
+
+
+
 
     def add_line(self, y, x=None, row=1, col=1, name=None, color=None):
         trace = go.Scatter(x=x, y=y, mode="lines", name=name, line=dict(color=color))

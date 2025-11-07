@@ -29,5 +29,7 @@ bmech.explodechannel()
 
 from biomechzoo.visualization.ensembler import Ensembler
 
-ensembler = Ensembler(fld=bmech.in_folder, ch=['RHipAngles_x', 'RHipAngles_y', 'RHipAngles_z'], conditions=['Straight', 'Turn'])
+ensembler = Ensembler(fld=bmech.in_folder, ch=['RHipAngles_x', 'RKneeAngles_x'], conditions=['Straight', 'Turn'])
 ensembler.plot_lines()
+ensembler.average()
+
