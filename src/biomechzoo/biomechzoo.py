@@ -23,7 +23,7 @@ from biomechzoo.biomech_ops.normalize_data import normalize_data
 from biomechzoo.biomech_ops.phase_angle_data import phase_angle_data
 from biomechzoo.biomech_ops.continuous_relative_phase_data import continuous_relative_phase_data
 from biomechzoo.biomech_ops.filter_data import filter_data
-# from biomechzoo.biomech_ops.compute_magnitude_data import compute_magnude_data
+from biomechzoo.linear_algebra_ops.compute_magnitude_data import compute_magnitude_data
 
 class BiomechZoo:
     def __init__(self, in_folder, inplace=False, subfolders=None, name_contains=None, verbose=0):
@@ -405,6 +405,26 @@ class BiomechZoo:
 
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
+
+    def partition(self, ch_x, ch_y, ch_z, out_folder=None, inplace=None):
+        """ partitions data between events evt_start and evt_end """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            if verbose:
+                batchdisp('computing magnitude for channels {} for '.format([ch_x, ch_y, ch_z], f), level=2, verbose=verbose)
+            data = zload(f)
+            data = compute_magnitude_data(data, ch_x, ch_y, ch_z)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
 
     def partition(self, evt_start, evt_end, out_folder=None, inplace=None):
         """ partitions data between events evt_start and evt_end """
