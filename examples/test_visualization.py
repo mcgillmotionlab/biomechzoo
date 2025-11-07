@@ -15,21 +15,15 @@ bmech.c3d2zoo(out_folder='visualization')
 bmech.inplace = True
 
 # Step 2: Normalize-------
-# TODO: question ch_data_line length is 101;
-#  This is the format for matlab because it starts at 1.
-#  But python starts at 0, so should the length of the normalized data be 100
-
 bmech.normalize()
 
 # Step 3: bmech explode channel
 bmech.explodechannel()
 
 # ---- test visualisation in script----
-# ensembler.average()
-
 from biomechzoo.visualization.ensembler import Ensembler
 
-ensembler = Ensembler(fld=bmech.in_folder, ch=['RHipAngles_x', 'RKneeAngles_x'], conditions=['Straight', 'Turn'])
-ensembler.plot_lines()
+ensembler = Ensembler(fld=bmech.in_folder, ch=['RHipAngles_x', 'RKneeAngles_x', 'RAnkleAngles_x'], conditions=['Straight', 'Turn'])
+ensembler.cycles()
 ensembler.average()
 

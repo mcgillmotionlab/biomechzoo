@@ -1,3 +1,4 @@
+import numpy as np
 import os
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
@@ -34,7 +35,7 @@ class Ensembler:
                 return cond
         return "Unknown"
 
-    def plot_lines(self):
+    def cycles(self):
         for fl in self.zoo_files:
             data = zload(fl)
             fname = os.path.basename(fl)
@@ -46,11 +47,11 @@ class Ensembler:
                 col = self.conditions.index(condition) + 1
                 self.add_line(y=ch_data_line, row=row, col=col, name=f"{fname} - {channel}")
 
-        # show plot after all
         self.show()
 
+
     def average(self):
-        #Initialize dictionary to store data
+        # Initialize dictionary to store data
         data_new = {c: {ch: [] for ch in self.channels} for c in self.conditions}
 
         for fl in self.zoo_files:
@@ -65,7 +66,21 @@ class Ensembler:
                 except KeyError:
                     print(f"Channel {channel} not found in file {fl}")
 
+        # Average per condition per channel
+        for condition in data_new:
+            for i, channel in enumerate(data_new[condition]):
+                line_data = data_new[condition][channel]
+                array_data = np.array(line_data)
+                average = np.nanmean(array_data, axis=0)
+                standard_dev = np.nanstd(array_data, axis=0)
 
+                # populate the figure
+                row = i + 1
+                col = self.conditions.index(condition) + 1
+                self.add_line(y=average, row=row, col=col, name=f"{condition} - {channel}", color='#1F77B4')
+                self.add_errorbar(y=average, yerr=standard_dev, row=row, col=col, color="rgba(31,119,180,0.3)")
+
+        self.show()
 
 
 
@@ -74,7 +89,25 @@ class Ensembler:
         self.fig.add_trace(trace, row=row, col=col)
 
 
+    def add_errorbar(self, y, yerr, row=1, col=1, color=None):
+        upper_bound = y + yerr
+        lower_bound = y - yerr
+
+        trace_lower = go.Scatter(y=lower_bound,
+                                 line=dict(color='rgba(0,0,0,0)'),
+                                 showlegend=False,
+                                 )
+
+        trace_upper = go.Scatter(y=upper_bound,
+                           fill="tonexty",
+                           fillcolor=color,
+                           line=dict(color='rgba(0,0,0,0)'),
+                           showlegend=False)
+
+        self.fig.add_trace(trace_lower, row=row, col=col)
+        self.fig.add_trace(trace_upper, row=row, col=col)
+
     def show(self):
-        self.fig.update_layout(height=500 * len(self.channels), width=700 * len(self.conditions),
+        self.fig.update_layout(height=300 * len(self.channels), width=400 * len(self.conditions),
                                template="simple_white",)
         self.fig.show()
