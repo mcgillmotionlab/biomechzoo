@@ -41,9 +41,3 @@ def common_substring_or_concat(str1, str2, str3):
         return str1 + str2 + str3
     return common
 
-# Example
-s1 = "biomechanics"
-s2 = "mechanical"
-s3 = "technician"
-
-print(common_substring(s1, s2, s3))
