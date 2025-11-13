@@ -21,11 +21,11 @@ class Ensembler:
             self.side = side
             self._filter_side_from_path()
 
-    def _assign_colors(self):
+    def _assign_subject_colors(self):
         NotImplementedError()
 
 
-    def  _assign_condition_colors(self, i):
+    def  _assign_colors(self, i):
         hex_code = pc.qualitative.D3[i]
         h = hex_code.lstrip('#')
         RGB =tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
@@ -51,6 +51,7 @@ class Ensembler:
             if cond in path:
                 return cond
         return "Unknown"
+
 
     def _filter_side_from_path(self):
         self.zoo_files = [zoo_file for zoo_file in self.zoo_files if self.side in zoo_file]
@@ -99,7 +100,7 @@ class Ensembler:
         # Average per condition per channel
 
         for c, condition in enumerate(data_new):
-            line_color, shade_color = self._assign_condition_colors(c)
+            line_color, shade_color = self._assign_colors(c)
             for i, channel in enumerate(data_new[condition]):
                 line_data = data_new[condition][channel]
                 array_data = np.array(line_data)
@@ -139,7 +140,17 @@ class Ensembler:
         self.fig.add_trace(trace_upper, row=row, col=col)
 
     def show(self):
-        self.fig.update_layout(height=300 * len(self.channels), width=400 * len(self.conditions),
+        self.fig.update_layout(height=350 * len(self.channels), width=450 * len(self.conditions),
                                template="simple_white",
                                showlegend=self.show_legend)
         self.fig.show()
+
+    def save(self, file_name, extension="html", folder=None):
+        if folder is None:
+            folder = self.fld
+
+        os.makedirs(folder, exist_ok=True)
+        if extension == "html":
+            self.fig.write_html(os.path.join(folder, f"{file_name}.{extension}"))
+        else:
+            self.fig.write_image(os.path.join(folder, f"{file_name}.{extension}"))
