@@ -1,20 +1,22 @@
 import numpy as np
 
 
-def movement_onset(yd, constant, etype):
+def movement_onset(yd, fsamp, constants, etype):
     """
     Extracts movement onset based on the average and standard deviation of a sliding window
     Standard thresholds for running are mean_thresh=1.2, std_thresh=0.2. For walking mean_thresh=0.6, std_thresh=0.2.
 
     yd: 1d array of the vector
-    constants: [sample_frequency, mean_thresh, std_thresh]
+    fsamp: sampling frequency
+    constants: [mean_thresh, std_thresh]
+    etype: 'movement_onset' or 'movement_offset'
     """
     acc_mag = yd.copy()
 
     # ----extract the constants----
-    fs = constant[0]
-    mean_thresh = constant[1]
-    std_thresh = constant[2]
+    fs = fsamp
+    mean_thresh = constants[0]
+    std_thresh = constants[1]
 
     # ----sliding window features----
     features = []
