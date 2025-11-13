@@ -8,10 +8,10 @@ from biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_ra
 
 def table2zoo_data(fl, extension, skip_rows=0, freq=None):
 
-    if extension == 'csv':
+    if 'csv' in extension:
         df, metadata, freq = _csv2zoo(fl, skip_rows=skip_rows, freq=freq)
 
-    elif extension == 'parquet':
+    elif 'parquet' in extension:
         df, metadata, freq = _parquet2zoo(fl, skip_rows=skip_rows, freq=freq)
     else:
         raise ValueError('extension {} not implemented'.format(extension))

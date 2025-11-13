@@ -76,6 +76,11 @@ class Ensembler:
 
         self.show()
 
+    def combine(self):
+        raise NotImplementedError
+
+    def combine_within(self):
+        raise NotImplementedError
 
     def average(self):
         # check if fig is populated
