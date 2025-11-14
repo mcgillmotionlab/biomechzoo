@@ -38,11 +38,23 @@ def tilt_algorithm_line(avert, amedlat, aantpost, plot_or_not=None):
     :return: dataframe of the tilt corrected and gravity subtracted vertical, medio-lateral and anterior-posterior
     acceleration signals
     """
-    #
 
     a_vt = avert.mean()
     a_ml = amedlat.mean()
     a_ap = aantpost.mean()
+
+    # if average vertical acceleration is more than 5, data is expressed in m/s^2
+    # Update signals to G's
+    if a_vt > 5:
+        avert /= 9.81
+        amedlat /= 9.81
+        aantpost /= 9.81
+
+        a_vt = avert.mean()
+        a_ml = amedlat.mean()
+        a_ap = aantpost.mean()
+
+
 
     # if avert is negative than turn the sensor around.
     if a_vt < 0.5:
