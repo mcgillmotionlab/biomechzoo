@@ -3,7 +3,7 @@ import copy
 import warnings
 from scipy.signal import find_peaks
 from biomechzoo.utils.peak_sign import peak_sign
-from biomechzoo.biomech_ops.movement_onset import movement_onset
+from biomechzoo.biomech_ops.movement_onset import movement_onset, movement_offset
 
 def addevent_data(data, channels, ename, etype, constant=None):
 
@@ -22,6 +22,12 @@ def addevent_data(data, channels, ename, etype, constant=None):
 
         if channel not in data:
             raise KeyError('Channel {} does not exist'.format(channel))
+
+        # todo extract sampling frequency (needed for some events)
+        if channel in data['zoosystem']['Video']['Channels']:
+            fsamp = data['zoosystem']['Video']['Freq']
+        elif channel in data['zoosystem']['Analog']['Channels']:
+            fsamp = data['zoosystem']['Analog']['Freq']
 
         yd = data_new[channel]['line']  # 1D array
         etype = etype.lower()
@@ -48,11 +54,10 @@ def addevent_data(data, channels, ename, etype, constant=None):
             exd = find_first_peak(yd, constant)
             eyd = float(yd[exd])
         elif etype == 'movement_onset':
-            exd = movement_onset(yd, constant, etype=etype)
+            exd = movement_onset(yd, fsamp, constant)
             eyd = yd[exd]
         elif etype == 'movement_offset':
-            yd2 = yd[::-1].copy() # Reverse the time series.
-            exd = movement_onset(yd2, constant, etype=etype)
+            exd = movement_offset(yd, fsamp, constant)
             eyd = yd[exd]
         elif etype in ['fs_fp', 'fo_fp']:
             # --- Handle constant ---
