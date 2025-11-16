@@ -3,7 +3,7 @@ import copy
 import warnings
 from scipy.signal import find_peaks
 from biomechzoo.utils.peak_sign import peak_sign
-from biomechzoo.biomech_ops.movement_onset import movement_onset
+from biomechzoo.biomech_ops.movement_onset import movement_onset, movement_offset
 
 def addevent_data(data, channels, ename, etype, constant=None):
 
@@ -23,7 +23,7 @@ def addevent_data(data, channels, ename, etype, constant=None):
         if channel not in data:
             raise KeyError('Channel {} does not exist'.format(channel))
 
-        #todo extract sampling frequency (needed for some events)
+        # todo extract sampling frequency (needed for some events)
         if channel in data['zoosystem']['Video']['Channels']:
             fsamp = data['zoosystem']['Video']['Freq']
         elif channel in data['zoosystem']['Analog']['Channels']:

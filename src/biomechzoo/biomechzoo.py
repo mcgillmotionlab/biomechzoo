@@ -112,8 +112,8 @@ class BiomechZoo:
         verbose = self.verbose
         in_folder = self.in_folder
 
-        if extension.startswith('.'):
-            extension = extension[1:]
+        if not extension.startswith('.'):
+            extension = '.' + extension
 
         if inplace is None:
             inplace = self.inplace
