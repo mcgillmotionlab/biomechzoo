@@ -1,12 +1,6 @@
 import numpy as np
 import scipy.signal as signal
 
-def movement_onset(yd, fsamp, constant):
-    # ----extract the constants----
-    mean_thresh, std_thresh = constant
-    min_thresh = 0.1
-    onset_time = None
-
 def movement_onset(yd, fsamp, constants, etype):
     """
     Extracts movement onset based on the average and standard deviation of a sliding window
@@ -22,7 +16,8 @@ def movement_onset(yd, fsamp, constants, etype):
     features, timestamps = sliding_window_features(ch_data=acc_mag_filtered, fs=fsamp)
 
     mean_thresh, std_thresh = constants[0], constants[1]
-
+    min_thresh = 0.1
+    onset_time = None
     while onset_time is None and mean_thresh > min_thresh:
         # ----Check if already moving----
         if check_already_moving(features=features, mean_thresh=mean_thresh, std_thresh=std_thresh):
