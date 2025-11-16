@@ -1,7 +1,7 @@
 import numpy as np
 import scipy.signal as signal
 
-def movement_onset(yd, fsamp, constants, etype):
+def movement_onset(yd, fsamp, constants):
     """
     Extracts movement onset based on the average and standard deviation of a sliding window
     Standard thresholds for running are mean_thresh=1.2, std_thresh=0.2. For walking mean_thresh=0.6, std_thresh=0.2.
@@ -39,8 +39,8 @@ def movement_onset(yd, fsamp, constants, etype):
 def movement_offset(yd, fsamp, constant):
     # ----extract the constants----
     fs = fsamp
-    mean_thresh = constants[0]
-    std_thresh = constants[1]
+    mean_thresh = constant[0]
+    std_thresh = constant[1]
 
         # ----Try detecting onset----
         else:
