@@ -25,3 +25,27 @@ def normalize_line(channel_data, nlength=101):
             channel_data_norm[:, i] = f(x_target)
 
     return channel_data_norm
+
+
+
+
+if __name__ == '__main__':
+    # --- 1D TESTS ---
+    data_1d = np.array([0, 1, 2, 3, 4])
+    print("Original 1D shape:", data_1d.shape)
+
+    # Case 1: same length
+    same = normalize_line(data_1d, nlength=5)
+    print("Same length test passed:", np.allclose(same, data_1d))
+
+    # Case 2: upsample
+    upsampled = normalize_line(data_1d, nlength=10)
+    print("Upsampled 1D shape:", upsampled.shape)
+    print("Upsampled 1D first/last values:", upsampled[0], upsampled[-1])
+
+    # Case 3: downsample
+    downsampled = normalize_line(data_1d, nlength=3)
+    print("Downsampled 1D shape:", downsampled.shape)
+    print("Downsampled 1D first/last values:", downsampled[0], downsampled[-1])
+
+    print("\nAll tests completed.")
