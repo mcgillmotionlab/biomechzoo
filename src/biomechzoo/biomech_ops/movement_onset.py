@@ -12,8 +12,8 @@ def movement_onset(yd, fsamp, constants):
     etype: 'movement_onset' or 'movement_offset'
     """
     acc_mag = yd.copy()
-    acc_mag_filtered = bw_filter(data=acc_mag, N=4, fc=20, btype="low")
-    features, timestamps = sliding_window_features(ch_data=acc_mag_filtered, fs=fsamp)
+    acc_mag_filtered = bw_filter(data=acc_mag, fsamp=fsamp, N=4, fc=20, btype="low")
+    features, timestamps = sliding_window_features(ch_data=acc_mag_filtered, fsamp=fsamp)
 
     mean_thresh, std_thresh = constants[0], constants[1]
     min_thresh = 0.1
