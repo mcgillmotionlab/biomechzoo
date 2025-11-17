@@ -36,12 +36,10 @@ def movement_onset(yd, fsamp, constants):
     return onset_time
 
 
-def movement_offset(yd, fsamp, constant):
-    raise NotImplementedError
+def movement_offset(yd, fsamp, constants):
+
     # ----extract the constants----
-    fs = constant[0]
-    mean_thresh = constant[1]
-    std_thresh = constant[2]
+    mean_thresh, std_thresh = constants[0], constants[1]
     min_thresh = 0.1
     onset_time = None
 
@@ -50,7 +48,7 @@ def movement_offset(yd, fsamp, constant):
     acc_mag = acc_mag[::-1]
 
     acc_mag_filtered = bw_filter(data=acc_mag, N=4, fc=20, btype="low", fsamp=fsamp)
-    features, timestamps = sliding_window_features(ch_data=acc_mag_filtered, fs=fsamp)
+    features, timestamps = sliding_window_features(ch_data=acc_mag_filtered, fsamp=fsamp)
 
     # ----reverse timestamps----
     timestamps = timestamps[::-1]

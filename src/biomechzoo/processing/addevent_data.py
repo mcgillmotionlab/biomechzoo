@@ -59,8 +59,7 @@ def addevent_data(data, channels, ename, etype, constant=None):
             exd = movement_onset(yd, fsamp, constant)
             eyd = yd[exd]
         elif etype == 'movement_offset':
-            yd2 = yd[::-1].copy() # Reverse the time series.
-            exd = movement_onset(yd2, fsamp, constant)
+            exd = movement_offset(yd, fsamp, constant)
             eyd = yd[exd]
         elif etype in ['fs_fp', 'fo_fp']:
             # --- Handle constant ---
