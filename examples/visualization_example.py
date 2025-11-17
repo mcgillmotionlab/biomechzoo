@@ -20,8 +20,8 @@ from biomechzoo.visualization.ensembler import Ensembler
 # Initialize the ensembler class and create the subplot bones
 ensembler = Ensembler(fld=bmech.in_folder, ch=['hip_flexion_r', 'knee_angle_r', 'ankle_angle_r'],
                       conditions=['Pre', 'Post'],
-                      name_contains=["jogging"],
-                      side="_r")
+                      name_contains=["jogging", "_r"],
+                      )
 
 # Populate the figure with individual gait cycles and save it to file
 ensembler.cycles()
@@ -29,11 +29,12 @@ ensembler.save(file_name="individual gait cycles")
 
 # Populate the figure with the average and standard deviation per condition.
 ensembler.average()
+ensembler.save(file_name="average gait cycles")
+
 
 # combine pre and post to the same subplot
-# ensembler.combine()  #todo : jill
-
-# ensembler.save(file_name="average gait cycles")
+ensembler.combine()
+ensembler.save(file_name="combined figure")
 
 # TODO: priority add markers/event
 # TODO: priority super-impose the pre-Post/turn-straight whatever conditions there are.

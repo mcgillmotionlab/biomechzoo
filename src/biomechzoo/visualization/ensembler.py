@@ -8,18 +8,17 @@ import plotly.colors as pc
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
 
-
 class Ensembler:
-    def __init__(self, fld, ch, conditions, name_contains=None, side=None, show_legend=False):
+    def __init__(self, fld, ch, conditions, name_contains=None, show_legend=False, match_all=True):
         self.fld = fld
         self.conditions = conditions
         self.channels = ch
         self.show_legend = show_legend
-        self.zoo_files = engine(fld, extension=".zoo", subfolders=conditions, name_contains=name_contains)
+        self.zoo_files = engine(fld, extension=".zoo", subfolders=conditions, name_contains=name_contains, match_all=match_all)
         self.fig = self._create_subplots()
-        if side is not None:
-            self.side = side
-            self._filter_side_from_path()
+        # self.average = self._calculate_average() # does this make sense?
+
+
 
     def _assign_subject_colors(self):
         NotImplementedError()
@@ -39,11 +38,19 @@ class Ensembler:
 
 
     def _create_subplots(self):
-        rows = len(self.channels)
-        cols = len(self.conditions)
+        self.rows = len(self.channels)
+        self.cols = len(self.conditions)
         titles = [f"{ch} - {cond}" for ch in self.channels for cond in self.conditions]
-        fig = make_subplots(rows=rows, cols=cols, shared_xaxes=True, shared_yaxes=True,
+        fig = make_subplots(rows=self.rows, cols=self.cols, shared_xaxes=True, shared_yaxes=False,
                              subplot_titles=titles)
+        return fig
+
+    def _create_subplots_combine(self):
+        self.rows = len(self.channels)
+        self.cols = 1
+        titles = [f"{ch}" for ch in self.channels ]
+        fig = make_subplots(rows=self.rows, cols=self.cols, shared_xaxes=True, shared_yaxes=True,
+                            subplot_titles=titles)
         return fig
 
     def _get_condition_from_path(self, path):
@@ -70,6 +77,12 @@ class Ensembler:
 
             for i, channel in enumerate(self.channels):
                 ch_data_line = data[channel]["line"]
+                ch_data_event = data[channel]["event"]
+                for event in ch_data_event:
+                    # loop thorugh and add marker.
+                    exd, eyd, _ = event
+                    self.add_marker()
+
                 row = i + 1
                 col = self.conditions.index(condition) + 1
                 self.add_line(y=ch_data_line, row=row, col=col, name=f"{fname} - {channel}")
@@ -77,7 +90,30 @@ class Ensembler:
         self.show()
 
     def combine(self):
-        raise NotImplementedError
+        # check if fig is populated
+        if self.fig:
+            self.fig.layout = {}
+            self.fig.data = []
+
+        # Create new figure object
+        self.fig = self._create_subplots_combine()
+
+        data = self._calculate_average()
+        for c, condition in enumerate(data):
+            line_color, shade_color = self._assign_colors(c)
+            for i, channel in enumerate(data[condition]):
+                average = data[condition][channel]["average"]
+                standard_dev = data[condition][channel]["standard_dev"]
+
+                # populate the figure
+                row = i + 1
+                self.add_line(y=average, row=row, col=1, name=f"{condition} - {channel}",
+                              color=line_color)
+                self.add_errorbar(y=average, yerr=standard_dev, row=row, col=1,
+                                  color=shade_color)
+
+        self.show()
+
 
     def combine_within(self):
         raise NotImplementedError
@@ -87,7 +123,25 @@ class Ensembler:
         if self.fig.data:
             self.fig.data = []
 
+        data = self._calculate_average()
+        for c, condition in enumerate(data):
+            line_color, shade_color = self._assign_colors(c)
+            for i, channel in enumerate(data[condition]):
+                average = data[condition][channel]["average"]
+                standard_dev = data[condition][channel]["standard_dev"]
+
+                # populate the figure
+                row = i + 1
+                col = self.conditions.index(condition) + 1
+                self.add_line(y=average, row=row, col=col, name=f"{condition} - {channel}", color=line_color) # color='#1F77B4')
+                self.add_errorbar(y=average, yerr=standard_dev, row=row, col=col, color = shade_color) #="rgba(31,119,180,0.3)")
+
+        self.show()
+
+    def _calculate_average(self):
+        """Calculates the average timeseries for the channels"""
         # Initialize dictionary to store data
+
         data_new = {c: {ch: [] for ch in self.channels} for c in self.conditions}
 
         for fl in self.zoo_files:
@@ -103,28 +157,24 @@ class Ensembler:
                     print(f"Channel {channel} not found in file {fl}")
 
         # Average per condition per channel
-
+        average_dict = {c: {ch: {} for ch in self.channels} for c in self.conditions}
         for c, condition in enumerate(data_new):
-            line_color, shade_color = self._assign_colors(c)
             for i, channel in enumerate(data_new[condition]):
                 line_data = data_new[condition][channel]
                 array_data = np.array(line_data)
                 average = np.nanmean(array_data, axis=0)
                 standard_dev = np.nanstd(array_data, axis=0)
 
-                # populate the figure
-                row = i + 1
-                col = self.conditions.index(condition) + 1
-                self.add_line(y=average, row=row, col=col, name=f"{condition} - {channel}", color=line_color) # color='#1F77B4')
-                self.add_errorbar(y=average, yerr=standard_dev, row=row, col=col, color = shade_color) #="rgba(31,119,180,0.3)")
+                average_dict[condition][channel].update({"average": average, "standard_dev": standard_dev})
 
-        self.show()
-
+        return average_dict
 
     def add_line(self, y, x=None, row=1, col=1, name=None, color=None):
         trace = go.Scatter(x=x, y=y, mode="lines", name=name, line=dict(color=color))
         self.fig.add_trace(trace, row=row, col=col)
 
+    def add_marker(self):
+        NotImplementedError()
 
     def add_errorbar(self, y, yerr, row=1, col=1, color=None):
         upper_bound = y + yerr
@@ -144,10 +194,32 @@ class Ensembler:
         self.fig.add_trace(trace_lower, row=row, col=col)
         self.fig.add_trace(trace_upper, row=row, col=col)
 
-    def show(self):
-        self.fig.update_layout(height=350 * len(self.channels), width=450 * len(self.conditions),
-                               template="simple_white",
-                               showlegend=self.show_legend)
+    def show(self, title=None):
+        # Dynamic sizing
+        base_height = 350
+        base_width = 450
+        height = base_height * self.rows
+        width = base_width * self.cols
+
+        # Default title if not provided
+        if title is None:
+            if self.cols == 1:
+                title = "Combined Conditions"
+                self.show_legend = True
+            else:
+                title = "Conditions by Channel"
+
+        # Update layout
+        self.fig.update_layout(
+            height=height,
+            width=width,
+            title=dict(text=title, x=0.5, font=dict(size=18)),
+            template="simple_white",
+            showlegend=self.show_legend,
+            margin=dict(l=50, r=50, t=80, b=50),
+            font=dict(size=12)
+        )
+
         self.fig.show()
 
     def save(self, file_name, extension="html", folder=None):
