@@ -416,7 +416,7 @@ class BiomechZoo:
             if verbose:
                 batchdisp('adding event {} to channel {} for {}'.format(event_type, ch, f), level=2, verbose=verbose)
             data = zload(f)
-            data = addevent_data(data, ch, event_type, event_name, constant)
+            data = addevent_data(data, ch, event_name, event_type, constant)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
