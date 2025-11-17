@@ -28,6 +28,8 @@ def addevent_data(data, channels, ename, etype, constant=None):
             fsamp = data['zoosystem']['Video']['Freq']
         elif channel in data['zoosystem']['Analog']['Channels']:
             fsamp = data['zoosystem']['Analog']['Freq']
+        else:
+            raise ValueError('Cannot extract sampling frequency associated with data')
 
         yd = data_new[channel]['line']  # 1D array
         etype = etype.lower()

@@ -3,23 +3,21 @@ import scipy.signal as signal
 
 def movement_onset(yd, fsamp, constants):
     """
-       Extracts movement onset based on the average and standard deviation of a sliding window
-       Standard thresholds for running are mean_thresh=1.2, std_thresh=0.2. For walking mean_thresh=0.6, std_thresh=0.2.
+    Extracts movement onset based on the average and standard deviation of a sliding window
+    Standard thresholds for running are mean_thresh=1.2, std_thresh=0.2. For walking mean_thresh=0.6, std_thresh=0.2.
 
-       yd: 1d array of the vector
-       fsamp: sampling frequency
-       constants: [mean_thresh, std_thresh]
-       etype: 'movement_onset' or 'movement_offset'
-       """
-    # ----extract the constants----
-    mean_thresh, std_thresh = constants
-    min_thresh = 0.1
-    onset_time = None
-
+    yd: 1d array of the vector
+    fsamp: sampling frequency
+    constants: [mean_thresh, std_thresh]
+    etype: 'movement_onset' or 'movement_offset'
+    """
     acc_mag = yd.copy()
     acc_mag_filtered = bw_filter(data=acc_mag, fsamp=fsamp, N=4, fc=20, btype="low")
     features, timestamps = sliding_window_features(ch_data=acc_mag_filtered, fsamp=fsamp)
 
+    mean_thresh, std_thresh = constants[0], constants[1]
+    min_thresh = 0.1
+    onset_time = None
     while onset_time is None and mean_thresh > min_thresh:
         # ----Check if already moving----
         if check_already_moving(features=features, mean_thresh=mean_thresh, std_thresh=std_thresh):
@@ -38,19 +36,23 @@ def movement_onset(yd, fsamp, constants):
     return onset_time
 
 
-def movement_offset(yd, fsamp, constants):
+def movement_offset(yd, fsamp, constant):
+    raise NotImplementedError
     # ----extract the constants----
-    mean_thresh, std_thresh = constants
+    fs = constant[0]
+    mean_thresh = constant[1]
+    std_thresh = constant[2]
     min_thresh = 0.1
     onset_time = None
 
-    # Reverse, filter and extract features
+    # ----Reverse, filter and extract features from the signa;----
     acc_mag = yd.copy()
     acc_mag = acc_mag[::-1]
-    acc_mag_filtered = bw_filter(data=acc_mag, fsamp=fsamp, N=4, fc=20, btype="low")
-    features, timestamps = sliding_window_features(ch_data=acc_mag_filtered, fsamp=fsamp)
 
-    # Reverse timestamps
+    acc_mag_filtered = bw_filter(data=acc_mag, N=4, fc=20, btype="low", fsamp=fsamp)
+    features, timestamps = sliding_window_features(ch_data=acc_mag_filtered, fs=fsamp)
+
+    # ----reverse timestamps----
     timestamps = timestamps[::-1]
 
     while onset_time is None and mean_thresh > min_thresh:
