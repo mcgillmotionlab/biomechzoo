@@ -10,7 +10,7 @@ from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
 
 class Ensembler:
-    def __init__(self, fld, ch, conditions, name_contains=None, show_legend=False, match_all=True, subj_pattern=r"\b\d{3}[A-Z]{2}\b"):
+    def __init__(self, fld, ch, conditions, name_contains=None, show_legend=True, match_all=True, subj_pattern=r"\b\d{3}[A-Z]{2}\b"):
         self.fld = fld
         self.conditions = conditions
         self.channels = ch
@@ -96,17 +96,23 @@ class Ensembler:
             subj = match.group(0) if match else "Unknown"
             line_color = self.subject_colors[subj]["line"]
             marker_color = self.subject_colors[subj]["event"]
+
+            if not any(t.legendgroup == subj for t in self.fig.data):
+                self.add_line(y=[None],name=f"Subject - {subj}", color=line_color,legendgroup=subj, showlegend=True )
+
             for i, channel in enumerate(self.channels):
                 ch_data_line = data[channel]["line"]
-                ch_data_event = data[channel]["event"]
+
                 row = i + 1
                 col = self.conditions.index(condition) + 1
-                self.add_line(y=ch_data_line, row=row, col=col, name=f"{fname} - {channel}", color=line_color)
+                self.add_line(y=ch_data_line, row=row, col=col, name=f"{fname} - {channel}", color=line_color, legendgroup=subj, showlegend=False)
+
+                ch_data_event = data[channel]["event"]
                 for event in ch_data_event:
                     exd, eyd, _ = event
                     self.add_marker(y=eyd, x=exd, row=row, col=col, name=None, color=marker_color)
 
-        self.show()
+        self.show(title="Cycles per Subject")
 
     def combine(self):
         # check if fig is populated
@@ -120,14 +126,17 @@ class Ensembler:
         data = self._calculate_average()
         for c, condition in enumerate(data):
             line_color, shade_color, marker_color = self._assign_colors(c)
+
+            if not any(t.legendgroup == condition for t in self.fig.data):
+                self.add_line(y=[None],name=f"{condition}", color=line_color,legendgroup=condition, showlegend=True )
+
             for i, channel in enumerate(data[condition]):
                 average = data[condition][channel]["average"]
                 standard_dev = data[condition][channel]["standard_dev"]
 
                 # populate the figure
                 row = i + 1
-                self.add_line(y=average, row=row, col=1, name=f"{condition} - {channel}",
-                              color=line_color)
+                self.add_line(y=average, row=row, col=1, name=f"{condition} - {channel}", color=line_color, legendgroup=condition, showlegend=False)
                 self.add_errorbar(y=average, yerr=standard_dev, row=row, col=1,
                                   color=shade_color)
 
@@ -146,6 +155,9 @@ class Ensembler:
         for c, condition in enumerate(data):
             line_color, shade_color, marker_color = self._assign_colors(c)
 
+            if not any(t.legendgroup == condition for t in self.fig.data):
+                self.add_line(y=[None],name=f"{condition}", color=line_color,legendgroup=condition, showlegend=True )
+
             for i, channel in enumerate(data[condition]):
                 average = data[condition][channel]["average"]
                 standard_dev = data[condition][channel]["standard_dev"]
@@ -153,8 +165,8 @@ class Ensembler:
                 # populate the figure
                 row = i + 1
                 col = self.conditions.index(condition) + 1
-                self.add_line(y=average, row=row, col=col, name=f"{condition} - {channel}", color=line_color) # color='#1F77B4')
-                self.add_errorbar(y=average, yerr=standard_dev, row=row, col=col, color = shade_color) #="rgba(31,119,180,0.3)")
+                self.add_line(y=average, row=row, col=col, name=f"{condition} - {channel}", color=line_color, legendgroup=condition, showlegend=False ) # color='#1F77B4')
+                self.add_errorbar(y=average, yerr=standard_dev, row=row, col=col, color = shade_color,) #="rgba(31,119,180,0.3)")
 
         self.show()
 
@@ -189,8 +201,8 @@ class Ensembler:
 
         return average_dict
 
-    def add_line(self, y, x=None, row=1, col=1, name=None, color=None):
-        trace = go.Scatter(x=x, y=y, mode="lines", name=name, line=dict(color=color))
+    def add_line(self, y, x=None, row=1, col=1, name=None, color=None, legendgroup=None, showlegend=True,):
+        trace = go.Scatter(x=x, y=y, mode="lines", name=name, line=dict(color=color), showlegend=showlegend, legendgroup=legendgroup)
         self.fig.add_trace(trace, row=row, col=col)
 
     def add_marker(self, y, x, row=1, col=1, name=None, color=None):
@@ -226,7 +238,6 @@ class Ensembler:
         if title is None:
             if self.cols == 1:
                 title = "Combined Conditions"
-                self.show_legend = True
             else:
                 title = "Conditions by Channel"
 
@@ -236,9 +247,8 @@ class Ensembler:
             width=width,
             title=dict(text=title, x=0.5, font=dict(size=24)),
             template="simple_white",
-            showlegend=self.show_legend,
             margin=dict(l=50, r=50, t=50, b=50),
-            font=dict(size=18)
+            font=dict(size=18), showlegend=True,
         )
 
         self.fig.show()
