@@ -35,6 +35,7 @@ ensembler.save(file_name="average gait cycles")
 # combine pre and post to the same subplot
 ensembler.combine()
 ensembler.save(file_name="combined figure")
+ensembler.save(file_name="combined figure", extension='png')
 
 # TODO: priority add markers/event
 # TODO: priority super-impose the pre-Post/turn-straight whatever conditions there are.

@@ -1,5 +1,6 @@
 import numpy as np
 import os
+import re
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.colors as pc
@@ -9,32 +10,51 @@ from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
 
 class Ensembler:
-    def __init__(self, fld, ch, conditions, name_contains=None, show_legend=False, match_all=True):
+    def __init__(self, fld, ch, conditions, name_contains=None, show_legend=False, match_all=True, subj_pattern=r"\b\d{3}[A-Z]{2}\b"):
         self.fld = fld
         self.conditions = conditions
         self.channels = ch
         self.show_legend = show_legend
+        self.subj_pattern = subj_pattern
         self.zoo_files = engine(fld, extension=".zoo", subfolders=conditions, name_contains=name_contains, match_all=match_all)
         self.fig = self._create_subplots()
-        # self.average = self._calculate_average() # does this make sense?
-
+        self.subject_colors = self._assign_subject_colors()
 
 
     def _assign_subject_colors(self):
-        NotImplementedError()
+        unique_subjects = self._get_unique_subjects()
+        subject_colors = {}
+        for idx, subj in enumerate(unique_subjects):
+            line_color, shade_color, marker_color = self._assign_colors(idx)
+            subject_colors[subj] = {
+                "line": line_color,
+                "shade": shade_color,
+                "event": marker_color
+            }
+        return subject_colors
 
+    def _get_unique_subjects(self):
+        subjects = set()
+        for fl in self.zoo_files:
+            match = re.search(self.subj_pattern, fl)
+            if match:
+                subjects.add(match.group(0))
+        return sorted(subjects)
 
     def  _assign_colors(self, i):
-        hex_code = pc.qualitative.D3[i]
+        hex_code = pc.qualitative.D3[i % len(pc.qualitative.D3)]
         h = hex_code.lstrip('#')
         RGB =tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
-        opacity = (0.3,)
-        rgba = RGB + opacity
 
-        line_color = hex_code
-        shade_color = f"rgba{rgba}"
+        #shade color with opacity
+        opacity = 0.3
+        shade_color = f"rgba({RGB[0]}, {RGB[1]}, {RGB[2]}, {opacity})"
 
-        return line_color, shade_color
+        #Get complementary color for marker
+        comp = ['%02X' % (255 - a) for a in RGB]
+        marker_color =  '#' + ''.join(comp)
+
+        return hex_code, shade_color, marker_color
 
 
     def _create_subplots(self):
@@ -60,10 +80,6 @@ class Ensembler:
         return "Unknown"
 
 
-    def _filter_side_from_path(self):
-        self.zoo_files = [zoo_file for zoo_file in self.zoo_files if self.side in zoo_file]
-
-
     def cycles(self):
         # check if fig is populated
         if self.fig.data:
@@ -75,17 +91,20 @@ class Ensembler:
             fname = os.path.basename(fl)
             condition = self._get_condition_from_path(fl)
 
+            # Get subject from path
+            match = re.search(self.subj_pattern, fl)
+            subj = match.group(0) if match else "Unknown"
+            line_color = self.subject_colors[subj]["line"]
+            marker_color = self.subject_colors[subj]["event"]
             for i, channel in enumerate(self.channels):
                 ch_data_line = data[channel]["line"]
                 ch_data_event = data[channel]["event"]
-                for event in ch_data_event:
-                    # loop thorugh and add marker.
-                    exd, eyd, _ = event
-                    self.add_marker()
-
                 row = i + 1
                 col = self.conditions.index(condition) + 1
-                self.add_line(y=ch_data_line, row=row, col=col, name=f"{fname} - {channel}")
+                self.add_line(y=ch_data_line, row=row, col=col, name=f"{fname} - {channel}", color=line_color)
+                for event in ch_data_event:
+                    exd, eyd, _ = event
+                    self.add_marker(y=eyd, x=exd, row=row, col=col, name=None, color=marker_color)
 
         self.show()
 
@@ -100,7 +119,7 @@ class Ensembler:
 
         data = self._calculate_average()
         for c, condition in enumerate(data):
-            line_color, shade_color = self._assign_colors(c)
+            line_color, shade_color, marker_color = self._assign_colors(c)
             for i, channel in enumerate(data[condition]):
                 average = data[condition][channel]["average"]
                 standard_dev = data[condition][channel]["standard_dev"]
@@ -125,7 +144,8 @@ class Ensembler:
 
         data = self._calculate_average()
         for c, condition in enumerate(data):
-            line_color, shade_color = self._assign_colors(c)
+            line_color, shade_color, marker_color = self._assign_colors(c)
+
             for i, channel in enumerate(data[condition]):
                 average = data[condition][channel]["average"]
                 standard_dev = data[condition][channel]["standard_dev"]
@@ -173,8 +193,9 @@ class Ensembler:
         trace = go.Scatter(x=x, y=y, mode="lines", name=name, line=dict(color=color))
         self.fig.add_trace(trace, row=row, col=col)
 
-    def add_marker(self):
-        NotImplementedError()
+    def add_marker(self, y, x, row=1, col=1, name=None, color=None):
+        trace = go.Scatter(x=x, y=y, mode="markers", name=name, line=dict(color=color))
+        self.fig.add_trace(trace, row=row, col=col)
 
     def add_errorbar(self, y, yerr, row=1, col=1, color=None):
         upper_bound = y + yerr
@@ -213,11 +234,11 @@ class Ensembler:
         self.fig.update_layout(
             height=height,
             width=width,
-            title=dict(text=title, x=0.5, font=dict(size=18)),
+            title=dict(text=title, x=0.5, font=dict(size=24)),
             template="simple_white",
             showlegend=self.show_legend,
-            margin=dict(l=50, r=50, t=80, b=50),
-            font=dict(size=12)
+            margin=dict(l=50, r=50, t=50, b=50),
+            font=dict(size=18)
         )
 
         self.fig.show()
