@@ -109,8 +109,11 @@ class Ensembler:
 
                 ch_data_event = data[channel]["event"]
                 for event in ch_data_event:
-                    exd, eyd, _ = event
-                    self.add_marker(y=eyd, x=exd, row=row, col=col, name=None, color=marker_color)
+                    ch_event_data = data[channel]["event"][event]
+                    eyd = np.array(ch_event_data[1]) # prep for plotting
+                    exd = np.array(ch_event_data[0]) # pre[ for plotting
+
+                    self.add_marker(y=eyd, x=exd, row=row, col=col, name=event, color=marker_color)
 
         self.show(title="Cycles per Subject")
 
