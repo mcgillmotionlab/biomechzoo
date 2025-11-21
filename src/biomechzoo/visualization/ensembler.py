@@ -233,7 +233,7 @@ class Ensembler:
     def show(self, title=None):
         # Dynamic sizing
         base_height = 350
-        base_width = 450
+        base_width = 550
         height = base_height * self.rows
         width = base_width * self.cols
 
