@@ -1,3 +1,4 @@
+import numpy as np
 from scipy.signal import find_peaks, butter, filtfilt
 
 def imu_mcgrath(ch_line, fsamp, min_stance_t, location=None,):

@@ -3,7 +3,8 @@ from biomechzoo.biomechzoo import BiomechZoo
 
 # get raw data folder
 project_root = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-fld_data = os.path.join(project_root, 'data', 'csv', 'opencap')
+# fld_data = os.path.join(project_root, 'data', 'csv', 'opencap')
+fld_data = os.path.join(project_root, 'data', 'imu', 'movement-onset')
 
 
 #%% set up a new 'bmech' object for processing
@@ -18,9 +19,9 @@ bmech.inplace = True
 from biomechzoo.visualization.ensembler import Ensembler
 
 # Initialize the ensembler class and create the subplot bones
-ensembler = Ensembler(fld=bmech.in_folder, ch=['hip_flexion_r', 'knee_angle_r', 'ankle_angle_r'],
-                      conditions=['Pre', 'Post'],
-                      name_contains=["jogging", "_r"],
+ensembler = Ensembler(fld=bmech.in_folder, ch=['gy_shank'],
+                      conditions=['pre'],
+                      name_contains=["Jogging"],
                       )
 
 # Populate the figure with individual gait cycles and save it to file

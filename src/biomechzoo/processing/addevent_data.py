@@ -25,12 +25,13 @@ def addevent_data(data, channels, ename, etype, constant=None):
             raise KeyError('Channel {} does not exist'.format(channel))
 
         # todo extract sampling frequency (needed for some events)
-        if channel in data['zoosystem']['Video']['Channels']:
-            fsamp = data['zoosystem']['Video']['Freq']
-        elif channel in data['zoosystem']['Analog']['Channels']:
-            fsamp = data['zoosystem']['Analog']['Freq']
-        else:
-            raise ValueError('Cannot extract sampling frequency associated with data')
+        # if channel in data['zoosystem']['Video']['Channels']:
+        #     fsamp = data['zoosystem']['Video']['Freq']
+        # elif channel in data['zoosystem']['Analog']['Channels']:
+        #     fsamp = data['zoosystem']['Analog']['Freq']
+        # else:
+        #     raise ValueError('Cannot extract sampling frequency associated with data')
+        fsamp = data['zoosystem']['Video']['Freq']
 
         yd = data_new[channel]['line']  # 1D array
         etype = etype.lower()
@@ -64,10 +65,14 @@ def addevent_data(data, channels, ename, etype, constant=None):
             eyd = yd[exd]
         elif etype == 'mcgrath_fs':
             min_stance_t = 95
-            [IC, TC] = imu_mcgrath(yd, fsamp, min_stance_t)
-            exd = IC
+            IC, TC = imu_mcgrath(yd, fsamp, min_stance_t)
+            exd = [int(ic) for ic in IC]
+            ey = []
             for i, ex in enumerate(exd):
-                eyd[i] = yd[ex]
+                # print(i)
+                ey.append(yd[ex])
+
+            eyd = [float(y) for y in ey]
 
         elif etype in ['fs_fp', 'fo_fp']:
             # --- Handle constant ---
@@ -112,9 +117,10 @@ def addevent_data(data, channels, ename, etype, constant=None):
 
         # Add event to the channel's event dict
         if len(exd) > 1:
+            data_new[channel]['event'] = {}
             for i, ex in enumerate(exd):
                 name = ename + '_' + str(i+1)
-                data_new[channel]['event'][name] = [exd[i], eyd[i], 0]
+                data_new[channel]['event'].update({name: [ex, eyd[i], 0]})
         else:
             data_new[channel]['event'][ename] = [exd, eyd, 0]
 
