@@ -34,13 +34,14 @@ def partition_data(data, evt_start, evt_end):
 
             # partition events
             events = ch_data['event']
-            for event_name, value in events.items():
-                original_frame = int(value[0])
-                if original_frame == 999:
-                    continue  # do not change outlier markers
-                else:
-                    arr = np.array(data_new[ch_name]['event'][event_name], dtype=np.int32)
-                    arr[0] = original_frame - e1
-                    data_new[ch_name]['event'][event_name] = arr
+            if len(events)>0:
+                for event_name, value in events.items():
+                    original_frame = int(value[0])
+                    if original_frame == 999:
+                        continue  # do not change outlier markers
+                    else:
+                        arr = np.array(data_new[ch_name]['event'][event_name], dtype=np.int32)
+                        arr[0] = original_frame - e1
+                        data_new[ch_name]['event'][event_name] = arr
 
     return data_new

@@ -61,6 +61,12 @@ def addevent_data(data, channels, ename, etype, constant=None):
         elif etype == 'movement_offset':
             exd = movement_offset(yd, fsamp, constant)
             eyd = yd[exd]
+        elif etype == 'mcgrath_fs':
+            exd = mcgrath(yd)
+            # eyd
+            for i, ex in enumerate(exd):
+                eyd[i] = yd[ex]
+
         elif etype in ['fs_fp', 'fo_fp']:
             # --- Handle constant ---
             if constant is None:
@@ -103,7 +109,12 @@ def addevent_data(data, channels, ename, etype, constant=None):
             raise ValueError(f'Unknown event type: {etype}')
 
         # Add event to the channel's event dict
-        data_new[channel]['event'][ename] = [exd, eyd, 0]
+        if len(exd) > 1:
+            for i, ex in enumerate(exd):
+                name = ename + '_' + str(i+1)
+                data_new[channel]['event'][name] = [exd[i], eyd[i], 0]
+        else:
+            data_new[channel]['event'][ename] = [exd, eyd, 0]
 
     return data_new
 
