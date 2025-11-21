@@ -4,6 +4,7 @@ import warnings
 from scipy.signal import find_peaks
 from biomechzoo.utils.peak_sign import peak_sign
 from biomechzoo.biomech_ops.movement_onset import movement_onset, movement_offset
+from biomechzoo.imu.step_detection import imu_mcgrath
 
 def addevent_data(data, channels, ename, etype, constant=None):
 
@@ -62,8 +63,9 @@ def addevent_data(data, channels, ename, etype, constant=None):
             exd = movement_offset(yd, fsamp, constant)
             eyd = yd[exd]
         elif etype == 'mcgrath_fs':
-            exd = mcgrath(yd)
-            # eyd
+            min_stance_t = 95
+            [IC, TC] = imu_mcgrath(yd, fsamp, min_stance_t)
+            exd = IC
             for i, ex in enumerate(exd):
                 eyd[i] = yd[ex]
 
