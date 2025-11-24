@@ -21,7 +21,7 @@ def table2zoo_data(fl, extension, skip_rows=0, freq=None):
     for ch in df.columns:
         data[ch] = {
             'line': df[ch].values,
-            'event': []
+            'event': {}
         }
 
 
