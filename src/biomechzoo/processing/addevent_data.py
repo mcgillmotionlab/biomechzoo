@@ -117,10 +117,9 @@ def addevent_data(data, channels, ename, etype, constant=None):
 
         # Add event to the channel's event dict
         if len(exd) > 1:
-            data_new[channel]['event'] = {}
             for i, ex in enumerate(exd):
                 name = ename + '_' + str(i+1)
-                data_new[channel]['event'].update({name: [ex, eyd[i], 0]})
+                data_new[channel]['event'][name] = [int(ex), eyd[i], 0]
         else:
             data_new[channel]['event'][ename] = [exd, eyd, 0]
 

@@ -1,25 +1,31 @@
 import numpy as np
 from scipy.signal import find_peaks, butter, filtfilt
 
-def imu_mcgrath(ch_line, fsamp, min_stance_t, location=None,):
+def imu_mcgrath(ch_line, fsamp, min_stance_t, is_filtered=False, location=None,):
     """
     This function detects the steps based on the method of McGrath et al. (2012) https://doi.org/10.1007/s12283-012-0093-8
     in short, the first minimum after a local maximum is the heel strike. The local maxima are the mid-swing.
+    Data should be filtered
     """
-    # Butterworth filter
-    order = 5
-    Fc = 5
-    Wn = Fc / (fsamp / 2)
-    [b, a] = butter(order, Wn, btype='low')
-    ML_filt = filtfilt(b, a, ch_line)  # MATLAB col 7 -> Python col 6
+
+
+    if is_filtered:
+        # Butterworth filter
+        order = 5
+        Fc = 5
+        Wn = Fc / (fsamp / 2)
+        [b, a] = butter(order, Wn, btype='low')
+        yd = filtfilt(b, a, ch_line)
+    else:
+        yd = ch_line
 
     # Identify midswing peaks
     t1 = round(fsamp / 2)
-    potential_midswing_ind, _ = find_peaks(ML_filt, distance=t1)
-    potential_midswing_mag = ML_filt[potential_midswing_ind]
+    potential_midswing_ind, _ = find_peaks(yd, distance=t1)
+    potential_midswing_mag = yd[potential_midswing_ind]
 
     # Thresholds for midswing
-    th2 = 0.8 * np.mean(ML_filt[ML_filt > np.mean(ML_filt)])
+    th2 = 0.8 * np.mean(yd[yd > np.mean(yd)])
     mask = potential_midswing_mag >= th2
     potential_midswing_ind = potential_midswing_ind[mask]
     potential_midswing_mag = potential_midswing_mag[mask]
@@ -27,8 +33,8 @@ def imu_mcgrath(ch_line, fsamp, min_stance_t, location=None,):
     th1 = 0.3 * potential_midswing_mag
 
     # Find minima
-    minima_ind, _ = find_peaks(-ML_filt)
-    minima_mag = -ML_filt[minima_ind]
+    minima_ind, _ = find_peaks(-yd)
+    minima_mag = -yd[minima_ind]
 
     # Validate midswing peaks
     valid_inds = []
@@ -43,13 +49,13 @@ def imu_mcgrath(ch_line, fsamp, min_stance_t, location=None,):
     potential_midswing_ind = np.array(valid_inds)
 
     # Additional thresholds
-    th3 = 0.8 * abs(np.mean(ML_filt[ML_filt < np.mean(ML_filt)]))
-    th4 = 0.8 * np.mean(ML_filt[ML_filt < np.mean(ML_filt)])
-    th5 = np.mean(ML_filt)
+    th3 = 0.8 * abs(np.mean(yd[yd < np.mean(yd)]))
+    th4 = 0.8 * np.mean(yd[yd < np.mean(yd)])
+    th5 = np.mean(yd)
     th6 = 2 * th3
 
-    maxima_ind, _ = find_peaks(ML_filt)
-    maxima_mag = ML_filt[maxima_ind]
+    maxima_ind, _ = find_peaks(yd)
+    maxima_mag = yd[maxima_ind]
 
     IC, TC = [], []
     t2 = round(1.5 * fsamp)
@@ -59,10 +65,10 @@ def imu_mcgrath(ch_line, fsamp, min_stance_t, location=None,):
         peak_idx = potential_midswing_ind[step_idx]
 
         # IC candidates (minima after midswing)
-        end_idx = min(peak_idx + t2, len(ML_filt))
-        ic_candidates, _ = find_peaks(-ML_filt[peak_idx:end_idx])
+        end_idx = min(peak_idx + t2, len(yd))
+        ic_candidates, _ = find_peaks(-yd[peak_idx:end_idx])
         ic_candidates = ic_candidates + peak_idx
-        ic_mags = ML_filt[ic_candidates]
+        ic_mags = yd[ic_candidates]
 
         # Filter IC by threshold
         ic_candidates = ic_candidates[ic_mags < th5]
@@ -73,15 +79,15 @@ def imu_mcgrath(ch_line, fsamp, min_stance_t, location=None,):
             preceding_max = maxima_ind[maxima_ind < ic_idx]
             if preceding_max.size > 0:
                 closest_max_idx = preceding_max[-1]
-                if ML_filt[closest_max_idx] >= ML_filt[ic_idx] + th3:
+                if yd[closest_max_idx] >= yd[ic_idx] + th3:
                     IC.append(ic_idx)
                     break
 
         # TC candidates (minima before midswing)
         start_idx = max(peak_idx - t2, 0)
-        tc_candidates, _ = find_peaks(-ML_filt[start_idx:peak_idx])
+        tc_candidates, _ = find_peaks(-yd[start_idx:peak_idx])
         tc_candidates = tc_candidates + start_idx
-        tc_mags = ML_filt[tc_candidates]
+        tc_mags = yd[tc_candidates]
 
         # Filter TC by threshold
         tc_candidates = tc_candidates[tc_mags < th4]
@@ -92,7 +98,7 @@ def imu_mcgrath(ch_line, fsamp, min_stance_t, location=None,):
             following_max = maxima_ind[maxima_ind > tc_idx]
             if following_max.size > 0:
                 closest_max_idx = following_max[0]
-                if ML_filt[closest_max_idx] >= ML_filt[tc_idx] + th6:
+                if yd[closest_max_idx] >= yd[tc_idx] + th6:
                     TC.append(tc_idx)
                     break
 
