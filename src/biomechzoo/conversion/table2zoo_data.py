@@ -21,7 +21,7 @@ def table2zoo_data(fl, extension, skip_rows=0, freq=None, data_type='Video'):
     for ch in df.columns:
         data[ch] = {
             'line': df[ch].values,
-            'event': []
+            'event': {}
         }
 
     # now try to calculate freq from a time column
