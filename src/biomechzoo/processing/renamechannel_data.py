@@ -1,4 +1,5 @@
 import numpy as np
+from biomechzoo.utils.update_channel_list import update_channel_list
 
 
 def renamechannel_data(data, ch_old_names, ch_new_names, section='Video'):
@@ -28,6 +29,12 @@ def renamechannel_data(data, ch_old_names, ch_new_names, section='Video'):
     - Adds channel name to the list in data['zoosystem'][section]['Channels'].
     """
 
+    # check if string (single input)
+    if isinstance(ch_old_names, str):
+        ch_old_names = [ch_old_names]
+    if isinstance(ch_new_names, str):
+        ch_new_names = [ch_new_names]
+
     for i, ch_old_name in enumerate(ch_old_names):
         ch_new_name = ch_new_names[i]
         # Warn if overwriting
@@ -44,16 +51,8 @@ def renamechannel_data(data, ch_old_names, ch_new_names, section='Video'):
         data.pop(ch_old_name)
 
     # Update channel list
-    ch_list = data['zoosystem'][section].get('Channels', [])
-
-    # If the channel list is a NumPy array, convert it to a list
-    if isinstance(ch_list, np.ndarray):
-        ch_list = ch_list.tolist()
-
-    # Ensure it's a flat list of strings
-    if isinstance(ch_list, list) and ch_new_name not in ch_list:
-        ch_list.append(ch_new_name)
-        data['zoosystem'][section]['Channels'] = ch_list
+    data = update_channel_list(data, section=section, ch_remove=ch_old_names)
+    data = update_channel_list(data, section=section, ch_add=ch_new_names)
 
     return data
 
