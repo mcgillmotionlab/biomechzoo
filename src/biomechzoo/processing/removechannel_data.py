@@ -1,3 +1,5 @@
+from biomechzoo.utils.update_channel_list import update_channel_list
+
 def removechannel_data(data, channels, mode='remove'):
     """
     File-level processing: Remove or keep specified channels in a single zoo dictionary.
@@ -39,8 +41,10 @@ def removechannel_data(data, channels, mode='remove'):
     for ch in remove_channels:
         data.pop(ch, None)
         if ch in data['zoosystem']['Video']['Channels']:
-            data['zoosystem']['Video']['Channels'] = [c for c in data['zoosystem']['Video']['Channels'] if c != ch]
-        if ch in data['zoosystem']['Analog']['Channels']:
-            data['zoosystem']['Analog']['Channels'] = [c for c in data['zoosystem']['Analog']['Channels'] if c != ch]
+            data = update_channel_list(data, section='Video', ch_remove=ch)
+        elif ch in data['zoosystem']['Analog']['Channels']:
+            data = update_channel_list(data, section='Analog', ch_remove=ch)
+        else:
+            raise ValueError('Unknown section for channel: {}'.format(ch))
 
     return data
