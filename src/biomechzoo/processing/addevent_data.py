@@ -64,11 +64,11 @@ def addevent_data(data, channels, ename, etype, constant=None):
             exd = movement_offset(yd, fsamp, constant)
             eyd = yd[exd]
         elif etype == 'mcgrath_fs':
-            raise NotImplementedError
-            exd = mcgrath(yd)
-            # eyd
+            min_stance_t = 95
+            IC, TC = imu_mcgrath(yd, fsamp, min_stance_t)
+            exd = [int(ic) for ic in IC]
+            ey = []
             for i, ex in enumerate(exd):
-                # print(i)
                 ey.append(yd[ex])
 
             eyd = [float(y) for y in ey]
