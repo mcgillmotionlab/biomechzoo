@@ -4,6 +4,7 @@ import warnings
 from scipy.signal import find_peaks
 from biomechzoo.utils.peak_sign import peak_sign
 from biomechzoo.biomech_ops.movement_onset import movement_onset, movement_offset
+from biomechzoo.imu.step_detection import imu_mcgrath
 
 def addevent_data(data, channels, ename, etype, constant=None):
 
@@ -24,12 +25,13 @@ def addevent_data(data, channels, ename, etype, constant=None):
             raise KeyError('Channel {} does not exist'.format(channel))
 
         # todo extract sampling frequency (needed for some events)
-        if channel in data['zoosystem']['Video']['Channels']:
-            fsamp = data['zoosystem']['Video']['Freq']
-        elif channel in data['zoosystem']['Analog']['Channels']:
-            fsamp = data['zoosystem']['Analog']['Freq']
-        else:
-            raise ValueError('Cannot extract sampling frequency associated with data')
+        # if channel in data['zoosystem']['Video']['Channels']:
+        #     fsamp = data['zoosystem']['Video']['Freq']
+        # elif channel in data['zoosystem']['Analog']['Channels']:
+        #     fsamp = data['zoosystem']['Analog']['Freq']
+        # else:
+        #     raise ValueError('Cannot extract sampling frequency associated with data')
+        fsamp = data['zoosystem']['Video']['Freq']
 
         yd = data_new[channel]['line']  # 1D array
         etype = etype.lower()
@@ -66,7 +68,10 @@ def addevent_data(data, channels, ename, etype, constant=None):
             exd = mcgrath(yd)
             # eyd
             for i, ex in enumerate(exd):
-                eyd[i] = yd[ex]
+                # print(i)
+                ey.append(yd[ex])
+
+            eyd = [float(y) for y in ey]
 
         elif etype in ['fs_fp', 'fo_fp']:
             # --- Handle constant ---
