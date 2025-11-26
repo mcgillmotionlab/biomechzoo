@@ -64,10 +64,9 @@ def addevent_data(data, channels, ename, etype, constant=None):
             exd = movement_offset(yd, fsamp, constant)
             eyd = yd[exd]
         elif etype == 'mcgrath_fs':
-            min_stance_t = 95
-            IC, TC = imu_mcgrath(yd, fsamp, min_stance_t)
-            exd = [int(ic) for ic in IC]
-            ey = []
+            raise NotImplementedError
+            exd = mcgrath(yd)
+            # eyd
             for i, ex in enumerate(exd):
                 # print(i)
                 ey.append(yd[ex])
@@ -111,14 +110,13 @@ def addevent_data(data, channels, ename, etype, constant=None):
                 exd_array = np.where(threshold_signal > constant)[0]
                 exd = exd_array[-1] + 1
                 eyd = yd[exd]
-
         else:
             raise ValueError(f'Unknown event type: {etype}')
 
         # Add event to the channel's event dict
-        if len(exd) > 1:
+        if isinstance(exd, list):
             for i, ex in enumerate(exd):
-                name = ename + '_' + str(i+1)
+                name = ename + '_' + str(i + 1)
                 data_new[channel]['event'][name] = [int(ex), eyd[i], 0]
         else:
             data_new[channel]['event'][ename] = [exd, eyd, 0]

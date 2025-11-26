@@ -6,13 +6,13 @@ from biomechzoo.utils.set_zoosystem import set_zoosystem
 from biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_rate_from_time
 
 
-def table2zoo_data(fl, extension, skip_rows=0, freq=None):
+def table2zoo_data(fl, extension, skip_rows=0, freq=None, data_type='Video'):
 
     if 'csv' in extension:
-        df, metadata, freq = _csv2zoo(fl, skip_rows=skip_rows, freq=freq)
+        df, metadata = _csv2zoo(fl, skip_rows=skip_rows, freq=freq)
 
     elif 'parquet' in extension:
-        df, metadata, freq = _parquet2zoo(fl, skip_rows=skip_rows, freq=freq)
+        df, metadata= _parquet2zoo(fl)
     else:
         raise ValueError('extension {} not implemented'.format(extension))
 
@@ -24,7 +24,6 @@ def table2zoo_data(fl, extension, skip_rows=0, freq=None):
             'event': {}
         }
 
-
     # now try to calculate freq from a time column
     if freq is None:
         time_col = [col for col in df.columns if 'time' in col.lower()]
@@ -35,8 +34,17 @@ def table2zoo_data(fl, extension, skip_rows=0, freq=None):
             raise ValueError('Unable to compute sampling rate for time column, please specify a sampling frequency'
                              )
     # add metadata
-    data['zoosystem']['Video']['Freq'] = freq
-    data['zoosystem']['Analog']['Freq'] = 'None'
+    if data_type == 'Video':
+        data['zoosystem']['Video']['Freq'] = freq
+        data['zoosystem']['Video']['Channels'] = list(df.columns)
+        data['zoosystem']['Analog']['Channels'] = {}
+        data['zoosystem']['Analog']['Freq'] = {}
+
+    elif data_type == 'Analog':
+        data['zoosystem']['Analog']['Freq'] = freq
+        data['zoosystem']['Analog']['Channels'] = list(df.columns)
+        data['zoosystem']['Video']['Channels'] = {}
+        data['zoosystem']['Video']['Freq'] = {}
 
     if metadata is not None:
         data['zoosystem']['Other'] = metadata
@@ -44,10 +52,10 @@ def table2zoo_data(fl, extension, skip_rows=0, freq=None):
     return data
 
 
-def _parquet2zoo(fl, skip_rows=0, freq=None):
+def _parquet2zoo(fl):
     df = pd.read_parquet(fl)
     metadata = None
-    return df, metadata, freq
+    return df, metadata
 
 def _csv2zoo(fl, skip_rows=0, freq=None):
     header_lines = []
@@ -59,19 +67,10 @@ def _csv2zoo(fl, skip_rows=0, freq=None):
     # Parse metadata
     metadata = _parse_metadata(header_lines)
 
-    # try to find frequency in metadata
-    if freq is None:
-        if 'freq' in metadata:
-            freq = metadata['freq']
-        elif 'sampling_rate' in metadata:
-            freq = metadata['sampling_rate']
-        else:
-            freq = None  # or raise an error
-
     # read csv
     df = pd.read_csv(fl, skiprows=skip_rows)
 
-    return df, metadata, freq
+    return df, metadata
 
 
 
@@ -108,7 +107,6 @@ def _parse_metadata(header_lines):
 if __name__ == '__main__':
     """ for unit testing"""
     current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(current_dir)
-    csv_file = os.path.join(project_root, 'data', 'other', 'opencap_walking1.csv')
-
-    data = table2zoo_data(csv_file)
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+    csv_file = os.path.join(project_root, 'data', 'csv', 'opencap_jogging.csv')
+    data = table2zoo_data(csv_file, extension='csv', freq=60)
