@@ -64,15 +64,23 @@ def addevent_data(data, channels, ename, etype, constant=None):
             exd = movement_offset(yd, fsamp, constant)
             eyd = yd[exd]
         elif etype == 'mcgrath_fs':
-            min_stance_t = 95
-            IC, TC = imu_mcgrath(yd, fsamp, min_stance_t)
+            if constant is None:
+                constant = 95
+            IC, _ = imu_mcgrath(yd, fsamp, min_stance_t=constant)
             exd = [int(ic) for ic in IC]
             ey = []
             for i, ex in enumerate(exd):
                 ey.append(yd[ex])
-
             eyd = [float(y) for y in ey]
-
+        elif etype == 'mcgrath_fo':
+            if constant is None:
+                constant = 95
+            _, TC = imu_mcgrath(yd, fsamp, min_stance_t=constant)
+            exd = [int(tc) for tc in TC]
+            ey = []
+            for i, ex in enumerate(exd):
+                ey.append(yd[ex])
+            eyd = [float(y) for y in ey]
         elif etype in ['fs_fp', 'fo_fp']:
             # --- Handle constant ---
             if constant is None:
