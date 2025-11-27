@@ -1,23 +1,23 @@
 import numpy as np
 from scipy.signal import find_peaks, butter, filtfilt
 
-def imu_mcgrath(ch_line, fsamp, min_stance_t, is_filtered=False, location=None,):
+def imu_mcgrath(ch_line, fsamp, min_stance_t, is_filtered=False):
     """
     This function detects the steps based on the method of McGrath et al. (2012) https://doi.org/10.1007/s12283-012-0093-8
     in short, the first minimum after a local maximum is the heel strike. The local maxima are the mid-swing.
     Data should be filtered
     """
 
-
     if is_filtered:
+        yd = ch_line
+    else:
         # Butterworth filter
         order = 5
         Fc = 5
         Wn = Fc / (fsamp / 2)
         [b, a] = butter(order, Wn, btype='low')
         yd = filtfilt(b, a, ch_line)
-    else:
-        yd = ch_line
+
 
     # Identify midswing peaks
     t1 = round(fsamp / 2)
