@@ -3,6 +3,7 @@ import inspect
 import time
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
+from biomechzoo.imu.kinematics import imu_angles_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
@@ -488,6 +489,28 @@ class BiomechZoo:
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
+            level=1, verbose=verbose)
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def imu_angles(self, prox_prefix:str, dist_prefix:str, order: str, out_folder=None, inplace=False):
+
+        """ tilt correction for acceleration data """
+
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('imu_angles for {}'.format(f), level=1, verbose=verbose)
+            data = zload(f)
+            data = imu_angles_data(data, prox_prefix, dist_prefix, order)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
             level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
