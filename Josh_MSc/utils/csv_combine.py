@@ -1,21 +1,37 @@
 import os
 import pandas as pd
 
-def combine_quats_to_csv(prox_csv, dist_csv, prox_prefix="prox_", dist_prefix="dist_", out_folder="combined_csvs", out_filename="combined_quats.csv"):
+def combine_quats_to_csv(
+    csv_files: list[str],
+    prefixes: list[str],
+    out_folder: str = "combined_csvs",
+    out_filename: str = None
+    ) -> str:
+
+    """ Concatenates quaternions from multiple CSV files into a single CSV file with prefixes defining segment."""
 
     root = os.getcwd()
     save_folder = os.path.join(root, out_folder)
     os.makedirs(save_folder, exist_ok=True)
 
-    prox_df = pd.read_csv(prox_csv)
-    dist_df = pd.read_csv(dist_csv)
+    time_col: str = "PacketCounter"
+    quat_cols: list[str] = ["Quat_W", "Quat_X", "Quat_Y", "Quat_Z"]
 
-    quat_cols = ["Quat_W", "Quat_X", "Quat_Y", "Quat_Z"]
+    first_df = pd.read_csv(csv_files[0])
+    time_df = first_df[[time_col]].rename(columns={time_col: "time"})
 
-    prox_df = prox_df[quat_cols].rename(columns={c: f"{prox_prefix}{c}" for c in quat_cols})
-    dist_df = dist_df[quat_cols].rename(columns={c: f"{dist_prefix}{c}" for c in quat_cols})
+    all_quat_dfs = []
 
-    combined_df = pd.concat([prox_df, dist_df], axis=1)
+    for csv_path, prefix in zip(csv_files, prefixes):
+        df = pd.read_csv(csv_path)
+        df = df[quat_cols].rename(columns={c: f"{prefix}_{c}" for c in quat_cols})
+        all_quat_dfs.append(df)
+
+    # concatenate time + all quat blocks
+    combined_df = pd.concat([time_df] + all_quat_dfs, axis=1)
+
+    if out_filename is None:
+        out_filename = "combined_quats.csv"
 
     out_file = os.path.join(save_folder, out_filename)
     combined_df.to_csv(out_file, index=False)
