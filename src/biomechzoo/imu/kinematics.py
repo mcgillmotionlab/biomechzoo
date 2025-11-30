@@ -3,37 +3,46 @@ import numpy as np
 
 def load_quats(data:dict, prefix:str) -> np.ndarray:
     """
-    Returns a stacked np.ndarray containing the w, x, y, z components of a quaternion in scalar first order
+    Returns a stacked np.ndarray containing the w, x, y, z components of a quaternion in scalar first order.
 
-    Note: the function assumes that data will have a prefix before data from different segments. For example:
+    Note:           the function assumes that data will have a prefix before quaternions from different segments.
+                    For example:
 
-    data.keys() = [LShQuat_W, LShQuat_X, ... LFQuat_W, LFQuat_X, ...]
+                    data.keys() = [LSh_Quat_W, LSh_Quat_X, ... LF_Quat_W, LF_Quat_X, ...]
 
-    :param data: dict containing the sensor data
-    :param prefix: the prefix defining the segment that is being loaded
-    :return: stacked np.ndarray containing the w, x, y, z components of the sensor from the desired sensor
+                    load_quats(data, prefix='LF_') -> returns LF_Quat_W, LF_Quat_X, LF_Quat_Y, LF_Quat_Z
+
+    :param data:    dict containing the sensor data
+    :param prefix:  the prefix defining the segment that is being loaded
+    :return:        stacked np.ndarray containing the w, x, y, z components of the sensor from the desired sensor
     """
 
+    # Define the keys to search for segment data
     base = ["W", "X", "Y", "Z"]
-    names = [f"{prefix}Quat_{c}" for c in base]
-    quat_components = [data[n]['line'] for n in names]
+    keys = [f"{prefix}_Quat_{b}" for b in base]
+
+    # Extract keys
+    quat_components = [data[k]['line'] for k in keys]
+
     return np.column_stack(quat_components)
 
-def imu_angles_data(data, prox_prefix, dist_prefix, order):
+
+def imu_angles_data(data:dict, prox_prefix:str, dist_prefix:str, order:str) -> dict:
     """
     Compute Euler angles between two IMU sensors.
 
-    :param data: dict containing the quaternions for each sensor
-    :param prox_prefix: prefix defining the segment that is being loaded
-    :param dist_prefix: prefix defining the segment that is being loaded
-    :param order: order of the IMU sensors. Note, the case of the order changes are intrinsic or extrinsic. For more
-                information please reference the scipy.spatial.transform documentation.
+    :param data:            dict containing the quaternions for each sensor
+    :param prox_prefix:     prefix defining the proximal segment
+    :param dist_prefix:     prefix defining the distal segment
+    :param order:           order of the IMU sensors. Note, the case of the order changes are intrinsic or extrinsic.
+                            For more information please reference the scipy.spatial.transform documentation:
+                            https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
 
-    :return: dict containing the Euler angles with alpha, beta, and gamma representing the first, second, and third
-            rotations in the sequence, respectively. Results are in degrees.
+    :return:                dict containing the Euler angles with alpha, beta, and gamma representing the first, second,
+                            and third rotations in the sequence, respectively. Results are in degrees.
     """
 
-    # Load the quaternions from the desired segments
+    # Load the quaternions from the proximal and distal segments
     q_prox = load_quats(data, prefix=prox_prefix)
     q_dist = load_quats(data, prefix=dist_prefix)
 
@@ -41,10 +50,10 @@ def imu_angles_data(data, prox_prefix, dist_prefix, order):
     R_prox = R.from_quat(q_prox, scalar_first=True)
     R_dist = R.from_quat(q_dist, scalar_first=True)
 
-    # Relative orientation
+    # Derive relative orientation
     R_rel = R_prox.inv() * R_dist
 
-    # Euler angles
+    # Convert to Euler angles using defines rotation order
     euler = R_rel.as_euler(order, degrees=True)
 
     return {
