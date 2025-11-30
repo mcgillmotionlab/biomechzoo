@@ -71,10 +71,14 @@ def main():
     ##Ensembler()
 
 
+data_root = os.path.dirname(os.path.dirname(__file__))
+
+example_data = os.path.join(data_root, 'data', 'imu_do_not_upload', '2 - relative_angles_combined','sample_combined_quats.zoo')
+
 if __name__ == "__main__":
     main()
 
-    angles_imu = zload('/Users/joshualowery/DataspellProjects/biomechzoo_dev/data/imu_do_not_upload/2 - relative_angles_combined/sample_combined_quats.zoo')
+    angles_imu = zload(example_data)
 
     angle_keys = ['alpha', 'beta', 'gamma']
 
