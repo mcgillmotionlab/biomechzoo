@@ -22,7 +22,7 @@ def split_trial_data(data, start_event, end_event):
         # Slice the line data
         trial_length = len(data_new[key]['line'])
         if trial_length > end_event_indx[0]:
-            data_new[key]['line'] = value['line'][start_event_indx[0]:end_event_indx[0]+1]
+            data_new[key]['line'] = value['line'][int(start_event_indx[0]):int(end_event_indx[0]+1)]
         else:
             print('skipping split trial since event is outside range of data')
             return None
