@@ -56,8 +56,12 @@ def imu_angles_data(data:dict, prox_prefix:str, dist_prefix:str, order:str) -> d
     # Convert to Euler angles using defines rotation order
     euler = R_rel.as_euler(order, degrees=True)
 
-    return {
-        "alpha": {"line": euler[:, 0]},
-        "beta":  {"line": euler[:, 1]},
-        "gamma": {"line": euler[:, 2]},
+    angles = {
+        f"{prox_prefix}_{dist_prefix}_alpha": {"line": euler[:, 0]},
+        f"{prox_prefix}_{dist_prefix}_beta":  {"line": euler[:, 1]},
+        f"{prox_prefix}_{dist_prefix}_gamma": {"line": euler[:, 2]},
     }
+
+    data.update(angles)
+
+    return data
