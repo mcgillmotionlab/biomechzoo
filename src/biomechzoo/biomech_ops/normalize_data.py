@@ -19,7 +19,8 @@ def normalize_data(data, nlength=101):
     for ch_name, ch_data in data_new.items():
         if ch_name != 'zoosystem':
             ch_data_line = ch_data['line']
-            ch_data_event = ch_data['event']
+            # ch_data_event = ch_data['event']
+            ch_data_event = ch_data.setdefault('event', {})
             ch_data_normalized = normalize_line(ch_data_line, nlength)
             data_new[ch_name]['line'] = ch_data_normalized
             data_new[ch_name]['event'] = ch_data_event
