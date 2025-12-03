@@ -5,23 +5,25 @@ import matplotlib.pyplot as plt
 from biomechzoo.biomechzoo import BiomechZoo
 import os
 
-example_root = os.path.dirname(os.path.dirname(__file__))
-
-lsh_data = os.path.join(example_root, 'data', 'imu_do_not_upload', 'LSh_20250818_114924.csv')
-lf_data = os.path.join(example_root, 'data', 'imu_do_not_upload', 'LF_20250818_114924.csv')
-out_fld = os.path.join(example_root, 'data', 'imu_do_not_upload', '0-create_combined_data')
-
 def main():
 
-    # Combine the quaternions from our two sensors
+    # Combine the quaternions from our two sensors #####################################################
+
     combine_quats_to_csv(
-        csv_files=[lsh_data, lf_data],
-        prefixes=["LSh", "LF"],
+        csv_files=[rsh_data_long_2, rf_data_long_2, rt_data_long_2, rh_data_long_2],
+        prefixes=["RSh", "RF", "RT", "RH"],
         out_folder= out_fld,
-        out_filename="sample_combined_quats.csv"
+        out_filename="123AA_combined.csv"
     )
 
-    # STEP 0: Initialize our BiomechZoo object
+    combine_quats_to_csv(
+        csv_files=[rsh_data_long_3, rf_data_long_3, rt_data_long_3, rh_data_long_3],
+        prefixes=["RSh", "RF", "RT", "RH"],
+        out_folder= out_fld,
+        out_filename="123AB_combined.csv"
+    )
+
+    # STEP 0: Initialize our BiomechZoo object #########################################################
     root = os.getcwd()
     fld = os.path.join(root, out_fld)
 
@@ -31,69 +33,110 @@ def main():
         verbose=2
     )
 
-    # STEP 1: Convert out combined quaternion file into a .zoo file
+    # STEP 1: Convert out combined quaternion file into a .zoo file ####################################
     bmech.table2zoo(
         out_folder= "1 - table2zoo_combined",
         extension='.csv',
         freq = 120
     )
 
-    # STEP 2: Calculate the 3D angles between the IMU sensors
+    # STEP 2: Calculate the 3D angles between the IMU sensors ##########################################
     bmech.imu_angles(
-        prox_prefix="LSh",
-        dist_prefix="LF",
+        prox_prefix="RSh",
+        dist_prefix="RF",
         order="XZY",
         out_folder= "2 - relative_angles_combined",
         inplace=False
     )
 
-    # STEP 3: Add heel strikes using the mcgrath method
+    bmech.imu_angles(
+        prox_prefix="RSh",
+        dist_prefix="RH",
+        order="XZY",
+        out_folder= "2 - relative_angles_combined",
+        inplace=False
+    )
+
+    bmech.imu_angles(
+        prox_prefix="RH",
+        dist_prefix="RF",
+        order="XZY",
+        out_folder= "2 - relative_angles_combined",
+        inplace=False
+    )
+
+    bmech.imu_angles(
+        prox_prefix="RF",
+        dist_prefix="RT",
+        order="XZY",
+        out_folder= "2 - relative_angles_combined",
+        inplace=False
+    )
+
+    # STEP 3: Add heel strikes using the mcgrath method ###########################################
     bmech.addevent(
-        ch="LSh_Gyr_Y",
+        ch="RSh_Gyr_Y",
         event_type="mcgrath_fs",
         event_name="FS",
         out_folder= "3 - add_event"
     )
 
-    # STEP 4: Split by gait cycles
+    # STEP 4: Split by gait cycles #################################################################
     bmech.split_trial_by_gait_cycle(
         first_event_name="FS_1",
         out_folder= "4 - split_trial_by_gait_cycle",
     )
 
 
-    # STEP 5: Normalize gait cycle lengths
-    # TODO: Note that the normalize_data.py function was altered to ensure that every channel had an 'event' column
+    # STEP 5: Normalize gait cycle lengths ##########################################################
     bmech.normalize(
         out_folder= "5 - normalize"
     )
 
-    # STEP 6: Visualize the results
+    # STEP 6: Visualize the results #################################################################
     ensembler = Ensembler(
         fld=bmech.in_folder,
-        ch=['LSh_LF_alpha','LSh_LF_beta','LSh_LF_gamma'],
+        ch=[
+            'RSh_RF_alpha','RSh_RF_beta','RSh_RF_gamma',
+            'RSh_RH_alpha', 'RSh_RH_beta', 'RSh_RH_gamma',
+            'RH_RF_alpha', 'RH_RF_beta', 'RH_RF_gamma',
+            'RF_RT_alpha', 'RF_RT_beta', 'RF_RT_gamma'
+        ],
         conditions = [''],
-        subj_pattern=r".*"
+        show_legend = True,
+        subj_pattern=r"\d{3}[A-Z]{2}"
     )
+
     ensembler.cycles()
+
+    ensembler.save(
+        file_name="Combined Waveforms",
+        extension="jpeg",
+        folder = os.path.join(example_root, 'data', 'imu_do_not_upload', '6 - Figures')
+    )
+
     ensembler.average()
-    ensembler.save(file_name="individual gait cycles")
 
+    ensembler.save(
+        file_name="Mean(SD) Waveforms",
+        extension="jpeg",
+        folder = os.path.join(example_root, 'data', 'imu_do_not_upload', '6 - Figures')
+    )
 
+# Defining the desired file paths:
+example_root = os.path.dirname(os.path.dirname(__file__))
+common_root = os.path.join(example_root, 'data', 'imu_do_not_upload', 'raw data')
+lsh_data_short = os.path.join(common_root, 'short_example ', 'LSh_20250818_114924.csv')
+lf_data_short = os.path.join(common_root, 'short_example ','LF_20250818_114924.csv')
+rsh_data_long_2 = os.path.join(common_root, 'long_example', '123AA_RSh.csv')
+rf_data_long_2 = os.path.join(common_root, 'long_example','123AA_RF.csv')
+rt_data_long_2 = os.path.join(common_root, 'long_example','123AA_RT.csv')
+rh_data_long_2 = os.path.join(common_root, 'long_example','123AA_RH.csv')
+rsh_data_long_3 = os.path.join(common_root, 'long_example', '123AB_RSh.csv')
+rf_data_long_3 = os.path.join(common_root, 'long_example','123AB_RF.csv')
+rt_data_long_3 = os.path.join(common_root, 'long_example','123AB_RT.csv')
+rh_data_long_3 = os.path.join(common_root, 'long_example','123AB_RH.csv')
+out_fld = os.path.join(example_root, 'data', 'imu_do_not_upload', '0-create_combined_data')
 
 if __name__ == "__main__":
     main()
-
-    data_root = os.path.dirname(os.path.dirname(__file__))
-
-    example_data = os.path.join(data_root, 'data', 'imu_do_not_upload', '2 - relative_angles_combined',
-                                'sample_combined_quats.zoo')
-    # PLOT THE RESULTING ANGLES
-    angles_imu = zload(example_data)
-    angle_keys = ['LSh_LF_alpha', 'LSh_LF_beta', 'LSh_LF_gamma', 'LSh_Gyr_Y']
-    for key in angle_keys:
-        plt.plot(angles_imu[key]['line'], label=key)
-        plt.xlabel('Time (frames)')
-        plt.ylabel(f' {key} (degrees)')
-        plt.legend()
-        plt.show()

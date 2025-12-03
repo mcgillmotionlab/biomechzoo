@@ -26,6 +26,7 @@ def load_quats(data:dict, prefix:str) -> np.ndarray:
 
     return np.column_stack(quat_components)
 
+# TODO : make a rotate IMU function for the hindfoot sensor?
 
 def imu_angles_data(data:dict, prox_prefix:str, dist_prefix:str, order:str) -> dict:
     """
