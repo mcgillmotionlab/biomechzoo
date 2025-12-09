@@ -26,16 +26,14 @@ def load_quats(data:dict, prefix:str) -> np.ndarray:
 
     return np.column_stack(quat_components)
 
-# TODO : make a rotate IMU function for the hindfoot sensor?
-
 def imu_angles_data(data:dict, prox_prefix:str, dist_prefix:str, order:str) -> dict:
     """
-    Compute Euler angles between two IMU sensors.
+    Compute Euler angles describing the orientation of the distal segment with respect to the proximal segment.
 
     :param data:            dict containing the quaternions for each sensor
     :param prox_prefix:     prefix defining the proximal segment
     :param dist_prefix:     prefix defining the distal segment
-    :param order:           order of the IMU sensors. Note, the case of the order changes are intrinsic or extrinsic.
+    :param order:           order of the IMU sensors. Note, the case of the order changes between intrinsic or extrinsic rotations.
                             For more information please reference the scipy.spatial.transform documentation:
                             https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
 
@@ -54,7 +52,7 @@ def imu_angles_data(data:dict, prox_prefix:str, dist_prefix:str, order:str) -> d
     # Derive relative orientation
     R_rel = R_prox.inv() * R_dist
 
-    # Convert to Euler angles using defines rotation order
+    # Convert to Euler angles using defined rotation order
     euler = R_rel.as_euler(order, degrees=True)
 
     angles = {

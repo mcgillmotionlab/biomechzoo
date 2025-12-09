@@ -1,7 +1,5 @@
-from Josh_MSc.utils.csv_combine import combine_quats_to_csv
+from biomechzoo.Josh_MSc.utils.csv_combine import combine_quats_to_csv
 from biomechzoo.visualization.ensembler import Ensembler
-from biomechzoo.utils.zload import zload
-import matplotlib.pyplot as plt
 from biomechzoo.biomechzoo import BiomechZoo
 import os
 
