@@ -20,7 +20,6 @@ class Ensembler:
         self.fig = self._create_subplots()
         self.subject_colors = self._assign_subject_colors()
 
-
     def _assign_subject_colors(self):
         unique_subjects = self._get_unique_subjects()
         subject_colors = {}
@@ -79,8 +78,37 @@ class Ensembler:
                 return cond
         return "Unknown"
 
+    # --- add to ensembler.py ---
 
-    def cycles(self):
+    def _make_point_customdata(self, subj, channel, condition, fname, row, col, x, y):
+        # Ensure x is an array of indices when None
+        if x is None:
+            x = list(range(len(y)))
+        return [
+            {
+                "subject": subj,
+                "channel": channel,
+                "condition": condition,
+                "source_file": fname,
+                "row": row,
+                "col": col,
+                "index": int(xi) if isinstance(xi, (int, np.integer)) else xi,
+                "value": float(yi) if isinstance(yi, (float, np.floating)) else yi
+            } for xi, yi in zip(x, y)
+        ]
+
+    def _default_hovertemplate(self):
+        # Compact, informative hover
+        return (
+            "Subject: %{customdata.subject}<br>"
+            "Channel: %{customdata.channel}<br>"
+            "Condition: %{customdata.condition}<br>"
+            "File: %{customdata.source_file}<br>"
+            "x: %{x}<br>y: %{y}"
+            "<extra></extra>"
+        )
+
+    def cycles(self, plot_markers=False):
         # check if fig is populated
         if self.fig.data:
             self.fig.data = []
@@ -102,18 +130,29 @@ class Ensembler:
 
             for i, channel in enumerate(self.channels):
                 ch_data_line = data[channel]["line"]
-
                 row = i + 1
                 col = self.conditions.index(condition) + 1
-                self.add_line(y=ch_data_line, row=row, col=col, name=f"{fname} - {channel}", color=line_color, legendgroup=subj, showlegend=False)
 
-                ch_data_event = data[channel]["event"]
-                for event in ch_data_event:
-                    ch_event_data = data[channel]["event"][event]
-                    eyd = np.array(ch_event_data[1]) # prep for plotting
-                    exd = np.array(ch_event_data[0]) # pre[ for plotting
+                # Built metadata for click/hover
+                x_line = list(range(len(ch_data_line)))
+                cdata = self._make_point_customdata(subj, channel, condition, fname, row, col, x_line, ch_data_line)
 
-                    self.add_marker(y=eyd, x=exd, row=row, col=col, name=event, color=marker_color)
+                self.add_line(y=ch_data_line, x=x_line, row=row, col=col,
+                              name=f"{fname} - {channel}", color=line_color,
+                              legendgroup=subj, showlegend=False,
+                              customdata=cdata, hovertemplate=self._default_hovertemplate())
+
+                if plot_markers:
+                    ch_data_event = data[channel]["event"]
+                    for event in ch_data_event:
+                        ch_event_data = data[channel]["event"][event]
+                        eyd = np.array(ch_event_data[1]) # prep for plotting
+                        exd = np.array(ch_event_data[0]) # prep for plotting
+                        cdata_m = self._make_point_customdata(subj, channel, condition, fname, row, col, exd.tolist(), eyd.tolist())
+
+                        self.add_marker(y=eyd, x=exd, row=row, col=col,
+                                        name=event, color=marker_color,
+                                        customdata=cdata_m, hovertemplate=self._default_hovertemplate())
 
         self.show(title="Cycles per Subject")
 
@@ -204,12 +243,15 @@ class Ensembler:
 
         return average_dict
 
-    def add_line(self, y, x=None, row=1, col=1, name=None, color=None, legendgroup=None, showlegend=True,):
-        trace = go.Scatter(x=x, y=y, mode="lines", name=name, line=dict(color=color), showlegend=showlegend, legendgroup=legendgroup)
+    def add_line(self, y, x=None, row=1, col=1, name=None, color=None, legendgroup=None, showlegend=True, customdata=None, hovertemplate=None):
+        trace = go.Scatter(x=x, y=y, mode="lines", name=name,
+                           line=dict(color=color), showlegend=showlegend, legendgroup=legendgroup,
+                           customdata=customdata, hovertemplate=hovertemplate)
         self.fig.add_trace(trace, row=row, col=col)
 
-    def add_marker(self, y, x, row=1, col=1, name=None, color=None):
-        trace = go.Scatter(x=x, y=y, mode="markers", name=name, line=dict(color=color))
+    def add_marker(self, y, x, row=1, col=1, name=None, color=None, customdata=None, hovertemplate=None):
+        trace = go.Scatter(x=x, y=y, mode="markers", name=name, line=dict(color=color),
+                           customdata=customdata, hovertemplate=hovertemplate)
         self.fig.add_trace(trace, row=row, col=col)
 
     def add_errorbar(self, y, yerr, row=1, col=1, color=None):
