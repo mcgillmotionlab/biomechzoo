@@ -1,19 +1,25 @@
 import numpy as np
 import os
 import re
+import pandas as pd
+import json
+
 import plotly.graph_objects as go
 from plotly.subplots import make_subplots
 import plotly.colors as pc
+from dash import Dash, dcc, html, Input, Output, State, no_update
+
 
 
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
 
 class Ensembler:
-    def __init__(self, fld, ch, conditions, name_contains=None, show_legend=True, match_all=True, subj_pattern=r"\b\d{3}[A-Z]{2}\b"):
+    def __init__(self, fld, ch, conditions, out_folder=None, name_contains=None, show_legend=True, match_all=True, subj_pattern=r"\b\d{3}[A-Z]{2}\b"):
         self.fld = fld
         self.conditions = conditions
         self.channels = ch
+        self.out_folder = out_folder
         self.show_legend = show_legend
         self.subj_pattern = subj_pattern
         self.zoo_files = engine(fld, extension=".zoo", subfolders=conditions, name_contains=name_contains, match_all=match_all)
@@ -77,8 +83,6 @@ class Ensembler:
             if cond in path:
                 return cond
         return "Unknown"
-
-    # --- add to ensembler.py ---
 
     def _make_point_customdata(self, subj, channel, condition, fname, row, col, x, y):
         # Ensure x is an array of indices when None
@@ -155,6 +159,14 @@ class Ensembler:
                                         customdata=cdata_m, hovertemplate=self._default_hovertemplate())
 
         self.show(title="Cycles per Subject")
+
+
+    def quality_check_cycles(self):
+        qc = EnsemblerQualityChecker(self.fig, self.out_folder)
+        qc.run()
+
+
+
 
     def combine(self):
         # check if fig is populated
@@ -307,3 +319,104 @@ class Ensembler:
             self.fig.write_html(os.path.join(folder, f"{file_name}.{extension}"))
         else:
             self.fig.write_image(os.path.join(folder, f"{file_name}.{extension}"))
+
+
+
+class EnsemblerQualityChecker:
+    def __init__(self, figure, out_folder):
+        self.figure = figure
+        self.out_folder = out_folder
+        self.app = Dash()
+        self._built_layout()
+        self._register_callbacks()
+
+
+    def _built_layout(self):
+        self.app.layout = html.Div([
+            # The graph
+            html.Div([
+                dcc.Graph(id="ensemble-graph", figure=self.figure, clear_on_unhover=True),
+            ]),
+            html.Hr(),
+            # click output
+            html.Div([
+                html.H4("Last click"),
+                html.Pre(id="last-click", style={"whiteSpace": "pre-wrap"}),
+                html.H4("Clicks captured"),
+                html.Pre(id="click-count")
+            ]),
+            # Download button
+            html.Div([
+                html.Button("Download CSV", id="btn-download", n_clicks=0),
+                dcc.Download(id="download-csv"),
+                dcc.Store(id="click-store", data=[])
+            ]),
+        ])
+
+    def _register_callbacks(self):
+        app=self.app
+
+        @app.callback(
+            Output("last-click", "children"),
+            Output("click-count", "children"),
+            Output("click-store", "data"),
+            Output("ensemble-graph", "figure"),
+            Input("ensemble-graph", "clickData"),
+            State("click-store", "data"),
+            State("ensemble-graph", "figure"),
+            prevent_initial_call=True
+        )
+        def save_and_remove(clickData, clicks, fig):
+            if not clickData or fig is None:
+                return no_update, no_update, clicks, no_update
+
+            pt = clickData["points"][0]
+            # Ignore helper/legend traces that use y=[None]
+            if pt.get("y") is None or pt.get("curveNumber") is None:
+                return no_update, no_update, clicks, no_update
+
+            # Build record (flat customdata: [subject, channel, condition, file, row, col, index, value])
+            cd = pt.get("customdata") or []
+            record = {
+                "subject": cd.get("subject"),
+                "channel": cd.get("channel"),
+                "condition": cd.get("condition"),
+                "source_file": cd.get("source_file"),
+                "row": cd.get("row"),
+                "col": cd.get("col"),
+                "index": cd.get("index"),
+                "value": cd.get("value"),
+                # native plotly info as well
+                "curveNumber": pt.get("curveNumber"),
+                "pointNumber": pt.get("pointNumber"),
+                "x": pt.get("x"),
+                "y": pt.get("y"),
+            }
+
+            # Append & persist
+            clicks = (clicks or []) + [record]
+            try:
+                out_dir = os.path.join(self.out_folder, "click_exports")
+                os.makedirs(out_dir, exist_ok=True)
+                # pd.DataFrame(clicks).to_csv(os.path.join(out_dir, "clicks_latest.csv"), index=False)
+            except Exception:
+                pass  # keep UI responsive even if write fails
+
+            # Remove the clicked trace
+            data = list(fig.get("data", []))
+            idx = pt["curveNumber"]
+            if 0 <= idx < len(data):
+                t = data[idx]
+                if t.get("type") == "scatter" and t.get("mode") in ("lines", "lines+markers", "markers"):
+                    data.pop(idx)
+                    fig["data"] = data
+                    fig.setdefault("layout", {})["uirevision"] = "ensembler"  # preserve zoom/state
+
+            return json.dumps(record, indent=2), f"Total clicks: {len(clicks)}", clicks, fig
+
+    def run(self, **kwargs):
+        # Default values if not provided
+        kwargs.setdefault("host", "127.0.0.1")
+        kwargs.setdefault("port", 8050)
+        kwargs.setdefault("debug", False)
+        self.app.run(**kwargs)
