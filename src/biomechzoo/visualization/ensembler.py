@@ -9,13 +9,14 @@ from plotly.subplots import make_subplots
 import plotly.colors as pc
 from dash import Dash, dcc, html, Input, Output, State, no_update
 
-
-
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
 
 class Ensembler:
-    def __init__(self, fld, ch, conditions, out_folder=None, name_contains=None, show_legend=True, match_all=True, subj_pattern=r"\b\d{3}[A-Z]{2}\b"):
+    def __init__(self, fld, ch, conditions, out_folder=None, name_contains=None, show_legend=True, match_all=True, subj_pattern=None):
+        if isinstance(subj_pattern,str):
+            subj_pattern = [subj_pattern]
+
         self.fld = fld
         self.conditions = conditions
         self.channels = ch
@@ -41,9 +42,15 @@ class Ensembler:
     def _get_unique_subjects(self):
         subjects = set()
         for fl in self.zoo_files:
-            match = re.search(self.subj_pattern, fl)
+            match = re.search(self.subj_pattern[0], fl)
             if match:
                 subjects.add(match.group(0))
+            elif match is None:
+                match = re.search(self.subj_pattern[1], fl)
+                if match:
+                    subjects.add(match.group(0))
+                else:
+                    subjects.add("unknown")
         return sorted(subjects)
 
     def  _assign_colors(self, i):
@@ -124,8 +131,16 @@ class Ensembler:
             condition = self._get_condition_from_path(fl)
 
             # Get subject from path
-            match = re.search(self.subj_pattern, fl)
-            subj = match.group(0) if match else "Unknown"
+            match = re.search(self.subj_pattern[0], fl)
+            if match:
+                subj = match.group(0)
+            elif match is None:
+                match = re.search(self.subj_pattern[1], fl)
+                if match:
+                    subj = match.group(0)
+                else:
+                    subj = "Unknown"
+
             line_color = self.subject_colors[subj]["line"]
             marker_color = self.subject_colors[subj]["event"]
 
@@ -165,8 +180,6 @@ class Ensembler:
         self.cycles(plot_markers=True)
         qc = EnsemblerQualityChecker(self.fig, self.out_folder)
         qc.run()
-
-
 
 
     def combine(self):
