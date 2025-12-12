@@ -40,6 +40,9 @@ class Ensembler:
         return subject_colors
 
     def _get_unique_subjects(self):
+        # TODO: get an option when subj_pattern is None.
+        #  Get from biomechzoo zoosystem?
+
         subjects = set()
         for fl in self.zoo_files:
             match = re.search(self.subj_pattern[0], fl)
@@ -130,16 +133,26 @@ class Ensembler:
             fname = os.path.basename(fl)
             condition = self._get_condition_from_path(fl)
 
-            # Get subject from path
-            match = re.search(self.subj_pattern[0], fl)
-            if match:
-                subj = match.group(0)
-            elif match is None:
-                match = re.search(self.subj_pattern[1], fl)
-                if match:
-                    subj = match.group(0)
-                else:
-                    subj = "Unknown"
+            subj_not_found = True
+            while subj_not_found:
+                for key in self.subject_colors:
+                    if key in fl:
+                        subj = key
+                        subj_not_found = False
+
+            if subj_not_found:
+                subj = "Unknown"
+
+            # # Get subject from path
+            # match = re.search(self.subj_pattern[0], fl)
+            # if match:
+            #     subj = match.group(0)
+            # elif match is None:
+            #     match = re.search(self.subj_pattern[1], fl)
+            #     if match:
+            #         subj = match.group(0)
+            #     else:
+            #         subj = "Unknown"
 
             line_color = self.subject_colors[subj]["line"]
             marker_color = self.subject_colors[subj]["event"]
