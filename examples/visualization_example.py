@@ -27,7 +27,7 @@ ensembler = Ensembler(fld=bmech.in_folder, ch=['knee_angle_r'],
                       )
 
 # Populate the figure with individual gait cycles and save it to file
-ensembler.cycles()
+# ensembler.cycles()
 # ensembler.save(file_name="individual gait cycles")
 ensembler.quality_check_cycles()
 
@@ -36,7 +36,7 @@ outlier_file = os.path.join(out_folder, "outlier_click.csv")
 # bmech.remove_data(outlier_file=outlier_file)
 
 # Populate the figure with the average and standard deviation per condition.
-# ensembler.average()
+ensembler.average()
 # ensembler.save(file_name="average gait cycles")
 #
 #

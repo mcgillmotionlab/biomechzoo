@@ -162,6 +162,7 @@ class Ensembler:
 
 
     def quality_check_cycles(self):
+        self.cycles(plot_markers=True)
         qc = EnsemblerQualityChecker(self.fig, self.out_folder)
         qc.run()
 
@@ -326,7 +327,7 @@ class EnsemblerQualityChecker:
     def __init__(self, figure, out_folder):
         self.figure = figure
         self.out_folder = out_folder
-        self.app = Dash()
+        self.app = Dash(__name__)
         self._built_layout()
         self._register_callbacks()
 
@@ -414,9 +415,22 @@ class EnsemblerQualityChecker:
 
             return json.dumps(record, indent=2), f"Total clicks: {len(clicks)}", clicks, fig
 
+        @app.callback(
+            Output("download-csv", "data"),
+            Input("btn-download", "n_clicks"),
+            State("click-store", "data"),
+            prevent_initial_call=True
+        )
+        def download_csv(n, clicks):
+            if not clicks:
+                return no_update
+            df = pd.DataFrame(clicks)
+            # For client-side download
+            return dcc.send_data_frame(df.to_csv, "ensembler_clicks.csv", index=False)
+
     def run(self, **kwargs):
         # Default values if not provided
         kwargs.setdefault("host", "127.0.0.1")
         kwargs.setdefault("port", 8050)
-        kwargs.setdefault("debug", False)
+        kwargs.setdefault("debug", True)
         self.app.run(**kwargs)
