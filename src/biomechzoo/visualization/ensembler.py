@@ -143,17 +143,6 @@ class Ensembler:
             if subj_not_found:
                 subj = "Unknown"
 
-            # # Get subject from path
-            # match = re.search(self.subj_pattern[0], fl)
-            # if match:
-            #     subj = match.group(0)
-            # elif match is None:
-            #     match = re.search(self.subj_pattern[1], fl)
-            #     if match:
-            #         subj = match.group(0)
-            #     else:
-            #         subj = "Unknown"
-
             line_color = self.subject_colors[subj]["line"]
             marker_color = self.subject_colors[subj]["event"]
 
@@ -190,9 +179,49 @@ class Ensembler:
 
 
     def quality_check_cycles(self):
-        self.cycles(plot_markers=True)
-        qc = EnsemblerQualityChecker(self.fig, self.out_folder)
-        qc.run()
+        # check if fig is populated
+        if self.fig.data:
+            self.fig.data = []
+
+        # loop thought the zoofiles and plot the traces
+        for fl in self.zoo_files:
+            data = zload(fl)
+            fname = os.path.basename(fl)
+            condition = self._get_condition_from_path(fl)
+
+            subj_not_found = True
+            while subj_not_found:
+                for key in self.subject_colors:
+                    if key in fl:
+                        subj = key
+                        subj_not_found = False
+
+            if subj_not_found:
+                subj = "Unknown"
+
+            line_color = self.subject_colors[subj]["line"]
+            marker_color = self.subject_colors[subj]["event"]
+
+            if not any(t.legendgroup == subj for t in self.fig.data):
+                self.add_line(y=[None], name=f"Subject - {subj}", color=line_color, legendgroup=subj,
+                              showlegend=True)
+
+            for i, channel in enumerate(self.channels):
+                ch_data_line = data[channel]["line"]
+                row = i + 1
+                col = self.conditions.index(condition) + 1
+
+                # Built metadata for click/hover
+                x_line = list(range(len(ch_data_line)))
+                cdata = self._make_point_customdata(subj, channel, condition, fname, row, col, x_line, ch_data_line)
+
+                self.add_line(y=ch_data_line, x=x_line, row=row, col=col,
+                              name=f"{fname} - {channel}", color=line_color,
+                              legendgroup=subj, showlegend=False,
+                              customdata=cdata, hovertemplate=self._default_hovertemplate())
+
+        # self.fig.show()
+
 
 
     def combine(self):
