@@ -42,7 +42,8 @@ def filter_line(signal_raw, filt=None, fs=None):
     norm_cutoff = np.atleast_1d(np.array(cutoff) / nyq)
 
     if ftype is 'butter':
-        signal_filtered = kt_butter(ts=signal_raw, fc=norm_cutoff, fs=fs, order=order, btype=btype, filtfilt=filtfilt)
+        [b, a] = sgl.butter(N=order, Wn=norm_cutoff, btype=btype, )
+        signal_filtered = sgl.filtfilt(b, a, signal_raw)
     else:
         raise NotImplementedError(f"Filter type '{ftype}' not implemented.")
 
