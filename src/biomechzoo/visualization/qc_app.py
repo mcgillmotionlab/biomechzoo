@@ -62,7 +62,12 @@ def run_quality_check(fld, ch, out_folder, subj_pattern, conditions=None, name_c
             html.Button("Download CSV", id="btn-download", n_clicks=0),
             dcc.Download(id="download-csv"),
             dcc.Store(id="click-store", data=[])
+
         ]),
+        html.Div([
+            html.Img(src=app.get_asset_url("(Preferred) - Red on white logo (1).png"), alt="The official McGill logo",
+                     style={"width": "20%", }),
+        ], style={'display': 'inline-block', 'vertical-align': 'bottom'}),
         ], className="wrapper"
     )
 
