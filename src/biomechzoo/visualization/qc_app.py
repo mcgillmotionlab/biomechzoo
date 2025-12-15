@@ -129,7 +129,18 @@ def run_quality_check(fld, ch, out_folder, subj_pattern, conditions=None, name_c
 
         return json.dumps(record, indent=2), f"Total clicks: {len(clicks)}", clicks, fig
 
-
+    @app.callback(
+        Output("download-csv", "data"),
+        Input("btn-download", "n_clicks"),
+        State("click-store", "data"),
+        prevent_initial_call=True
+    )
+    def download_csv(n, clicks):
+        if not clicks:
+            return no_update
+        df = pd.DataFrame(clicks)
+        # For client-side download
+        return dcc.send_data_frame(df.to_csv, "ensembler_clicks.csv", index=False)
 
     app.run(debug=True)
 
