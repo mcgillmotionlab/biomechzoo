@@ -15,6 +15,7 @@ dependencies = [
     "pyarrow>=19.0.0",      # for parquet support
     "plotly==6.4.0",        # for ensembler
     "kaleido==1.2.0",       # for ensembler (saving images)
+    "dash==3.3.0",          # for ensembler (quality check)
 ]
 
 [project.urls]
