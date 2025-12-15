@@ -15,14 +15,18 @@ def split_trial_data(data, start_event, end_event):
     if end_event_indx is None:
         raise ValueError('event_event {} not found'.format(end_event))
 
+    # hard fix integer
+    start_event_indx = int(start_event_indx[0])
+    end_event_indx = int(end_event_indx[0])
+
     for key, value in data_new.items():
         if key == 'zoosystem':
             continue
 
         # Slice the line data
         trial_length = len(data_new[key]['line'])
-        if trial_length > end_event_indx[0]:
-            data_new[key]['line'] = value['line'][start_event_indx[0]:end_event_indx[0]+1]
+        if trial_length > end_event_indx:
+            data_new[key]['line'] = value['line'][start_event_indx:end_event_indx+1]
         else:
             print('skipping split trial since event is outside range of data')
             return None
@@ -33,7 +37,7 @@ def split_trial_data(data, start_event, end_event):
             for evt_name, evt_val in value['event'].items():
                 event_frame = evt_val[0]
                 # Adjust index relative to new start
-                n = event_frame - start_event_indx[0]
+                n = event_frame - start_event_indx
                 new_events[evt_name] = [n, 0, 0]
             data_new[key]['event'] = new_events
 
