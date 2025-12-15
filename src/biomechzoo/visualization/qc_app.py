@@ -66,7 +66,7 @@ def run_quality_check(fld, ch, out_folder, subj_pattern, conditions=None, name_c
         ]),
         html.Div([
             html.Img(src=app.get_asset_url("(Preferred) - Red on white logo (1).png"), alt="The official McGill logo",
-                     style={"width": "20%", }),
+                     style={"width": "20%", 'float': 'right'}),
         ], style={'display': 'inline-block', 'vertical-align': 'bottom'}),
         ], className="wrapper"
     )
