@@ -59,7 +59,7 @@ class Ensembler:
         return sorted(subjects)
 
     @staticmethod
-    def  _assign_colors(i):
+    def  _assign_colors(i, color_library=None):
         """
         Assign colors to each subject based on the hex-code in pc.qualitative.D3 library.
 
@@ -78,7 +78,10 @@ class Ensembler:
             marker_color: string
                 The complementary marker color
         """
-        hex_code = pc.qualitative.D3[i % len(pc.qualitative.D3)]
+        if color_library is None:
+            color_library = pc.qualitative.D3
+
+        hex_code = color_library[i % len(color_library)]
         h = hex_code.lstrip('#')
         rgb =tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
@@ -118,6 +121,7 @@ class Ensembler:
         return "Unknown"
 
     def _make_point_customdata(self, subj, channel, condition, fname, row, col, x, y):
+        """Curates the data for the hover functionality in plotly figure"""
         # Ensure x is an array of indices when None
         if x is None:
             x = list(range(len(y)))
@@ -150,6 +154,7 @@ class Ensembler:
         ]
 
     def _default_hovertemplate(self):
+        """Curates default hover template"""
         # Compact, informative hover
         return (
             "Subject: %{customdata.subject}<br>"
@@ -186,6 +191,7 @@ class Ensembler:
 
             if not any(t.legendgroup == subj for t in self.fig.data):
                 self.add_line(y=[None],name=f"Subject - {subj}", color=line_color,legendgroup=subj, showlegend=True )
+                self.add_marker(y=[None], x= [None], name=f"Event - {subj}", color=marker_color, legendgroup=subj, showlegend=True)
 
             for i, channel in enumerate(self.channels):
                 ch_data_line = data[channel]["line"]
@@ -211,6 +217,7 @@ class Ensembler:
 
                         self.add_marker(y=eyd, x=exd, row=row, col=col,
                                         name=event, color=marker_color,
+                                        legendgroup=subj, showlegend=False,
                                         customdata=cdata_m, hovertemplate=self._default_hovertemplate())
 
         self.show(title="Cycles per Subject")
@@ -355,8 +362,9 @@ class Ensembler:
                            customdata=customdata, hovertemplate=hovertemplate)
         self.fig.add_trace(trace, row=row, col=col)
 
-    def add_marker(self, y, x, row=1, col=1, name=None, color=None, customdata=None, hovertemplate=None):
-        trace = go.Scatter(x=x, y=y, mode="markers", name=name, line=dict(color=color),
+    def add_marker(self, y, x, row=1, col=1, name=None, color=None, legendgroup=None, showlegend=True, customdata=None, hovertemplate=None):
+        trace = go.Scatter(x=x, y=y, mode="markers", name=name,
+                           line=dict(color=color), showlegend=showlegend, legendgroup=legendgroup,
                            customdata=customdata, hovertemplate=hovertemplate)
         self.fig.add_trace(trace, row=row, col=col)
 
