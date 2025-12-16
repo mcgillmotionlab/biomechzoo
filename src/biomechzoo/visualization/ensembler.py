@@ -1,3 +1,12 @@
+"""
+Plot module associated to the Biomechzoo toolbox
+
+Example:
+    from biomechzoo.visualization.ensembler import Ensembler
+    ens = Ensembler(fld=bmech.in_folder, ch=["gy_shank], conditions=["pre, post], subj_pattern = [r"\b\d{3}[A-Z]{2}\b"])
+    ens.combine()
+"""
+
 import numpy as np
 import os
 import re
@@ -11,6 +20,7 @@ from dash import Dash, dcc, html, Input, Output, State, no_update
 
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
+from biomechzoo.utils.findfield import findfield
 
 class Ensembler:
     def __init__(self, fld, ch, conditions, out_folder=None, name_contains=None, show_legend=True, match_all=True, subj_pattern=None):
@@ -61,14 +71,14 @@ class Ensembler:
     @staticmethod
     def  _assign_colors(i, color_library=None):
         """
-        Assign colors to each subject based on the hex-code in pc.qualitative.D3 library.
+        Assign colors to each subject automatically.
 
-        Arguments:
+        Parameters
         ----------
             i: integer
                 The index associated with the subject pattern
 
-        Returns:
+        Returns
         --------
             hex_code: string
                 The ith hex-code from pc.qualitative.D3 library.
@@ -121,7 +131,7 @@ class Ensembler:
         return "Unknown"
 
     def _make_point_customdata(self, subj, channel, condition, fname, row, col, x, y):
-        """Curates the data for the hover functionality in plotly figure"""
+        """Curate data for the hover functionality in plotly figure"""
         # Ensure x is an array of indices when None
         if x is None:
             x = list(range(len(y)))
@@ -154,7 +164,7 @@ class Ensembler:
         ]
 
     def _default_hovertemplate(self):
-        """Curates default hover template"""
+        """Curate default hover template"""
         # Compact, informative hover
         return (
             "Subject: %{customdata.subject}<br>"
@@ -165,7 +175,19 @@ class Ensembler:
             "<extra></extra>"
         )
 
-    def cycles(self, plot_markers=False):
+    def cycles(self, event_name=None):
+        """
+        Plot cycle data. Assumes data is normalized to 100% of the movement.
+
+        Parameters:
+        -----------
+            event_name: str or list
+
+        Returns:
+        --------
+
+        """
+
         # check if fig is populated
         if self.fig.data:
             self.fig.data = []
@@ -191,7 +213,6 @@ class Ensembler:
 
             if not any(t.legendgroup == subj for t in self.fig.data):
                 self.add_line(y=[None],name=f"Subject - {subj}", color=line_color,legendgroup=subj, showlegend=True )
-                self.add_marker(y=[None], x= [None], name=f"Event - {subj}", color=marker_color, legendgroup=subj, showlegend=True)
 
             for i, channel in enumerate(self.channels):
                 ch_data_line = data[channel]["line"]
@@ -207,23 +228,27 @@ class Ensembler:
                               legendgroup=subj, showlegend=False,
                               customdata=cdata, hovertemplate=self._default_hovertemplate())
 
-                if plot_markers:
-                    ch_data_event = data[channel]["event"]
-                    for event in ch_data_event:
-                        ch_event_data = data[channel]["event"][event]
-                        eyd = np.array(ch_event_data[1]) # prep for plotting
-                        exd = np.array(ch_event_data[0]) # prep for plotting
-                        cdata_m = self._make_point_customdata(subj, channel, condition, fname, row, col, exd.tolist(), eyd.tolist())
+                if event_name:
+                    exd, eyd, evt_ch = self._get_events_data(data, event_name, fname=fname)
+                    if evt_ch == channel:
+                        # Create dummy marker trace for the legend
+                        self.add_marker(y=[None], x=[None], name=f"{event_name} - {subj}", color=marker_color,
+                                        legendgroup=subj, showlegend=True)
 
+                        # plot the markers on the line
+                        exd = np.array(exd)  # prep for plotting
+                        eyd = np.array(eyd)  # prep for plotting
+                        cdata_m = self._make_point_customdata(subj, channel, condition, fname, row, col, exd.tolist(),
+                                                              eyd.tolist())
                         self.add_marker(y=eyd, x=exd, row=row, col=col,
-                                        name=event, color=marker_color,
+                                        name=event_name, color=marker_color,
                                         legendgroup=subj, showlegend=False,
                                         customdata=cdata_m, hovertemplate=self._default_hovertemplate())
 
         self.show(title="Cycles per Subject")
 
 
-    def quality_check_cycles(self):
+    def quality_check_cycles(self, event_name=None):
         # check if fig is populated
         if self.fig.data:
             self.fig.data = []
@@ -253,8 +278,9 @@ class Ensembler:
 
             for i, channel in enumerate(self.channels):
                 ch_data_line = data[channel]["line"]
-                row = i + 1
-                col = self.conditions.index(condition) + 1
+                # A single fixed row and column number for now
+                row = 1
+                col = 1
 
                 # Built metadata for click/hover
                 x_line = list(range(len(ch_data_line)))
@@ -265,8 +291,39 @@ class Ensembler:
                               legendgroup=subj, showlegend=False,
                               customdata=cdata, hovertemplate=self._default_hovertemplate())
 
+                if event_name:
+                    exd, eyd, evt_ch = self._get_events_data(data, event_name, fname)
+                    if evt_ch == channel:
+                        # Create dummy trace for the legend
+                        self.add_marker(y=[None], x=[None], name=f"{event_name} - {subj}", color=marker_color,
+                                        legendgroup=subj, showlegend=True)
+
+                        # plot the event on the line
+                        exd = np.array(exd)  # prep for plotting
+                        eyd = np.array(eyd)  # prep for plotting
+                        cdata_m = self._make_point_customdata(subj, channel, condition, fname, row, col, exd.tolist(),
+                                                              eyd.tolist())
+                        self.add_marker(y=eyd, x=exd, row=row, col=col,
+                                        name=event_name, color=marker_color,
+                                        legendgroup=subj, showlegend=False,
+                                        customdata=cdata_m, hovertemplate=self._default_hovertemplate())
 
 
+    def _get_events_data(self, data, target_event=None, fname=None):
+        if target_event:
+            evt_val, evt_ch = findfield(data,target_event)
+
+            if not evt_ch:
+                print(f" event '{target_event}' not found in any channel for file '{fname}'")
+                return None, None, None
+
+            exd = int(evt_val[0])
+            eyd = float(evt_val[1])
+
+            return exd, eyd, evt_ch
+
+        else:
+            raise ValueError(f'No target event given: ')
 
 
     def combine(self):
