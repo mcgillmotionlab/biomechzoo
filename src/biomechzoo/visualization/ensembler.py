@@ -28,6 +28,7 @@ class Ensembler:
         self.subject_colors = self._assign_subject_colors()
 
     def _assign_subject_colors(self):
+        """Creates subject specific colors"""
         unique_subjects = self._get_unique_subjects()
         subject_colors = {}
         for idx, subj in enumerate(unique_subjects):
@@ -40,6 +41,7 @@ class Ensembler:
         return subject_colors
 
     def _get_unique_subjects(self):
+        """Extract unique subject names from subject pattern initialized in __init__()"""
         # TODO: get an option when subj_pattern is None.
         #  Get from biomechzoo zoosystem?
 
@@ -56,23 +58,43 @@ class Ensembler:
                     subjects.add("unknown")
         return sorted(subjects)
 
-    def  _assign_colors(self, i):
+    @staticmethod
+    def  _assign_colors(i):
+        """
+        Assign colors to each subject based on the hex-code in pc.qualitative.D3 library.
+
+        Arguments:
+        ----------
+            i: integer
+                The index associated with the subject pattern
+
+        Returns:
+        --------
+            hex_code: string
+                The ith hex-code from pc.qualitative.D3 library.
+            shade_color: string
+                The associated shade color
+
+            marker_color: string
+                The complementary marker color
+        """
         hex_code = pc.qualitative.D3[i % len(pc.qualitative.D3)]
         h = hex_code.lstrip('#')
-        RGB =tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+        rgb =tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 
         #shade color with opacity
         opacity = 0.3
-        shade_color = f"rgba({RGB[0]}, {RGB[1]}, {RGB[2]}, {opacity})"
+        shade_color = f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, {opacity})"
 
         #Get complementary color for marker
-        comp = ['%02X' % (255 - a) for a in RGB]
+        comp = ['%02X' % (255 - a) for a in rgb]
         marker_color =  '#' + ''.join(comp)
 
         return hex_code, shade_color, marker_color
 
 
     def _create_subplots(self):
+        """Create subplots for each channel and each condition"""
         self.rows = len(self.channels)
         self.cols = len(self.conditions)
         titles = [f"{ch} - {cond}" for ch in self.channels for cond in self.conditions]
@@ -81,6 +103,7 @@ class Ensembler:
         return fig
 
     def _create_subplots_combine(self):
+        """Create subplots for each channel"""
         self.rows = len(self.channels)
         self.cols = 1
         titles = [f"{ch}" for ch in self.channels ]
@@ -98,6 +121,21 @@ class Ensembler:
         # Ensure x is an array of indices when None
         if x is None:
             x = list(range(len(y)))
+
+        if isinstance(y, float):
+            return [
+                {
+                    "subject": subj,
+                    "channel": channel,
+                    "condition": condition,
+                    "source_file": fname,
+                    "row": row,
+                    "col": col,
+                    "index": int(x) if isinstance(x, (int, np.integer)) else x,
+                    "value": float(y) if isinstance(y, (float, np.floating)) else y
+                }
+            ]
+
         return [
             {
                 "subject": subj,
@@ -220,7 +258,7 @@ class Ensembler:
                               legendgroup=subj, showlegend=False,
                               customdata=cdata, hovertemplate=self._default_hovertemplate())
 
-        # self.fig.show()
+
 
 
 
