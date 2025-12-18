@@ -126,7 +126,7 @@ def main():
     ensembler.save(
         file_name="Combined Waveforms",
         extension="jpeg",
-        folder = os.path.join(example_root, 'data', 'imu_do_not_upload', '6 - Figures')
+        folder = os.path.join(example_root, 'data', 'imu_xsens_dot', '6 - Figures')
     )
 
     ensembler.average()
@@ -134,7 +134,7 @@ def main():
     ensembler.save(
         file_name="Mean(SD) Waveforms",
         extension="jpeg",
-        folder = os.path.join(example_root, 'data', 'imu_do_not_upload', '6 - Figures')
+        folder = os.path.join(example_root, 'data', 'imu_xsens_dot', '6 - Figures')
     )
 
 
