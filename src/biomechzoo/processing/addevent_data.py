@@ -6,7 +6,7 @@ from biomechzoo.utils.peak_sign import peak_sign
 from biomechzoo.biomech_ops.movement_onset import movement_onset, movement_offset
 from biomechzoo.imu.step_detection import imu_mcgrath
 
-def addevent_data(data, channels, ename, etype, constant=None):
+def addevent_data(data, channels, ename, etype, fsamp = None, constant=None):
 
     data_new = copy.deepcopy(data)
 
@@ -31,7 +31,9 @@ def addevent_data(data, channels, ename, etype, constant=None):
         #     fsamp = data['zoosystem']['Analog']['Freq']
         # else:
         #     raise ValueError('Cannot extract sampling frequency associated with data')
-        fsamp = data['zoosystem']['Video']['Freq']
+
+        if fsamp is None:
+            fsamp = data['zoosystem']['Video']['Freq']
 
         yd = data_new[channel]['line']  # 1D array
         etype = etype.lower()
