@@ -1,4 +1,4 @@
-from biomechzoo.Josh_MSc.utils.csv_combine import combine_quats_to_csv
+from biomechzoo.Josh_MSc.utils.csv_combine import combine_imu_to_csv
 from biomechzoo.visualization.ensembler import Ensembler
 from biomechzoo.biomechzoo import BiomechZoo
 import os
@@ -7,14 +7,14 @@ def main():
 
     # Combine the quaternions from our two sensors #####################################################
 
-    combine_quats_to_csv(
+    combine_imu_to_csv(
         csv_files=[rsh_data_long_2, rf_data_long_2, rt_data_long_2, rh_data_long_2],
         prefixes=["RSh", "RF", "RT", "RH"],
         out_folder= out_fld,
         out_filename="123AA_combined.csv"
     )
 
-    combine_quats_to_csv(
+    combine_imu_to_csv(
         csv_files=[rsh_data_long_3, rf_data_long_3, rt_data_long_3, rh_data_long_3],
         prefixes=["RSh", "RF", "RT", "RH"],
         out_folder= out_fld,
