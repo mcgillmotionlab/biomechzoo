@@ -2,7 +2,7 @@ import os
 import pandas as pd
 
 def combine_quats_to_csv():
-    raise NotImplementedError("Use combine_quats_to_csv() instead")
+    raise NotImplementedError("Use combine_imu_to_csv() instead")
 def combine_imu_to_csv(
     csv_files: list[str],
     prefixes: list[str],
