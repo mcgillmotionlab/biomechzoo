@@ -110,105 +110,59 @@ def imu_angles_data(data:dict, prox_prefix:str, dist_prefix:str, order:str) -> d
 #%% TESTING
 if __name__ == "__main__":
 
-    from scipy.spatial.transform import Rotation as R
-    import numpy as np
+    # Defining the path to the example data
+    example_path_H = "/Users/joshualowery/DataspellProjects/biomechzoo_dev/data/imu_do_not_upload/raw data/long_example/123AA_RH_header.csv"
+    example_path_Sh = "/Users/joshualowery/DataspellProjects/biomechzoo_dev/data/imu_do_not_upload/raw data/long_example/123AA_RSh_header.csv"
 
-    # System 1: Y right, X up, Z forward
-    # System 2: Z right, Y up, X forward
+    # Creating a dictionary with the data in it
+    data_H = table2zoo_data(example_path_H, ".csv", skip_rows = 0)
+    data_Sh = table2zoo_data(example_path_Sh, ".csv", skip_rows = 0)
 
-    # Expected rotation matrix (from system 1 to system 2)
-    expected_matrix = np.array([
-        [0, 1, 0],  # X1 -> Y2
-        [0, 0, 1],  # Y1 -> Z2
-        [1, 0, 0]  # Z1 -> X2
-    ])
+    # Loading the quaternions from our dictionary
+    data_quats_H = load_quats(data_H, prefix="")
+    data_quats_Sh = load_quats(data_Sh, prefix="")
 
-    print("Expected rotation matrix:")
-    print(expected_matrix)
-    print()
+    # Verify the size of th data 4 x n
+    print("Size of data (Hindfoot):",len(data_quats_H[0]),",",len(data_quats_H))
+    print("Size of data (Shank):",len(data_quats_Sh[0]),",",len(data_quats_Sh))
 
-    # Method 1: Decompose the matrix into XYZ Euler angles
-    r_from_matrix = R.from_matrix(expected_matrix)
-    euler_xyz = r_from_matrix.as_euler('xyz', degrees=True)
-    print(f"XYZ Euler angles from matrix decomposition: {euler_xyz}")
-    print()
+    # Create a rotation object from our quats
+    R_data_H = R.from_quat(data_quats_H, scalar_first=True)
+    R_data_Sh = R.from_quat(data_quats_Sh, scalar_first=True)
 
-    # Method 2: Test your proposed angles (-90, 0, -90)
-    r_proposed = R.from_euler('xyz', [-90, 0, -90], degrees=True)
-    proposed_matrix = r_proposed.as_matrix()
-    print("Matrix from [-90°, 0°, -90°]:")
-    print(proposed_matrix)
-    print(f"Matches expected? {np.allclose(proposed_matrix, expected_matrix)}")
-    print()
+    # Define a rotation about the x-axis
+    Rx = R.from_matrix(
+        matrix = create_rot_matrix(axis="X", degrees=180)
+    )
 
-    # Method 3: Try other common combinations
-    test_angles = [
-        [-90, 0, -90],
-        [90, 0, 90],
-        [-90, 90, 0],
-        [0, -90, -90],
-    ]
+    # Apply the rotation to our hindfoot DCM
+    R_data_H_rotated = (R_data_H) * Rx
 
-    print("Testing other angle combinations:")
-    for angles in test_angles:
-        r_test = R.from_euler('xyz', angles, degrees=True)
-        if np.allclose(r_test.as_matrix(), expected_matrix):
-            print(f"✓ {angles} MATCHES!")
-        else:
-            print(f"✗ {angles} does not match")
-    # # Defining the path to the example data
-    # example_path_H = "/Users/joshualowery/DataspellProjects/biomechzoo_dev/data/imu_do_not_upload/raw data/long_example/123AA_RH_header.csv"
-    # example_path_Sh = "/Users/joshualowery/DataspellProjects/biomechzoo_dev/data/imu_do_not_upload/raw data/long_example/123AA_RSh_header.csv"
-    #
-    # # Creating a dictionary with the data in it
-    # data_H = table2zoo_data(example_path_H, ".csv", skip_rows = 0)
-    # data_Sh = table2zoo_data(example_path_Sh, ".csv", skip_rows = 0)
-    #
-    # # Loading the quaternions from our dictionary
-    # data_quats_H = load_quats(data_H, prefix="")
-    # data_quats_Sh = load_quats(data_Sh, prefix="")
-    #
-    # # Verify the size of th data 4 x n
-    # print("Size of data (Hindfoot):",len(data_quats_H[0]),",",len(data_quats_H))
-    # print("Size of data (Shank):",len(data_quats_Sh[0]),",",len(data_quats_Sh))
-    #
-    # # Create a rotation object from our quats
-    # R_data_H = R.from_quat(data_quats_H, scalar_first=True)
-    # R_data_Sh = R.from_quat(data_quats_Sh, scalar_first=True)
-    #
-    # # Define a rotation about the x-axis
-    # Rx = R.from_matrix(
-    #     matrix = create_rot_matrix(axis="X", degrees=180)
-    # )
-    #
-    # # Apply the rotation to our hindfoot DCM
-    # R_data_H_rotated = (R_data_H) * Rx
-    #
-    # # calculate the unrotated joint angles
-    # R_joint_no_rot = (R_data_Sh).inv() * R_data_H
-    # euler_no_rot = R_joint_no_rot.as_euler("YZX", degrees=True)
-    #
-    # #calculate the rotated equivalent
-    # R_joint_rot = (R_data_Sh).inv() * R_data_H_rotated
-    # euler_rot = R_joint_rot.as_euler("YZX", degrees=True)
-    #
-    # # Plot the comparison
-    #
-    # labels = ["Alpha", "Beta", "Gamma"]
-    #
-    # plt.figure(figsize=(10, 6))
-    #
-    # for i in range(3):
-    #     plt.subplot(3, 1, i + 1)
-    #     plt.plot(euler_no_rot[:, i], label="No rotation")
-    #     plt.plot(euler_rot[:, i], label="With frame rotation")
-    #     plt.ylabel("Angle (deg)")
-    #     plt.title(labels[i])
-    #     plt.legend()
-    #
-    # plt.xlabel("Frame")
-    # plt.tight_layout()
-    # plt.show()
+    # calculate the unrotated joint angles
+    R_joint_no_rot = (R_data_Sh).inv() * R_data_H
+    euler_no_rot = R_joint_no_rot.as_euler("YZX", degrees=True)
+
+    #calculate the rotated equivalent
+    R_joint_rot = (R_data_Sh).inv() * R_data_H_rotated
+    euler_rot = R_joint_rot.as_euler("YZX", degrees=True)
+
+    # Plot the comparison
+
+    labels = ["Alpha", "Beta", "Gamma"]
+
+    plt.figure(figsize=(10, 6))
+
+    for i in range(3):
+        plt.subplot(3, 1, i + 1)
+        plt.plot(euler_no_rot[:, i], label="No rotation")
+        plt.plot(euler_rot[:, i], label="With frame rotation")
+        plt.ylabel("Angle (deg)")
+        plt.title(labels[i])
+        plt.legend()
+
+    plt.xlabel("Frame")
+    plt.tight_layout()
+    plt.show()
 
 
 
