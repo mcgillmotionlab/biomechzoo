@@ -1,13 +1,23 @@
 import os
+import time
+import inspect
 import pandas as pd
+from biomechzoo.utils.engine import engine
+from biomechzoo.imu.kinematics import load_quats
+from biomechzoo.utils.engine import engine
+from biomechzoo.utils.zload import zload
+from biomechzoo.utils.zsave import zsave
+from biomechzoo.utils.batchdisp import batchdisp
 
 def combine_quats_to_csv():
     raise NotImplementedError("Use combine_imu_to_csv() instead")
-def combine_imu_to_csv(
+
+def combine_imu_to_csv_data(
     csv_files: list[str],
     prefixes: list[str],
     out_folder: str = None,
-    out_filename: str = None
+    out_filename: str = None,
+    verbose = 1
     ) -> str:
 
     """Concatenates time, quaternions, gyroscope, and accelerometer data
@@ -51,3 +61,53 @@ def combine_imu_to_csv(
     return out_file
 
 
+def combine_imu_to_csv(prefixes: list[str], in_folder, out_folder=None, inplace=False, name_contains=None,
+                       subfolders=None, verbose=1):
+    """
+    Recursive version of the combine_imu_to_csv_data function
+    """
+
+    start_time = time.time()
+    in_folder = in_folder
+
+    fl = list(engine(in_folder, extension='.csv', name_contains=name_contains, subfolders=subfolders))
+
+    if not fl:
+        batchdisp('No CSV files found in {}'.format(in_folder), level=0, verbose=verbose)
+        return
+
+    subject_groups = {}
+    for csv_file in fl:
+        subject_folder = os.path.dirname(csv_file)
+        subject_name = os.path.basename(subject_folder)
+
+        if subject_name not in subject_groups:
+            subject_groups[subject_name] = []
+        subject_groups[subject_name].append(csv_file)
+
+    for subject_name, csv_files in subject_groups.items():
+        batchdisp('combine_imu_to_csv for channel {}'.format(subject_name), level=2, verbose=verbose)
+
+        csv_files_sorted = []
+        prefixes_sorted = []
+        for prefix in prefixes:
+            for csv_file in csv_files:
+                if csv_file.endswith('_{}.csv'.format(prefix)):
+                    csv_files_sorted.append(csv_file)
+                    prefixes_sorted.append(prefix)
+                    break
+
+        if csv_files_sorted:
+            combine_imu_to_csv_data(
+                csv_files=csv_files_sorted,
+                prefixes=prefixes_sorted,
+                out_folder=out_folder,
+                out_filename='{}_combined.csv'.format(subject_name),
+                verbose=verbose
+            )
+
+    method_name = inspect.currentframe().f_code.co_name
+    batchdisp(
+        '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(subject_groups),
+                                                                   time.time() - start_time),
+        level=1, verbose=verbose)
