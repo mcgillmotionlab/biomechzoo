@@ -135,7 +135,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def table2zoo(self, extension, out_folder=None, inplace=None, skip_rows=0, freq=None):
+    def table2zoo(self, extension, out_folder=None, inplace=None, skip_rows=0, freq=None, sep=","):
         """ Converts generic .csv file in the folder to .zoo format """
         start_time = time.time()
         verbose = self.verbose
@@ -149,7 +149,7 @@ class BiomechZoo:
         fl = engine(in_folder, extension=extension, name_contains=self.name_contains, subfolders=self.subfolders)
         for f in fl:
             batchdisp('converting {} to zoo for {}'.format(extension, f), level=2, verbose=verbose)
-            data = table2zoo_data(f, extension=extension, skip_rows=skip_rows, freq=freq)
+            data = table2zoo_data(f, extension=extension, skip_rows=skip_rows, freq=freq, sep=sep)
             f_zoo = f.replace(extension, '.zoo')
             zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
