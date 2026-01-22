@@ -309,7 +309,8 @@ class Ensembler:
                                         customdata=cdata_m, hovertemplate=self._default_hovertemplate())
 
 
-    def _get_events_data(self, data, target_event=None, fname=None):
+    @staticmethod
+    def _get_events_data(data, target_event=None, fname=None):
         if target_event:
             evt_val, evt_ch = findfield(data,target_event)
 
