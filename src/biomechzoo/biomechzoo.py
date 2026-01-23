@@ -518,7 +518,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def R2angles(self, prox_key, dist_key, order, in_folder, out_folder=None, inplace=False):
+    def R2angles(self, prox_key, dist_key, order, out_folder=None, inplace=False):
 
         start_time = time.time()
         verbose = self.verbose
