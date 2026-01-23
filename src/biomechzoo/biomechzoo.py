@@ -4,6 +4,7 @@ import time
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
 from biomechzoo.imu.kinematics import imu_angles_data
+from biomechzoo.Josh_MSc.utils.R2angles import R2angles_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
@@ -515,5 +516,26 @@ class BiomechZoo:
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
             level=1, verbose=verbose)
         # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def R2angles(self, prox_key, dist_key, order, in_folder, out_folder=None, inplace=False):
+
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('R2angles for channel {}'.format(f), level=2, verbose=verbose)
+            data = zload(f)
+            data = R2angles_data(data, prox_key, dist_key, order)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
+            level=1, verbose=verbose)
+        batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
         self._update_folder(out_folder, inplace, in_folder)
 

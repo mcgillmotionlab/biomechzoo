@@ -4,8 +4,6 @@ import inspect
 import pandas as pd
 from collections import defaultdict
 from biomechzoo.utils.engine import engine
-from biomechzoo.imu.kinematics import load_quats
-from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
 from biomechzoo.utils.batchdisp import batchdisp
