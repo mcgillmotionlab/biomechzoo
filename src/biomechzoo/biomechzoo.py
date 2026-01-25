@@ -518,7 +518,8 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def R2angles(self, prox_key, dist_key, order, out_folder=None, inplace=False):
+    def R2angles(self, prox_key, dist_key, order, rot_prox_axis = None, rot_dist_axis = None, rot_deg = None,
+                 out_folder=None, inplace=False):
 
         start_time = time.time()
         verbose = self.verbose
@@ -530,7 +531,7 @@ class BiomechZoo:
         for f in fl:
             batchdisp('R2angles for channel {}'.format(f), level=2, verbose=verbose)
             data = zload(f)
-            data = R2angles_data(data, prox_key, dist_key, order)
+            data = R2angles_data(data, prox_key, dist_key, order, rot_prox_axis, rot_dist_axis, rot_deg)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp(
