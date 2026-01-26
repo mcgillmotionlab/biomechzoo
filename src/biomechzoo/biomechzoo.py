@@ -505,9 +505,9 @@ class BiomechZoo:
         fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
         for f in fl:
             if verbose:
-                batchdisp('downsampling data for for data in {}'.format(f), level=2, verbose=verbose)
+                batchdisp('resampling data for for data in {}'.format(f), level=2, verbose=verbose)
             data = zload(f)
-            data = resample_data(data, up = up, down = down)
+            data = resample_data(data, up=up, down=down)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
