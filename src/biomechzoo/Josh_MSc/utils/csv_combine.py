@@ -90,10 +90,13 @@ def combine_imu_to_csv(prefixes: list[str],in_folder,out_folder=None,inplace=Fal
                 prefix_sorted.append(p)
 
         if csv_sorted:
+
+            subject_out_folder = os.path.join(out_folder, subject) if out_folder else subject
+
             combine_imu_to_csv_data(
                 csv_files=csv_sorted,
                 prefixes=prefix_sorted,
-                out_folder=out_folder,
+                out_folder=subject_out_folder,
                 out_filename=f'{subject}_combined.csv',
                 verbose=verbose
             )
