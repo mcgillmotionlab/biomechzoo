@@ -1,9 +1,9 @@
 import numpy as np
 from scipy.signal import resample_poly
 
-def resample_data(signal_dict, up=1, down=1):
+def resample_data(signal_dict:dict, up=1, down=1)-> dict:
     """
-    Upsamples / downsamples data
+    Upsamples / downsamples data using scipy.signal.resample_poly
     """
 
     if up == 1 and down == 1:

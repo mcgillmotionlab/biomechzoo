@@ -541,7 +541,9 @@ class BiomechZoo:
 
     def R2angles(self, prox_key, dist_key, order, rot_prox_axis = None, rot_dist_axis = None, rot_deg = None,
                  out_folder=None, inplace=False):
-
+        """
+        Generates joint angles given a direction cosine matrix.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
