@@ -29,14 +29,12 @@ def combine_imu_to_csv_data(csv_files: list[str], prefixes: list[str], out_folde
     }
 
     first_df = pd.read_csv(csv_files[0]) # Taking the time column from the first fiel, assuming they all have = lengths
-
     combined_dfs = [
         first_df[["PacketCounter"]].rename(columns={"PacketCounter": "time"})
     ]
 
     for csv_path, prefix in zip(csv_files, prefixes):
         df = pd.read_csv(csv_path)
-
         for cols in sensor_columns.values():
             renamed = {
                 c: f"{prefix}_{c}" for c in cols
@@ -44,7 +42,6 @@ def combine_imu_to_csv_data(csv_files: list[str], prefixes: list[str], out_folde
             combined_dfs.append(df[cols].rename(columns=renamed))
 
     combined_df = pd.concat(combined_dfs, axis=1)
-
     out_file = os.path.join(save_folder, out_filename)
     combined_df.to_csv(out_file, index=False)
 
@@ -57,14 +54,12 @@ def combine_imu_to_csv(prefixes: list[str],in_folder,out_folder=None,inplace=Fal
     verbose=1):
 
     start_time = time.time()
-
     files = list(engine(
         in_folder,
         extension='.csv',
         name_contains=name_contains,
         subfolders=subfolders
     ))
-
     subjects = defaultdict(list)
     for f in files:
         subjects[os.path.basename(os.path.dirname(f))].append(f)
@@ -80,7 +75,6 @@ def combine_imu_to_csv(prefixes: list[str],in_folder,out_folder=None,inplace=Fal
             os.path.splitext(os.path.basename(f))[0].split('_')[-1]: f
             for f in csv_files
         }
-
         csv_sorted = []
         prefix_sorted = []
 
@@ -90,9 +84,7 @@ def combine_imu_to_csv(prefixes: list[str],in_folder,out_folder=None,inplace=Fal
                 prefix_sorted.append(p)
 
         if csv_sorted:
-
             subject_out_folder = os.path.join(out_folder, subject) if out_folder else subject
-
             combine_imu_to_csv_data(
                 csv_files=csv_sorted,
                 prefixes=prefix_sorted,
@@ -100,10 +92,8 @@ def combine_imu_to_csv(prefixes: list[str],in_folder,out_folder=None,inplace=Fal
                 out_filename=f'{subject}_combined.csv',
                 verbose=verbose
             )
-
     batchdisp(
         f'{inspect.currentframe().f_code.co_name} complete '
         f'for {len(subjects)} file(s) in {time.time() - start_time:.2f}s',
-        level=1,
-        verbose=verbose
+        level=1,verbose=verbose
     )
