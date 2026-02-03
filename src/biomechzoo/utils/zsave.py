@@ -48,7 +48,7 @@ def zsave(fl, data, inplace=True, out_folder=None, root_folder=None, verbose=Fal
         os.makedirs(save_folder, exist_ok=True)
 
     # Save the .zoo file
-    savemat(fl_new, data)
+    savemat(fl_new, data, long_field_names=True)
     batchdisp('all files saved to ' + out_dir, level=1, verbose=verbose)
 
 
