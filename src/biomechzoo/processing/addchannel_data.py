@@ -1,30 +1,23 @@
+from typing import Dict
+import numpy as np
+from numpy.typing import ArrayLike
 from biomechzoo.utils.update_channel_list import update_channel_list
 
 
-def addchannel_data(data, ch_new_name, ch_new_data, section='Video'):
+def addchannel_data(data: Dict, ch_new_name: str, ch_new_data: ArrayLike, section: str = 'Video') -> Dict:
     """
     Add a new channel to zoo data.
 
-    Parameters
-    ----------
-    data : dict
-        Zoo file data.
-    ch_new_name : str
-        Name of the new channel.
-    ch_new_data : array-like
-        New data to be added to the channel (should be n x 1 or n x 3).
-    section : str
-        Section of zoo data ('Video' or 'Analog').
+    :param data: zoo file data
+    :param ch_new_name: name of the new channel
+    :param ch_new_data: new data to be added to the channel (should be n x 1 or n x 3)
+    :param section: section of zoo data ('Video' or 'Analog')
+    
+    :return data: updated zoo data with new channel added
 
-    Returns
-    -------
-    dict
-        Updated zoo data with new channel added.
-
-    Notes
-    -----
-    - If the channel already exists, it will be overwritten.
-    - Adds channel name to the list in data['zoosystem'][section]['Channels'].
+    Notes:
+        - If the channel already exists, it will be overwritten.
+        - Adds channel name to the list in data['zoosystem'][section]['Channels'].
     """
 
     # Warn if overwriting
