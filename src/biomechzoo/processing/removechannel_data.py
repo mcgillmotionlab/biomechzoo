@@ -1,16 +1,36 @@
+from typing import Dict, List, Any
 from biomechzoo.utils.update_channel_list import update_channel_list
 
-def removechannel_data(data, channels, mode='remove'):
+def removechannel_data(
+    data: Dict[str, Any],
+    channels: List[str],
+    mode: str = 'remove'
+) -> Dict[str, Any]:
     """
-    File-level processing: Remove or keep specified channels in a single zoo dictionary.
+    Remove or keep specified channels in a biomechanical data structure.
 
-    Parameters:
-    - data (dict): Zoo data loaded from a file
-    - channels (list of str): List of channels to remove or keep
-    - mode (str): 'remove' or 'keep'
+    This function provides two modes of operation: 'remove' mode deletes the specified
+    channels from the data, while 'keep' mode retains only the specified channels and
+    removes all others. The function updates both the main data dictionary and the
+    channel lists in the zoosystem metadata.
 
-    Returns:
-    - dict: Modified zoo dictionary with updated channels
+    :param data: Biomechanical data dictionary loaded from a zoo file.
+    :type data: Dict[str, Any]
+    :param channels: List of channel names to remove or keep, depending on mode.
+    :type channels: List[str]
+    :param mode: Operation mode - 'remove' to delete specified channels, or 'keep' to
+                 retain only specified channels. Defaults to 'remove'.
+    :type mode: str
+    :return: Modified data dictionary with channels removed or kept according to mode.
+    :rtype: Dict[str, Any]
+    :raises ValueError: If mode is not 'remove' or 'keep', or if channel section cannot
+                        be determined.
+
+    .. note::
+       Channels not found in the data will generate a warning but will not cause an error.
+
+    .. note::
+       The function modifies the input data dictionary in place and also returns it.
     """
     if mode not in ['remove', 'keep']:
         raise ValueError("mode must be 'remove' or 'keep'.")

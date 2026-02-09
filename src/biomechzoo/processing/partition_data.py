@@ -1,11 +1,40 @@
+from typing import Dict, Any
 from biomechzoo.utils.findfield import findfield
 import warnings
 import copy
 import numpy as np
 
 
-def partition_data(data, evt_start, evt_end):
-    """ partition data for all channels between events evt_start and evt_end"""
+def partition_data(
+    data: Dict[str, Any],
+    evt_start: str,
+    evt_end: str
+) -> Dict[str, Any]:
+    """
+    Partition data for all channels between two specified events.
+
+    This function extracts a subset of data between a start event and an end event,
+    trimming all channel data to this time range. Event indices within channels are
+    adjusted relative to the new partitioned start position.
+
+    :param data: Biomechanical data dictionary containing channels and events.
+    :type data: Dict[str, Any]
+    :param evt_start: Name of the starting event for partitioning.
+    :type evt_start: str
+    :param evt_end: Name of the ending event for partitioning.
+    :type evt_end: str
+    :return: Deep copy of input data with channels partitioned between the two events.
+    :rtype: Dict[str, Any]
+    :raises ValueError: If either start or end event is not found in the data.
+
+    .. note::
+       Event indices are automatically adjusted relative to the new partition start.
+       Events marked with index 999 (outlier markers) are preserved unchanged.
+
+    .. note::
+       Channels that cause IndexError or ValueError during partitioning will be
+       skipped with a warning message.
+    """
 
     # extract event values
     e1, _ = findfield(data, evt_start)

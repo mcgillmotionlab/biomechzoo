@@ -1,20 +1,34 @@
-def renameevent_data(data, evt, nevt):
+from typing import Dict, List, Union, Any
+
+
+def renameevent_data(
+    data: Dict[str, Any],
+    evt: Union[str, List[str]],
+    nevt: Union[str, List[str]]
+) -> Dict[str, Any]:
     """
-    Rename events in the Zoo data structure.
+    Rename events in all channels of a biomechanical data structure.
 
-    Parameters
-    ----------
-    data : dict
-        The Zoo-formatted dictionary.
-    evt : str or list of str
-        Names of existing events to rename.
-    nevt : str or list of str
-        Names of new events to apply.
+    This function searches all channels for specified event names and renames them
+    to the new names. If an old event name is not found in a channel, it is skipped
+    for that channel without error.
 
-    Returns
-    -------
-    data : dict
-        Updated Zoo data with renamed events.
+    :param data: Biomechanical data dictionary loaded from a zoo file.
+    :type data: Dict[str, Any]
+    :param evt: Existing event name(s) to rename.
+    :type evt: Union[str, List[str]]
+    :param nevt: New event name(s) to apply. Must be same length as evt.
+    :type nevt: Union[str, List[str]]
+    :return: Modified data dictionary with renamed events.
+    :rtype: Dict[str, Any]
+    :raises ValueError: If evt and nevt do not have the same length.
+
+    .. note::
+       Only events that exist in a channel will be renamed. Missing events are
+       silently skipped for each channel.
+
+    .. note::
+       The function modifies the input data dictionary in place and also returns it.
     """
     # Convert to list if passed as single string
     if isinstance(evt, str):

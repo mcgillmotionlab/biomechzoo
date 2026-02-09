@@ -1,32 +1,40 @@
 import numpy as np
+from typing import Dict, List, Union, Any
 from biomechzoo.utils.update_channel_list import update_channel_list
 
 
-def renamechannel_data(data, ch_old_names, ch_new_names, section='Video'):
+def renamechannel_data(
+    data: Dict[str, Any],
+    ch_old_names: Union[str, List[str]],
+    ch_new_names: Union[str, List[str]],
+    section: str = 'Video'
+) -> Dict[str, Any]:
     """
-    Rename channels in a zoo data.
+    Rename channels in a biomechanical data structure.
 
-    Parameters
-    ----------
-    data : dict
-        Zoo file data.
-    ch_old_names : str or list
-        Name of the old channels.
-    ch_new_names : str or list
-        Name of the new channels.
+    This function renames one or more channels by creating new channel entries with
+    the new names, copying the line data and events from the old channels, and then
+    removing the old channel entries. The channel list in zoosystem metadata is
+    updated accordingly.
 
-    section : str
-        Section of zoo data ('Video' or 'Analog').
+    :param data: Biomechanical data dictionary loaded from a zoo file.
+    :type data: Dict[str, Any]
+    :param ch_old_names: Current name(s) of channel(s) to rename.
+    :type ch_old_names: Union[str, List[str]]
+    :param ch_new_names: New name(s) for the channel(s). Must be same length as ch_old_names.
+    :type ch_new_names: Union[str, List[str]]
+    :param section: Section of zoo data where channels belong ('Video' or 'Analog').
+                    Defaults to 'Video'.
+    :type section: str
+    :return: Modified data dictionary with renamed channels.
+    :rtype: Dict[str, Any]
 
-    Returns
-    -------
-    dict
-        Updated zoo data with new channel added.
+    .. note::
+       If a new channel name already exists in the data, it will be overwritten
+       with a warning message.
 
-    Notes
-    -----
-    - If the channel already exists, it will be overwritten.
-    - Adds channel name to the list in data['zoosystem'][section]['Channels'].
+    .. note::
+       The function modifies the input data dictionary in place and also returns it.
     """
 
     # check if string (single input)
