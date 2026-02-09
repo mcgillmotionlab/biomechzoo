@@ -74,36 +74,36 @@ class BiomechZoo:
 
         batchdisp('all files saved to: {}'.format(self.in_folder ), level=1, verbose=self.verbose)
 
+    def remove_files(self, fl_remove: list[str], out_folder: str | None = None, inplace: bool | None = None) -> None:
+        """
+        Remove files listed in fl_remove from self.in_folder.
+        Files not in fl_remove are saved using zsave.
+        """
 
-    def remove_files(self, fl_remove: list[str], out_folder: str | None =None, inplace: bool = False):
-        """ Remove files in fl_remove from folder """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
 
+        inplace = self.inplace if inplace is None else inplace
+
+        # Get all files using engine (BiomechZoo pattern)
+        fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         removed = 0
-        for f in fl_remove:
-            if not os.path.isfile(f):
-                batchdisp(f'File not found: {f}', level=2, verbose=verbose)
+        for f in fl:
+            if any(rem in f for rem in fl_remove):
+                removed += 1
+                batchdisp('not copying {} to new folder {}'.format(f, out_folder), level=2, verbose=verbose)
                 continue
 
-            if inplace:
-                os.remove(f)
-            else:
-                if out_folder is None:
-                    raise ValueError("out_folder must be provided when inplace=False")
-
-                os.makedirs(out_folder, exist_ok=True)
-                out_path = os.path.join(out_folder, os.path.basename(f))
-                os.remove(out_path) if os.path.exists(out_path) else None
-
-            removed += 1
-            batchdisp(f'Removed {f}', level=2, verbose=verbose)
+            # Save only good files
+            data = zload(f)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
 
         method_name = inspect.currentframe().f_code.co_name
-        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl_remove),
-                                                                             time.time() - start_time), level=1, verbose=verbose)
-        # Update self.folder after  processing
+        t = time.time() - start_time
+        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, removed, t), level=1,
+                  verbose=verbose)
         self._update_folder(out_folder, inplace, in_folder)
 
 
@@ -206,7 +206,6 @@ class BiomechZoo:
 
     def parquet2zoo(self, out_folder=None, inplace=None):
         raise NotImplementedError('Use table2zoo instead')
-
 
     def tilt_algorithm(self, chname_avert, chname_medlat, chname_antpost, out_folder=None, inplace=False):
         """ tilt correction for acceleration data """
@@ -420,24 +419,6 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-
-    # def mean_absolute_relative_phase_deviation_phase(self, channels, out_folder=None, inplace=None):
-    #     verbose = self.verbose
-    #     in_folder = self.in_folder
-    #     if inplace is None:
-    #         inplace = self.inplace
-    #
-    #     fl = engine(in_folder)
-    #     for f in fl:
-    #         for channel in channels:
-    #             batchdisp('collecting trials for marp and dp for {}'.format(f), level=2, verbose=verbose)
-    #             data = zload(f)
-    #             data = removechannel_data(data, ch, mode)
-    #             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
-    #             batchdisp('remove channel complete', level=1, verbose=verbose)
-    #
-    #     # Update self.folder after  processing
-    #     self._update_folder(out_folder, inplace, in_folder)
     def renameevent(self, evt, nevt, out_folder=None, inplace=None):
         """ renames event evt to nevt in all zoo files """
         start_time = time.time()
