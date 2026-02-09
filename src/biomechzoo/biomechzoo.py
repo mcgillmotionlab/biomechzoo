@@ -75,6 +75,38 @@ class BiomechZoo:
         batchdisp('all files saved to: {}'.format(self.in_folder ), level=1, verbose=self.verbose)
 
 
+    def remove_files(self, fl_remove: list[str], out_folder: str | None =None, inplace: bool = False):
+        """ Remove files in fl_remove from folder """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+
+        removed = 0
+        for f in fl_remove:
+            if not os.path.isfile(f):
+                batchdisp(f'File not found: {f}', level=2, verbose=verbose)
+                continue
+
+            if inplace:
+                os.remove(f)
+            else:
+                if out_folder is None:
+                    raise ValueError("out_folder must be provided when inplace=False")
+
+                os.makedirs(out_folder, exist_ok=True)
+                out_path = os.path.join(out_folder, os.path.basename(f))
+                os.remove(out_path) if os.path.exists(out_path) else None
+
+            removed += 1
+            batchdisp(f'Removed {f}', level=2, verbose=verbose)
+
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl_remove),
+                                                                             time.time() - start_time), level=1, verbose=verbose)
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+
     def combine_files(self, merge_by, out_folder=None, inplace=False, ):
         """
         Merge all .zoo files within each subject folder into a single .zoo file.
@@ -101,7 +133,6 @@ class BiomechZoo:
             fl = engine(in_folder,  subfolders=p)
             for f in fl:
                 data = zload(f)
-
 
 
     def mvnx2zoo(self, out_folder=None, inplace=False):
