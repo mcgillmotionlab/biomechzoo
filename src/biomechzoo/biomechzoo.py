@@ -305,8 +305,8 @@ class BiomechZoo:
         # Update folder after processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def compute_magnitude(self, chname1, chname2, chname3, out_folder=None, inplace=False):
-        """ compute euclidean magnitude  """
+    def compute_magnitude(self, chname1, chname2, chname3, ch_new_name=None, out_folder=None, inplace=False):
+        """ compute euclidean magnitude as a new channel  """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -317,7 +317,7 @@ class BiomechZoo:
         for f in fl:
             batchdisp('compute magnitude from channels {}, {}, {} for {}'.format(chname1, chname2, chname3, f), level=2, verbose=verbose)
             data = zload(f)
-            data = compute_magnitude_data(data, chname1, chname2, chname3)
+            data = compute_magnitude_data(data, chname1, chname2, chname3, ch_new_name)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp(
