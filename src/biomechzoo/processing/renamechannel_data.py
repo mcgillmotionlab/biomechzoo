@@ -17,24 +17,28 @@ def renamechannel_data(
     removing the old channel entries. The channel list in zoosystem metadata is
     updated accordingly.
 
-    :param data: Biomechanical data dictionary loaded from a zoo file.
-    :type data: Dict[str, Any]
-    :param ch_old_names: Current name(s) of channel(s) to rename.
-    :type ch_old_names: Union[str, List[str]]
-    :param ch_new_names: New name(s) for the channel(s). Must be same length as ch_old_names.
-    :type ch_new_names: Union[str, List[str]]
-    :param section: Section of zoo data where channels belong ('Video' or 'Analog').
-                    Defaults to 'Video'.
-    :type section: str
-    :return: Modified data dictionary with renamed channels.
-    :rtype: Dict[str, Any]
+    Parameters
+    ----------
+    data : dict of str to Any
+        Biomechanical data dictionary loaded from a zoo file.
+    ch_old_names : str or list of str
+        Current name(s) of channel(s) to rename.
+    ch_new_names : str or list of str
+        New name(s) for the channel(s). Must be same length as ch_old_names.
+    section : {'Video', 'Analog'}, optional
+        Section of zoo data where channels belong. Default is 'Video'.
 
-    .. note::
-       If a new channel name already exists in the data, it will be overwritten
-       with a warning message.
+    Returns
+    -------
+    dict of str to Any
+        Modified data dictionary with renamed channels.
 
-    .. note::
-       The function modifies the input data dictionary in place and also returns it.
+    Notes
+    -----
+    If a new channel name already exists in the data, it will be overwritten
+    with a warning message.
+
+    The function modifies the input data dictionary in place and also returns it.
     """
 
     # check if string (single input)

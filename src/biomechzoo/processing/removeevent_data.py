@@ -9,28 +9,42 @@ def removeevent_data(
     mode: str = 'remove'
 ) -> Dict[str, Any]:
     """
-    Remove or keep specified events in all channels of a biomechanical data structure.
+    Remove or retain specified events across all channels in a biomechanical
+    data structure.
 
-    This function operates on all channels in the data dictionary, either removing
-    specified events or keeping only the specified events (removing all others).
-    Events not found in the data will generate a warning and be skipped.
+    This function operates on every channel in the input data dictionary,
+    either removing the specified events or keeping only the specified
+    events (removing all others). Events not found in the data generate
+    a warning and are skipped.
 
-    :param data: Biomechanical data dictionary loaded from a zoo file.
-    :type data: Dict[str, Any]
-    :param events: Event name or list of event names to remove or keep.
-    :type events: Union[str, List[str]]
-    :param mode: Operation mode - 'remove' to delete specified events, or 'keep' to
-                 retain only specified events. Defaults to 'remove'.
-    :type mode: str
-    :return: Deep copy of input data with events removed or kept according to mode.
-    :rtype: Dict[str, Any]
-    :raises ValueError: If mode is not 'remove' or 'keep'.
+    Parameters
+    ----------
+    data : dict of str to Any
+        Biomechanical data dictionary loaded from a .zoo file.
+    events : str or list of str
+        Event name or list of event names to remove or retain.
+    mode : {'remove', 'keep'}, optional
+        Operation mode. If 'remove', specified events are deleted.
+        If 'keep', only the specified events are retained and all
+        others are removed. Default is 'remove'.
 
-    .. note::
-       Events not found in the data will generate a warning but will not cause an error.
+    Returns
+    -------
+    dict of str to Any
+        Deep copy of the input data with events modified according
+        to the selected mode.
 
-    .. note::
-       The operation is applied to all channels in the data structure.
+    Raises
+    ------
+    ValueError
+        If `mode` is not 'remove' or 'keep'.
+
+    Notes
+    -----
+    Events not found in the data generate a warning but do not
+    raise an error.
+
+    The operation is applied to all channels in the data structure.
     """
     if mode not in ['remove', 'keep']:
         raise ValueError("mode must be 'remove' or 'keep'.")

@@ -16,26 +16,34 @@ def split_trial_data(
     All channel data is sliced to this range, and event indices are recalculated
     relative to the new start position.
 
-    :param data: Biomechanical data dictionary loaded from a zoo file.
-    :type data: Dict[str, Any]
-    :param start_event: Name of the event marking the beginning of the sub-trial.
-    :type start_event: str
-    :param end_event: Name of the event marking the end of the sub-trial.
-    :type end_event: str
-    :return: Deep copy of input data containing only the data between the two events,
-             or None if the end event is outside the data range.
-    :rtype: Optional[Dict[str, Any]]
-    :raises ValueError: If either start_event or end_event is not found in the data.
+    Parameters
+    ----------
+    data : dict of str to Any
+        Biomechanical data dictionary loaded from a zoo file.
+    start_event : str
+        Name of the event marking the beginning of the sub-trial.
+    end_event : str
+        Name of the event marking the end of the sub-trial.
 
-    .. note::
-       The end event index is inclusive in the slice (start:end+1).
+    Returns
+    -------
+    dict of str to Any or None
+        Deep copy of input data containing only the data between the two events,
+        or None if the end event is outside the data range.
 
-    .. note::
-       If the end event index exceeds the trial length, the function returns None
-       and prints a warning message.
+    Raises
+    ------
+    ValueError
+        If either start_event or end_event is not found in the data.
 
-    .. note::
-       Event indices are adjusted relative to the new start position in the split trial.
+    Notes
+    -----
+    The end event index is inclusive in the slice (start:end+1).
+
+    If the end event index exceeds the trial length, the function returns None
+    and prints a warning message.
+
+    Event indices are adjusted relative to the new start position in the split trial.
     """
     # todo check index problem compared to matlab start at 0 or 1
     data_new = copy.deepcopy(data)

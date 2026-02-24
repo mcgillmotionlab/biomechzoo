@@ -13,22 +13,31 @@ def renameevent_data(
     to the new names. If an old event name is not found in a channel, it is skipped
     for that channel without error.
 
-    :param data: Biomechanical data dictionary loaded from a zoo file.
-    :type data: Dict[str, Any]
-    :param evt: Existing event name(s) to rename.
-    :type evt: Union[str, List[str]]
-    :param nevt: New event name(s) to apply. Must be same length as evt.
-    :type nevt: Union[str, List[str]]
-    :return: Modified data dictionary with renamed events.
-    :rtype: Dict[str, Any]
-    :raises ValueError: If evt and nevt do not have the same length.
+    Parameters
+    ----------
+    data : dict of str to Any
+        Biomechanical data dictionary loaded from a zoo file.
+    evt : str or list of str
+        Existing event name(s) to rename.
+    nevt : str or list of str
+        New event name(s) to apply. Must be same length as evt.
 
-    .. note::
-       Only events that exist in a channel will be renamed. Missing events are
-       silently skipped for each channel.
+    Returns
+    -------
+    dict of str to Any
+        Modified data dictionary with renamed events.
 
-    .. note::
-       The function modifies the input data dictionary in place and also returns it.
+    Raises
+    ------
+    ValueError
+        If evt and nevt do not have the same length.
+
+    Notes
+    -----
+    Only events that exist in a channel will be renamed. Missing events are
+    silently skipped for each channel.
+
+    The function modifies the input data dictionary in place and also returns it.
     """
     # Convert to list if passed as single string
     if isinstance(evt, str):

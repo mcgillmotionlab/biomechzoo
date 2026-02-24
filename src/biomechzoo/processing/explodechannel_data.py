@@ -14,21 +14,30 @@ def explodechannel_data(
     and splits them into three separate channels with '_x', '_y', and '_z' suffixes.
     Events from the original channel are preserved in the '_x' component only.
 
-    :param data: Biomechanical data dictionary loaded from a zoo file.
-    :type data: Dict[str, Any]
-    :param channels: List of channel names to explode. If None, automatically explodes
-                     all channels with 'line' data shaped (n x 3).
-    :type channels: Optional[List[str]]
-    :return: Deep copy of input data with specified channels exploded into X, Y, Z components.
-    :rtype: Dict[str, Any]
-    :raises ValueError: If channel section (Video/Analog) cannot be determined.
+    Parameters
+    ----------
+    data : dict of str to Any
+        Biomechanical data dictionary loaded from a zoo file.
+    channels : list of str, optional
+        List of channel names to explode. If None, automatically explodes
+        all channels with 'line' data shaped (n x 3).
 
-    .. note::
-       Original channel events are transferred only to the '_x' component channel.
-       The '_y' and '_z' components will have empty event dictionaries.
+    Returns
+    -------
+    dict of str to Any
+        Deep copy of input data with specified channels exploded into X, Y, Z components.
 
-    .. note::
-       Channels that are not n x 3 shaped will be skipped with a warning message.
+    Raises
+    ------
+    ValueError
+        If channel section (Video/Analog) cannot be determined.
+
+    Notes
+    -----
+    Original channel events are transferred only to the '_x' component channel.
+    The '_y' and '_z' components will have empty event dictionaries.
+
+    Channels that are not n x 3 shaped will be skipped with a warning message.
     """
     data_new = copy.deepcopy(data)
 

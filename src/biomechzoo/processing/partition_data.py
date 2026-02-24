@@ -17,23 +17,32 @@ def partition_data(
     trimming all channel data to this time range. Event indices within channels are
     adjusted relative to the new partitioned start position.
 
-    :param data: Biomechanical data dictionary containing channels and events.
-    :type data: Dict[str, Any]
-    :param evt_start: Name of the starting event for partitioning.
-    :type evt_start: str
-    :param evt_end: Name of the ending event for partitioning.
-    :type evt_end: str
-    :return: Deep copy of input data with channels partitioned between the two events.
-    :rtype: Dict[str, Any]
-    :raises ValueError: If either start or end event is not found in the data.
+    Parameters
+    ----------
+    data : dict of str to Any
+        Biomechanical data dictionary containing channels and events.
+    evt_start : str
+        Name of the starting event for partitioning.
+    evt_end : str
+        Name of the ending event for partitioning.
 
-    .. note::
-       Event indices are automatically adjusted relative to the new partition start.
-       Events marked with index 999 (outlier markers) are preserved unchanged.
+    Returns
+    -------
+    dict of str to Any
+        Deep copy of input data with channels partitioned between the two events.
 
-    .. note::
-       Channels that cause IndexError or ValueError during partitioning will be
-       skipped with a warning message.
+    Raises
+    ------
+    ValueError
+        If either start or end event is not found in the data.
+
+    Notes
+    -----
+    Event indices are automatically adjusted relative to the new partition start.
+    Events marked with index 999 (outlier markers) are preserved unchanged.
+
+    Channels that cause IndexError or ValueError during partitioning will be
+    skipped with a warning message.
     """
 
     # extract event values

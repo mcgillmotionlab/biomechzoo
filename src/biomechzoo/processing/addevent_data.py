@@ -22,34 +22,45 @@ def addevent_data(
     movement onset/offset, force plate thresholds) and adds them to the specified
     channels in the data dictionary.
 
-    :param data: Biomechanical data dictionary containing channels and zoosystem metadata.
-    :type data: Dict[str, Any]
-    :param channels: Channel name(s) to add events to. Use 'all' to apply to all channels.
-    :type channels: Union[str, List[str]]
-    :param ename: Name of the event to add. Use empty string to clear all events.
-    :type ename: str
-    :param etype: Event type (e.g., 'max', 'min', 'absmax', 'first', 'last', 'rom',
-                  'first peak', 'movement_onset', 'movement_offset', 'mcgrath_fs',
-                  'mcgrath_fo', 'fs_fp', 'fo_fp').
-    :type etype: str
-    :param fsamp: Sampling frequency in Hz. If None, extracted from zoosystem metadata.
-    :type fsamp: Optional[float]
-    :param constant: Threshold or parameter value for certain event types (e.g., peak
-                     height threshold, force plate threshold).
-    :type constant: Optional[float]
-    :return: Deep copy of input data with events added to specified channels.
-    :rtype: Dict[str, Any]
-    :raises KeyError: If specified channel does not exist in data.
-    :raises ValueError: If event type is unknown or if required peaks are not found.
-    :raises Warning: If video and analog sampling rates differ for force plate events.
+    Parameters
+    ----------
+    data : dict of str to Any
+        Biomechanical data dictionary containing channels and zoosystem metadata.
+    channels : str or list of str
+        Channel name(s) to add events to. Use 'all' to apply to all channels.
+    ename : str
+        Name of the event to add. Use empty string to clear all events.
+    etype : str
+        Event type, one of: 'max', 'min', 'absmax', 'first', 'last', 'rom',
+        'first peak', 'movement_onset', 'movement_offset', 'mcgrath_fs',
+        'mcgrath_fo', 'fs_fp', 'fo_fp'.
+    fsamp : float, optional
+        Sampling frequency in Hz. If None, extracted from zoosystem metadata.
+    constant : float, optional
+        Threshold or parameter value for certain event types (e.g., peak
+        height threshold, force plate threshold).
 
-    .. note::
-       Event format in data structure: [index, value, 0] where index is the frame
-       number, value is the signal value at that frame, and 0 is a placeholder.
+    Returns
+    -------
+    dict of str to Any
+        Deep copy of input data with events added to specified channels.
 
-    .. note::
-       For event types that find multiple events (mcgrath_fs, mcgrath_fo), events
-       are numbered sequentially (e.g., 'ename_1', 'ename_2', etc.).
+    Raises
+    ------
+    KeyError
+        If specified channel does not exist in data.
+    ValueError
+        If event type is unknown or if required peaks are not found.
+    Warning
+        If video and analog sampling rates differ for force plate events.
+
+    Notes
+    -----
+    Event format in data structure: [index, value, 0] where index is the frame
+    number, value is the signal value at that frame, and 0 is a placeholder.
+
+    For event types that find multiple events (mcgrath_fs, mcgrath_fo), events
+    are numbered sequentially (e.g., 'ename_1', 'ename_2', etc.).
     """
 
     data_new = copy.deepcopy(data)
