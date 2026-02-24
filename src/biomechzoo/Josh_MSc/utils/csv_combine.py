@@ -28,7 +28,7 @@ def combine_imu_to_csv_data(csv_files: list[str], prefixes: list[str], skip_rows
         "Acc":  ["Acc_X", "Acc_Y", "Acc_Z"],
     }
 
-    first_df = pd.read_csv(csv_files[0]) # Taking the time column from the first fiel, assuming they all have = lengths
+    first_df = pd.read_csv(csv_files[0], skiprows= skip_rows) # Taking the time column from the first file, assuming they all have = lengths
     combined_dfs = [
         first_df[["PacketCounter"]].rename(columns={"PacketCounter": "time"})
     ]
