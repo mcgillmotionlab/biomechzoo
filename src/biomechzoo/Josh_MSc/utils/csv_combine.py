@@ -11,7 +11,7 @@ from biomechzoo.utils.batchdisp import batchdisp
 def combine_quats_to_csv():
     raise NotImplementedError("Use combine_imu_to_csv() instead")
 
-def combine_imu_to_csv_data(csv_files: list[str], prefixes: list[str], out_folder: str = None, out_filename: str = None,
+def combine_imu_to_csv_data(csv_files: list[str], prefixes: list[str], skip_rows:int = None ,out_folder: str = None, out_filename: str = None,
     verbose: int = 1) -> str:
 
     if out_folder is None:
@@ -34,7 +34,7 @@ def combine_imu_to_csv_data(csv_files: list[str], prefixes: list[str], out_folde
     ]
 
     for csv_path, prefix in zip(csv_files, prefixes):
-        df = pd.read_csv(csv_path)
+        df = pd.read_csv(csv_path, skiprows=skip_rows)
         for cols in sensor_columns.values():
             renamed = {
                 c: f"{prefix}_{c}" for c in cols
