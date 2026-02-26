@@ -12,6 +12,7 @@ from biomechzoo.processing.split_trial_data import split_trial_data
 from biomechzoo.conversion.c3d2zoo_data import c3d2zoo_data
 from biomechzoo.conversion.table2zoo_data import table2zoo_data
 from biomechzoo.conversion.mvnx2zoo_data import mvnx2zoo_data
+from biomechzoo.conversion.combine_zoo_data import combine_files_within, combine_files_between
 from biomechzoo.processing.removechannel_data import removechannel_data
 from biomechzoo.processing.renamechannel_data import renamechannel_data
 from biomechzoo.processing.removeevent_data import removeevent_data
@@ -68,32 +69,32 @@ class BiomechZoo:
 
         batchdisp('all files saved to: {}'.format(self.in_folder ), level=1, verbose=self.verbose)
 
-    def combine_files(self, merge_by, out_folder=None, inplace=False, ):
-        """
-        Merge all .zoo files within each subject folder into a single .zoo file.
-        Assumes each zoo file contains synchronized but different channel sets
-        (e.g., data from different devices).
-
-        Parameters
-        ----------
-        out_folder : str or None
-            Optional output location for merged zoo files.
-        inplace : bool
-            If True, overwrite inside the subject folder. If False, save to out_folder.
-        merge_by : str
-        """
-        raise NotImplementedError('BiomechZoo combine_files is not implemented.')
-        start_time = time.time()
-        verbose = self.verbose
-
-        in_folder = self.in_folder
-        if inplace is None:
-            inplace = self.inplace
-
-        for p in merge_by:
-            fl = engine(in_folder,  subfolders=p)
-            for f in fl:
-                data = zload(f)
+    # def combine_files(self, merge_by, out_folder=None, inplace=False, ):
+    #     """
+    #     Merge all .zoo files within each subject folder into a single .zoo file.
+    #     Assumes each zoo file contains synchronized but different channel sets
+    #     (e.g., data from different devices).
+    #
+    #     Parameters
+    #     ----------
+    #     out_folder : str or None
+    #         Optional output location for merged zoo files.
+    #     inplace : bool
+    #         If True, overwrite inside the subject folder. If False, save to out_folder.
+    #     merge_by : str
+    #     """
+    #     raise NotImplementedError('BiomechZoo combine_files is not implemented.')
+    #     start_time = time.time()
+    #     verbose = self.verbose
+    #
+    #     in_folder = self.in_folder
+    #     if inplace is None:
+    #         inplace = self.inplace
+    #
+    #     for p in merge_by:
+    #         fl = engine(in_folder,  subfolders=p)
+    #         for f in fl:
+    #             data = zload(f)
 
 
 
@@ -165,6 +166,17 @@ class BiomechZoo:
 
     def parquet2zoo(self, out_folder=None, inplace=None):
         raise NotImplementedError('Use table2zoo instead')
+
+    def combine_files(self, within=True, suffix=None, out_folder=None, inplace=None):
+        """Merge .zoo file into 1 zoo-file."""
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        if within:
+            combine_files_within(fld=in_folder, suffix_map=suffix, name_contains=self.name_contains, subfolders=self.subfolders, inplace=inplace, out_folder=out_folder,)
 
 
     def tilt_algorithm(self, chname_avert, chname_medlat, chname_antpost, out_folder=None, inplace=False):
