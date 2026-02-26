@@ -12,7 +12,36 @@ from biomechzoo.processing.renamechannel_data import renamechannel_data
 from biomechzoo.utils.zsave import zsave
 
 
-def combine_files_within(fld, suffix_map, name_contains, subfolders, inplace, out_folder):
+def combine_files_within(fld:str, suffix_map:list[str], name_contains:str | list[str], subfolders:str | list[str],
+                         inplace:bool, out_folder:str):
+    """
+    Combines zoo-files within a subfolder into a single file
+
+    This function operates on a root folder and automatically finds all the subdirectories. All channels withing the
+    files within the folders will be combined into a single zoo-file.
+
+    Parameters
+    ----------
+    fld : str
+        Path to the root folder containing all zoo-files
+    suffix_map : list[str]
+        List of names containing suffixes for channels --> must be matched to the file names
+    name_contains : str or list of str
+        Name of list of names that should be within the filepath
+    subfolders : str of list of str
+            Folder of list of folders that should be within the filepath
+    inplace : bool
+    out_folder : str
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    Automatically saves the combined file to the out-folder.
+
+    """
     # Get all base directories.
     all_files = engine(fld, extension="zoo", name_contains=name_contains, subfolders=subfolders)
     dirs = set()
