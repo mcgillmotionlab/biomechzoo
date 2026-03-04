@@ -90,5 +90,120 @@ def combine_files_within(fld:str, suffix_map:list[str], name_contains:str | list
         zsave(fl[0], data_new, inplace=inplace, out_folder=out_folder, root_folder=fld)
 
 
-def combine_files_between():
-    NotImplementedError()
+def combine_files_between(in_folder:str, fld1:str, fld2:str, suffix:str,  name_contains:str | list[str], subfolders:str | list[str],
+                          method:str="down",inplace:bool=False,
+                          fl1exclude:list=None, fl2exclude:list=None,
+                          out_folder:str=None, strmatch:str=None,):
+
+    """
+    Combines 2 zoo-files in different subfolders into a single file.
+
+    This function operates on 2 folders that have the same root and automatically finds all the subdirectories.
+    The function find the files to combine by matching the filename. Posible use case is combing data collected with
+    different motion capture devices, e.g. IMUs and Vicon, Vicon and Force plates.
+
+    Parameters
+    ----------
+    in_folder : str
+        Path to the root folder containing all zoo-files
+    fld1 : str
+        Path to the subfolder th be merged
+    fld2 : str
+        Path to the subfolder to be merged
+    suffix : str
+        Name containing suffix for the channels
+    name_contains : str or list of str
+        Name of list of names that should be within the filepath
+    subfolders : str of list of str
+            Folder of list of folders that should be within the filepath
+    method: str
+        determines if you want to upsample the signal with the lower frequency ("up"), if you want to downsample
+        the signal with the  highest frequency ('down'), or leave them the same 'none'. Default is down if frequencies are different.
+    inplace: bool
+    fl1exclude: str or list of str
+        files names to ignore from fld1. Default is None.
+    fl2exclude: str or list of str
+        filenames to ignore from fld2. Default is None.
+    strmatch: str
+        The regular expression to find the common subject folder.
+    out_folder : str
+
+    Returns
+    -------
+    None
+
+    Notes
+    -----
+    Automatically saves the combined file to the out-folder using the subdirectories of the first folder path.
+    Filenames MUST have the exact same name.
+    """
+
+    fl1 = engine(fld1, extension="zoo", name_contains=name_contains, subfolders=subfolders)
+    fl2= engine(fld2, extension="zoo", name_contains=name_contains, subfolders=subfolders)
+
+    # set up framework for the first folder
+    fname1 = []
+    dict1 = {}
+    for f in fl1:
+        match = re.search(strmatch, f)
+        if match:
+            if match[0] not in dict1.keys():
+                dict1.update({match[0]: {}})
+
+        directory, filename, extension = fileparts(f)
+        fname1.append(filename + extension)
+        dict1[match[0]].update({filename + extension: f})
+
+    # set up the framework for the second folder
+    fname2 = []
+    dict2 = {}
+    for f in fl2:
+        match = re.search(strmatch, f)
+        if match:
+            if match[0] not in dict2.keys():
+                dict2.update({match[0]: {}})
+
+        directory, filename, extension = fileparts(f)
+        fname2.append(filename + extension)
+
+        dict2[match[0]].update({filename + extension: f})
+
+    # Find the match between framework 1 and framework 2 on the first (participant?) level
+    lvl1 = [s for s in dict1.keys() if s in dict2.keys()]
+
+    for key in lvl1:
+        # Find common file names.
+        lvl2 = [f for f in dict1[key].keys() if f in dict2[key].keys()]
+
+        for l2 in lvl2:
+            # load data
+            f1 = dict1[key][l2]
+            data1 = zload(f1)
+
+            f2 = dict2[key][l2]
+            data2 = zload(f2)
+
+            # combining the data
+            data_new = copy.deepcopy(data1)
+            sections = ["Video", "Analog"]
+
+            # Add all the video an analog files from data2
+            for section in sections:
+                ch2 = data2["zoosystem"][section]["Channels"]
+                freq1 = data1["zoosystem"][section]["Freq"]
+                freq2 = data2["zoosystem"][section]["Freq"]
+
+                if freq1 != freq2:
+                    print("Frequencies do not match")
+                    # TODO: implement resample
+
+                if ch2:
+                    for ch in ch2:
+                        line_data = data2[ch]["line"]
+                        event_data = data2[ch]["event"]
+
+                        data_new = addchannel_data(data=data_new, ch_new_name=f"{ch}_{suffix}", ch_new_data=line_data)
+                        data_new[f"{ch}_{suffix}"]["event"] = event_data
+
+            zsave(f1, data_new, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+
