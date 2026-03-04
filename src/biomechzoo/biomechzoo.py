@@ -167,7 +167,8 @@ class BiomechZoo:
     def parquet2zoo(self, out_folder=None, inplace=None):
         raise NotImplementedError('Use table2zoo instead')
 
-    def combine_files(self, within=True, suffix=None, out_folder=None, inplace=None):
+    def combine_files(self, within=True, suffix=None, out_folder=None, inplace=None,
+                      fld1=None, fld2=None, method=None, fl1exlude=None, fl2exclude=None, strmatch=None):
         """Merge .zoo file into 1 zoo-file."""
         start_time = time.time()
         verbose = self.verbose
@@ -177,7 +178,14 @@ class BiomechZoo:
 
         if within:
             combine_files_within(fld=in_folder, suffix_map=suffix, name_contains=self.name_contains, subfolders=self.subfolders, inplace=inplace, out_folder=out_folder,)
+        else:
+            combine_files_between(in_folder=in_folder, fld1=fld1, fld2=fld2, suffix=suffix,  name_contains=self.name_contains,
+                                  subfolders=self.subfolders,
+                                  method=method, inplace=inplace,
+                                  fl1exclude=fl1exlude, fl2exclude=fl2exclude,
+                                  out_folder=out_folder, strmatch=strmatch)
 
+        self._update_folder(out_folder, inplace, in_folder)
 
     def tilt_algorithm(self, chname_avert, chname_medlat, chname_antpost, out_folder=None, inplace=False):
         """ tilt correction for acceleration data """
