@@ -136,7 +136,15 @@ def combine_files_between(in_folder:str, fld1:str, fld2:str, suffix:str,  name_c
     -----
     Automatically saves the combined file to the out-folder using the subdirectories of the first folder path.
     Filenames MUST have the exact same name.
+
+    #TODO: find the files to exclude for fl1 and fl2
+
+    #TODO: Find the files that are shared between the two folders.
+
+    #TODO: REWORK COMBINE TO INCLUDE RESAMPLING METHODS AND TO USE THE SELF INPUT
     """
+
+
 
     fl1 = engine(fld1, extension="zoo", name_contains=name_contains, subfolders=subfolders)
     fl2= engine(fld2, extension="zoo", name_contains=name_contains, subfolders=subfolders)
