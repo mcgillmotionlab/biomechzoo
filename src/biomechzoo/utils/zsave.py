@@ -7,14 +7,23 @@ from biomechzoo.utils.batchdisp import batchdisp
 
 def zsave(fl, data, inplace=True, out_folder=None, root_folder=None, verbose=False):
     """
-    Save zoo data to .zoo file (MAT format)
+    Save zoo data to a .zoo file (MATLAB MAT format).
 
-    Arguments:
-        fl (str): Full path to original .zoo file
-        data (dict): Zoo data to save
-        inplace (bool): Whether to overwrite original file
-        out_folder (str or None): If not inplace, output folder name (relative to root_folder or file location)
-        root_folder (str or None): Optional base directory for saving when inplace=False
+    Parameters
+    ----------
+    fl : str
+        Full path to the original .zoo file.
+    data : dict
+        Zoo data dictionary to save.
+    inplace : bool, optional
+        If True, overwrite the original file. Default is True.
+    out_folder : str or None, optional
+        Output folder name (relative to ``root_folder`` or the file's
+        location) when ``inplace=False``.
+    root_folder : str or None, optional
+        Optional base directory used when ``inplace=False``.
+    verbose : bool, optional
+        If True, print save progress. Default is False.
     """
     # Get caller function name for logging
     caller_name = inspect.stack()[1].function

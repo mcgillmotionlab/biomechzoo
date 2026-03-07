@@ -2,10 +2,18 @@ from biomechzoo.utils.set_zoosystem import set_zoosystem
 
 def c3d2zoo_data(c3d_obj):
     """
-    Converts an ezc3d C3D object to zoo format.
+    Convert an ezc3d C3D object to zoo format.
 
-    Returns:
-    - data (dict): Zoo dictionary with 'line' and 'event' fields per channel.
+    Parameters
+    ----------
+    c3d_obj : dict
+        C3D object loaded via ezc3d, containing 'data' and 'parameters' keys.
+
+    Returns
+    -------
+    dict
+        Zoo dictionary with 'line' and 'event' fields per channel, plus
+        a 'zoosystem' metadata entry.
     """
     data = {}
     data['zoosystem'] = set_zoosystem()

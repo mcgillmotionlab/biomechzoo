@@ -3,13 +3,31 @@ import scipy.signal as signal
 
 def movement_onset(yd, fsamp, constants):
     """
-    Extracts movement onset based on the average and standard deviation of a sliding window
-    Standard thresholds for running are mean_thresh=1.2, std_thresh=0.2. For walking mean_thresh=0.6, std_thresh=0.2.
+    Detect the time of movement onset from an acceleration magnitude signal.
 
-    yd: 1d array of the vector
-    fsamp: sampling frequency
-    constants: [mean_thresh, std_thresh]
-    etype: 'movement_onset' or 'movement_offset'
+    Uses sliding-window mean and standard deviation to identify when sustained
+    movement begins. Thresholds are relaxed iteratively if no onset is found.
+
+    Parameters
+    ----------
+    yd : ndarray
+        1-D array of the acceleration magnitude signal.
+    fsamp : float
+        Sampling frequency in Hz.
+    constants : list of float
+        Threshold constants ``[mean_thresh, std_thresh]``. Recommended values:
+        running — ``[1.2, 0.2]``; walking — ``[0.6, 0.2]``.
+
+    Returns
+    -------
+    onset_time : int or None
+        Sample index of detected movement onset, or None if not detected.
+
+    Notes
+    -----
+    The signal is low-pass filtered at 20 Hz (4th-order Butterworth) before
+    feature extraction. Thresholds are halved each iteration until onset is
+    found or the minimum threshold (0.1) is reached.
     """
     acc_mag = yd.copy()
     acc_mag_filtered = bw_filter(data=acc_mag, fsamp=fsamp, N=4, fc=20, btype="low")
@@ -37,7 +55,26 @@ def movement_onset(yd, fsamp, constants):
 
 
 def movement_offset(yd, fsamp, constants):
+    """
+    Detect the time of movement offset from an acceleration magnitude signal.
 
+    Mirrors the logic of :func:`movement_onset` by reversing the signal
+    before detection, then mapping the result back to original time.
+
+    Parameters
+    ----------
+    yd : ndarray
+        1-D array of the acceleration magnitude signal.
+    fsamp : float
+        Sampling frequency in Hz.
+    constants : list of float
+        Threshold constants ``[mean_thresh, std_thresh]``.
+
+    Returns
+    -------
+    onset_time : int or None
+        Sample index of detected movement offset, or None if not detected.
+    """
     # ----extract the constants----
     mean_thresh, std_thresh = constants[0], constants[1]
     min_thresh = 0.1
@@ -106,15 +143,27 @@ def detect_movement_onset(features, fs, mean_thresh=1.2, std_thresh=0.2, min_dur
 
 def bw_filter(data, fsamp, N, fc, btype, output="ba"):
     """
-    Basic zero-phase butterworth filter.
-    :param data: 1xN array
-    :param N: filter order
-    :param fc: cutoff frequency
-    :param btype: filter type
-    :return: filtered data 1xN.
+    Apply a zero-phase Butterworth filter to a 1-D signal.
 
-    Args:
-        output:
+    Parameters
+    ----------
+    data : ndarray
+        1-D input signal array.
+    fsamp : float
+        Sampling frequency in Hz.
+    N : int
+        Filter order.
+    fc : float
+        Cutoff frequency in Hz.
+    btype : str
+        Filter type (e.g., 'low', 'high', 'bandpass').
+    output : str, optional
+        Output format for scipy.signal.butter. Default is 'ba'.
+
+    Returns
+    -------
+    filtered_data : ndarray
+        Zero-phase filtered signal of the same shape as input.
     """
 
     answer = fc

@@ -27,7 +27,7 @@ def addevent_data(
     data : dict of str to Any
         Biomechanical data dictionary containing channels and zoosystem metadata.
     channels : str or list of str
-        Channel name(s) to add events to. Use 'all' to apply to all channels.
+        Channel name(s) to add events to. Pass ``'all'`` to apply to all channels.
     ename : str
         Name of the event to add. Use empty string to clear all events.
     etype : str
@@ -190,18 +190,24 @@ def addevent_data(
 
 def find_first_peak(yd: np.ndarray, constant: Optional[float]) -> int:
     """
-    Extract the first peak from a signal containing multiple peaks.
+    Extract the index of the first peak from a multi-peak signal.
 
-    Finds peaks in the signal that exceed a threshold and returns the index
-    of the first peak. Requires at least 2 peaks to be present.
+    Parameters
+    ----------
+    yd : ndarray
+        1-D signal data array to search for peaks.
+    constant : float or None
+        Minimum height threshold for peak detection.
 
-    :param yd: 1D signal data array to search for peaks.
-    :type yd: np.ndarray
-    :param constant: Minimum height threshold for peak detection.
-    :type constant: Optional[float]
-    :return: Index of the first peak in the signal.
-    :rtype: int
-    :raises ValueError: If no peaks are found or only 1 peak is found.
+    Returns
+    -------
+    int
+        Index of the first peak in the signal.
+
+    Raises
+    ------
+    ValueError
+        If fewer than 2 peaks are found.
     """
     # Find peaks above threshold
     peaks, _ = find_peaks(yd, height=constant)

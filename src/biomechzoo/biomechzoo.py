@@ -233,11 +233,16 @@ class BiomechZoo:
         """
         Extract representative trial per subject/condition folder.
 
-        Arguments:
-            channels (list or 'all'): Channels used to compute representative trial
-            method (str): 'mean' or 'rmse'
-            out_folder (str, optional): Output folder
-            inplace (bool): Overwrite existing files
+        Parameters
+        ----------
+        channels : list of str or 'all', optional
+            Channels used to compute the representative trial. Default is 'all'.
+        method : {'mean', 'rmse'}, optional
+            Method for computing the representative trial. Default is 'mean'.
+        out_folder : str, optional
+            Output folder path.
+        inplace : bool, optional
+            If True, overwrite existing files. Default is False.
         """
 
         start_time = time.time()

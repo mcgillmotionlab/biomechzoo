@@ -4,8 +4,20 @@ from scipy.interpolate import interp1d
 
 def normalize_line(channel_data, nlength=101):
     """
-    Channel-level: interpolate channel data to target length.
-    Assumes channel_data is a 1D or 2D numpy array.
+    Interpolate a channel array to a target length.
+
+    Parameters
+    ----------
+    channel_data : ndarray
+        1-D or 2-D numpy array of shape (n,) or (n, k) to be resampled.
+    nlength : int, optional
+        Target number of samples. Default is 101.
+
+    Returns
+    -------
+    channel_data_norm : ndarray
+        Array resampled to shape (nlength,) or (nlength, k) using
+        linear interpolation.
     """
     original_length = channel_data.shape[0]
 

@@ -4,18 +4,21 @@ from scipy.signal import hilbert
 
 def phase_angle_line(r):
     """
-    Computes the phase angle for a single kinematic waveform using the Hilbert transform method.
+    Compute phase angle for a single kinematic waveform using the Hilbert transform.
 
-    Parameters:
+    Parameters
+    ----------
     r : array_like
-        (n, 1) array of kinematic data (e.g., joint or segment angle)
+        1-D array of kinematic data (e.g., joint or segment angle).
 
-    Returns:
-    PA_data : ndarray
-        1D array of phase angle (in degrees) computed from input using the Hilbert transform.
+    Returns
+    -------
+    PA : ndarray
+        1-D array of phase angle in degrees computed via the Hilbert transform.
 
-    Reference:
-    Lamb and Stöckl (2014). "On the use of continuous relative phase..."
+    References
+    ----------
+    Lamb and Stöckl (2014). On the use of continuous relative phase.
     Clinical Biomechanics. https://doi.org/10.1016/j.clinbiomech.2014.03.008
     """
 

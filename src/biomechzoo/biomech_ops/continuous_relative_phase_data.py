@@ -3,9 +3,31 @@ from biomechzoo.processing.addchannel_data import addchannel_data
 
 
 def continuous_relative_phase_data(data, ch_dist, ch_prox):
-    """ This function determines the CRP on a 0-180 scale, correcting for
-           discontinuity in the signals >180.
-    See Also phase_angle_data.py and phase_angle_line.py
+    """
+    Compute continuous relative phase (CRP) between two kinematic channels.
+
+    Determines the CRP on a 0-180 scale, correcting for discontinuities
+    in signals greater than 180 degrees.
+
+    Parameters
+    ----------
+    data : dict
+        Biomechanical data dictionary loaded from a zoo file.
+    ch_dist : str
+        Name of the distal channel (e.g., knee angle).
+    ch_prox : str
+        Name of the proximal channel (e.g., hip angle).
+
+    Returns
+    -------
+    dict
+        Updated data dictionary with a new CRP channel appended,
+        named '<ch_dist>_<ch_prox>_crp'.
+
+    See Also
+    --------
+    phase_angle_data : Compute phase angle using the Hilbert transform.
+    continuous_relative_phase_line : Core line-level CRP computation.
     """
 
     data_new = data.copy()

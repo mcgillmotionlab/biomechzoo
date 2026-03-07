@@ -5,19 +5,31 @@ import numpy as np
 def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, name_excludes=None,
            match_all=False, verbose=False):
     """
-    Recursively search for files with a given extension, optionally filtering by
-    specific subfolders and substrings in filenames.
+    Recursively search for files with a given extension, with optional filters.
 
-    Arguments:
-        root_folder (str): Root directory path where the search begins.
-        extension (str): File extension to search for (e.g., '.zoo', '.c3d')
-        subfolders (list or str, optional): Restrict search to folders with these names.
-        name_contains (str or list, optional): Substring(s) that must appear in filename.
-        name_excludes (str or list, optional): Substring(s) that must not appear in filename.
-        match_all (bool, optional, default False):
-            If False, keep file if it contains ANY substring.
-            If True, keep file only if it contains ALL substrings.
-        verbose (bool): Print results.
+    Parameters
+    ----------
+    root_folder : str
+        Root directory path where the search begins.
+    extension : str, optional
+        File extension to search for. Default is '.zoo'.
+    subfolders : str or list of str, optional
+        Restrict search to folders whose names match these strings.
+    name_contains : str or list of str, optional
+        Substring(s) that must appear in the filename.
+    name_excludes : str or list of str, optional
+        Substring(s) that must not appear in the filename.
+    match_all : bool, optional
+        If False, keep file if it contains ANY of the substrings in
+        ``name_contains``. If True, keep only if it contains ALL of them.
+        Default is False.
+    verbose : bool, optional
+        If True, print the list of matched files. Default is False.
+
+    Returns
+    -------
+    list of str
+        Sorted list of absolute file paths matching the search criteria.
     """
 
     # check format of subfolders
