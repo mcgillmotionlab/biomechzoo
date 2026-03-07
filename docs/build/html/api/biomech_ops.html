@@ -1,0 +1,671 @@
+<!doctype html>
+<html class="no-js" lang="en" data-content_root="../">
+  <head><meta charset="utf-8">
+    <meta name="viewport" content="width=device-width,initial-scale=1">
+    <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Processing" href="processing.html"><link rel="prev" title="API Reference" href="index.html">
+
+    <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
+        <title>Biomechanical Operations - biomechzoo 0.7.10 documentation</title>
+      <link rel="stylesheet" type="text/css" href="../_static/pygments.css?v=d111a655" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo.css?v=7bdb33bb" />
+    <link rel="stylesheet" type="text/css" href="../_static/copybutton.css?v=76b2166b" />
+    <link rel="stylesheet" type="text/css" href="../_static/styles/furo-extensions.css?v=8dab3a3b" />
+    
+    
+
+
+<style>
+  body {
+    --color-code-background: #f2f2f2;
+  --color-code-foreground: #1e1e1e;
+  
+  }
+  @media not print {
+    body[data-theme="dark"] {
+      --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+    }
+    @media (prefers-color-scheme: dark) {
+      body:not([data-theme="light"]) {
+        --color-code-background: #202020;
+  --color-code-foreground: #d0d0d0;
+  
+      }
+    }
+  }
+</style></head>
+  <body>
+    
+    <script>
+      document.body.dataset.theme = localStorage.getItem("theme") || "auto";
+    </script>
+    
+
+<svg xmlns="http://www.w3.org/2000/svg" style="display: none;">
+  <symbol id="svg-toc" viewBox="0 0 24 24">
+    <title>Contents</title>
+    <svg stroke="currentColor" fill="currentColor" stroke-width="0" viewBox="0 0 1024 1024">
+      <path d="M408 442h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8zm-8 204c0 4.4 3.6 8 8 8h480c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8H408c-4.4 0-8 3.6-8 8v56zm504-486H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zm0 632H120c-4.4 0-8 3.6-8 8v56c0 4.4 3.6 8 8 8h784c4.4 0 8-3.6 8-8v-56c0-4.4-3.6-8-8-8zM115.4 518.9L271.7 642c5.8 4.6 14.4.5 14.4-6.9V388.9c0-7.4-8.5-11.5-14.4-6.9L115.4 505.1a8.74 8.74 0 0 0 0 13.8z"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-menu" viewBox="0 0 24 24">
+    <title>Menu</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-menu">
+      <line x1="3" y1="12" x2="21" y2="12"></line>
+      <line x1="3" y1="6" x2="21" y2="6"></line>
+      <line x1="3" y1="18" x2="21" y2="18"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-arrow-right" viewBox="0 0 24 24">
+    <title>Expand</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="2" stroke-linecap="round" stroke-linejoin="round" class="feather-chevron-right">
+      <polyline points="9 18 15 12 9 6"></polyline>
+    </svg>
+  </symbol>
+  <symbol id="svg-sun" viewBox="0 0 24 24">
+    <title>Light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="feather-sun">
+      <circle cx="12" cy="12" r="5"></circle>
+      <line x1="12" y1="1" x2="12" y2="3"></line>
+      <line x1="12" y1="21" x2="12" y2="23"></line>
+      <line x1="4.22" y1="4.22" x2="5.64" y2="5.64"></line>
+      <line x1="18.36" y1="18.36" x2="19.78" y2="19.78"></line>
+      <line x1="1" y1="12" x2="3" y2="12"></line>
+      <line x1="21" y1="12" x2="23" y2="12"></line>
+      <line x1="4.22" y1="19.78" x2="5.64" y2="18.36"></line>
+      <line x1="18.36" y1="5.64" x2="19.78" y2="4.22"></line>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon" viewBox="0 0 24 24">
+    <title>Dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-moon">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M12 3c.132 0 .263 0 .393 0a7.5 7.5 0 0 0 7.92 12.446a9 9 0 1 1 -8.313 -12.454z" />
+    </svg>
+  </symbol>
+  <symbol id="svg-sun-with-moon" viewBox="0 0 24 24">
+    <title>Auto light/dark, in light mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path style="opacity: 50%" d="M 5.411 14.504 C 5.471 14.504 5.532 14.504 5.591 14.504 C 3.639 16.319 4.383 19.569 6.931 20.352 C 7.693 20.586 8.512 20.551 9.25 20.252 C 8.023 23.207 4.056 23.725 2.11 21.184 C 0.166 18.642 1.702 14.949 4.874 14.536 C 5.051 14.512 5.231 14.5 5.411 14.5 L 5.411 14.504 Z"/>
+      <line x1="14.5" y1="3.25" x2="14.5" y2="1.25"/>
+      <line x1="14.5" y1="15.85" x2="14.5" y2="17.85"/>
+      <line x1="10.044" y1="5.094" x2="8.63" y2="3.68"/>
+      <line x1="19" y1="14.05" x2="20.414" y2="15.464"/>
+      <line x1="8.2" y1="9.55" x2="6.2" y2="9.55"/>
+      <line x1="20.8" y1="9.55" x2="22.8" y2="9.55"/>
+      <line x1="10.044" y1="14.006" x2="8.63" y2="15.42"/>
+      <line x1="19" y1="5.05" x2="20.414" y2="3.636"/>
+      <circle cx="14.5" cy="9.55" r="3.6"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-moon-with-sun" viewBox="0 0 24 24">
+    <title>Auto light/dark, in dark mode</title>
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round"
+      class="icon-custom-derived-from-feather-sun-and-tabler-moon">
+      <path d="M 8.282 7.007 C 8.385 7.007 8.494 7.007 8.595 7.007 C 5.18 10.184 6.481 15.869 10.942 17.24 C 12.275 17.648 13.706 17.589 15 17.066 C 12.851 22.236 5.91 23.143 2.505 18.696 C -0.897 14.249 1.791 7.786 7.342 7.063 C 7.652 7.021 7.965 7 8.282 7 L 8.282 7.007 Z"/>
+      <line style="opacity: 50%" x1="18" y1="3.705" x2="18" y2="2.5"/>
+      <line style="opacity: 50%" x1="18" y1="11.295" x2="18" y2="12.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="4.816" x2="14.464" y2="3.964"/>
+      <line style="opacity: 50%" x1="20.711" y1="10.212" x2="21.563" y2="11.063"/>
+      <line style="opacity: 50%" x1="14.205" y1="7.5" x2="13.001" y2="7.5"/>
+      <line style="opacity: 50%" x1="21.795" y1="7.5" x2="23" y2="7.5"/>
+      <line style="opacity: 50%" x1="15.316" y1="10.184" x2="14.464" y2="11.036"/>
+      <line style="opacity: 50%" x1="20.711" y1="4.789" x2="21.563" y2="3.937"/>
+      <circle style="opacity: 50%" cx="18" cy="7.5" r="2.169"/>
+    </svg>
+  </symbol>
+  <symbol id="svg-pencil" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-pencil-code">
+      <path d="M4 20h4l10.5 -10.5a2.828 2.828 0 1 0 -4 -4l-10.5 10.5v4" />
+      <path d="M13.5 6.5l4 4" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+  <symbol id="svg-eye" viewBox="0 0 24 24">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+      stroke-width="1" stroke-linecap="round" stroke-linejoin="round" class="icon-tabler-eye-code">
+      <path stroke="none" d="M0 0h24v24H0z" fill="none" />
+      <path d="M10 12a2 2 0 1 0 4 0a2 2 0 0 0 -4 0" />
+      <path
+        d="M11.11 17.958c-3.209 -.307 -5.91 -2.293 -8.11 -5.958c2.4 -4 5.4 -6 9 -6c3.6 0 6.6 2 9 6c-.21 .352 -.427 .688 -.647 1.008" />
+      <path d="M20 21l2 -2l-2 -2" />
+      <path d="M17 17l-2 2l2 2" />
+    </svg>
+  </symbol>
+</svg>
+
+<input type="checkbox" class="sidebar-toggle" name="__navigation" id="__navigation" aria-label="Toggle site navigation sidebar">
+<input type="checkbox" class="sidebar-toggle" name="__toc" id="__toc" aria-label="Toggle table of contents sidebar">
+<label class="overlay sidebar-overlay" for="__navigation"></label>
+<label class="overlay toc-overlay" for="__toc"></label>
+
+<a class="skip-to-content muted-link" href="#furo-main-content">Skip to content</a>
+
+
+
+<div class="page">
+  <header class="mobile-header">
+    <div class="header-left">
+      <label class="nav-overlay-icon" for="__navigation">
+        <span class="icon"><svg><use href="#svg-menu"></use></svg></span>
+      </label>
+    </div>
+    <div class="header-center">
+      <a href="../index.html"><div class="brand">biomechzoo 0.7.10 documentation</div></a>
+    </div>
+    <div class="header-right">
+      <div class="theme-toggle-container theme-toggle-header">
+        <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+          <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+          <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+          <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+          <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+        </button>
+      </div>
+      <label class="toc-overlay-icon toc-header-icon" for="__toc">
+        <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+      </label>
+    </div>
+  </header>
+  <aside class="sidebar-drawer">
+    <div class="sidebar-container">
+      
+      <div class="sidebar-sticky"><a class="sidebar-brand" href="../index.html">
+  
+  <span class="sidebar-brand-text">biomechzoo 0.7.10 documentation</span>
+  
+</a><form class="sidebar-search-container" method="get" action="../search.html" role="search">
+  <input class="sidebar-search" placeholder="Search" name="q" aria-label="Search">
+  <input type="hidden" name="check_keywords" value="yes">
+  <input type="hidden" name="area" value="default">
+</form>
+<div id="searchbox"></div><div class="sidebar-scroll"><div class="sidebar-tree">
+  <p class="caption" role="heading"><span class="caption-text">API Reference</span></p>
+<ul class="current">
+<li class="toctree-l1 current has-children"><a class="reference internal" href="index.html">API Reference</a><input aria-label="Toggle navigation of API Reference" checked="" class="toctree-checkbox" id="toctree-checkbox-1" name="toctree-checkbox-1" role="switch" type="checkbox"/><label for="toctree-checkbox-1"><span class="icon"><svg><use href="#svg-arrow-right"></use></svg></span></label><ul class="current">
+<li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Biomechanical Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="processing.html">Processing</a></li>
+<li class="toctree-l2"><a class="reference internal" href="conversion.html">Conversion</a></li>
+<li class="toctree-l2"><a class="reference internal" href="imu.html">IMU</a></li>
+<li class="toctree-l2"><a class="reference internal" href="linear_algebra_ops.html">Linear Algebra Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="statistics.html">Statistics</a></li>
+<li class="toctree-l2"><a class="reference internal" href="utils.html">Utilities</a></li>
+</ul>
+</li>
+</ul>
+<p class="caption" role="heading"><span class="caption-text">Links</span></p>
+<ul>
+<li class="toctree-l1"><a class="reference external" href="https://github.com/mcgillmotionlab/biomechzoo">GitHub</a></li>
+</ul>
+
+</div>
+</div>
+
+      </div>
+      
+    </div>
+  </aside>
+  <div class="main">
+    <div class="content">
+      <div class="article-container">
+        <a href="#" class="back-to-top muted-link">
+          <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 24 24">
+            <path d="M13 20h-2V8l-5.5 5.5-1.42-1.42L12 4.16l7.92 7.92-1.42 1.42L13 8v12z"></path>
+          </svg>
+          <span>Back to top</span>
+        </a>
+        <div class="content-icon-container">
+          <div class="view-this-page">
+  <a class="muted-link" href="../_sources/api/biomech_ops.rst.txt" title="View this page">
+    <svg><use href="#svg-eye"></use></svg>
+    <span class="visually-hidden">View this page</span>
+  </a>
+</div>
+<div class="theme-toggle-container theme-toggle-content">
+            <button class="theme-toggle" aria-label="Toggle Light / Dark / Auto color theme">
+              <svg class="theme-icon-when-auto-light"><use href="#svg-sun-with-moon"></use></svg>
+              <svg class="theme-icon-when-auto-dark"><use href="#svg-moon-with-sun"></use></svg>
+              <svg class="theme-icon-when-dark"><use href="#svg-moon"></use></svg>
+              <svg class="theme-icon-when-light"><use href="#svg-sun"></use></svg>
+            </button>
+          </div>
+          <label class="toc-overlay-icon toc-content-icon" for="__toc">
+            <span class="icon"><svg><use href="#svg-toc"></use></svg></span>
+          </label>
+        </div>
+        <article role="main" id="furo-main-content">
+          <section id="biomechanical-operations">
+<h1>Biomechanical Operations<a class="headerlink" href="#biomechanical-operations" title="Link to this heading">¶</a></h1>
+<p>Functions for computing biomechanical metrics such as phase angles, continuous
+relative phase, signal filtering, movement onset detection, and data normalisation.</p>
+<section id="module-biomechzoo.biomech_ops.filter_data">
+<span id="filtering"></span><h2>Filtering<a class="headerlink" href="#module-biomechzoo.biomech_ops.filter_data" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.filter_data.filter_data">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.filter_data.</span></span><span class="sig-name descname"><span class="pre">filter_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/filter_data.html#filter_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.filter_data.filter_data" title="Link to this definition">¶</a></dt>
+<dd><p>Filter one or more channels from a zoo data dictionary using specified filter parameters.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – The zoo data dictionary containing signal channels.</p></li>
+<li><p><strong>ch</strong> (<em>str or list of str</em>) – The name(s) of the channel(s) to filter.</p></li>
+<li><p><strong>filt</strong> (<em>dict, optional</em>) – Dictionary specifying filter parameters. Keys may include:
+- ‘ftype’: ‘butter’ (default)
+- ‘order’: filter order (default: 4)
+- ‘cutoff’: cutoff frequency or tuple (Hz)
+- ‘btype’: ‘low’, ‘high’, ‘bandpass’, ‘bandstop’ (default: ‘lowpass’)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>dict</em> – The updated data dictionary with filtered channels.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function" id="module-biomechzoo.biomech_ops.filter_line">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.filter_line.filter_line">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.filter_line.</span></span><span class="sig-name descname"><span class="pre">filter_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">signal_raw</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/filter_line.html#filter_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.filter_line.filter_line" title="Link to this definition">¶</a></dt>
+<dd><p>Filter a 1-D signal array using a Butterworth filter.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>signal_raw</strong> (<em>ndarray</em>) – Raw 1-D signal to be filtered.</p></li>
+<li><p><strong>filt</strong> (<em>dict, optional</em>) – Filter parameter dictionary with keys:
+- ‘ftype’ : str — filter type, e.g. ‘butter’ (default)
+- ‘order’ : int — filter order (default: 4)
+- ‘cutoff’ : float or tuple — cutoff frequency in Hz
+- ‘btype’ : str — ‘lowpass’, ‘highpass’, ‘bandpass’, or ‘bandstop’
+- ‘filtfilt’ : bool — zero-phase filtering if True
+- ‘fs’ : float — sampling frequency in Hz (required)</p></li>
+<li><p><strong>fs</strong> (<em>float, optional</em>) – Sampling frequency in Hz. Only used when filt is not provided.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>signal_filtered</strong> (<em>ndarray</em>) – Filtered signal array.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If ‘fs’ is not provided when filt is None, or if ‘fs’ key is
+    missing from the filt dictionary.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#NotImplementedError" title="(in Python v3.14)"><strong>NotImplementedError</strong></a> – If a filter type other than ‘butter’ is specified.</p></li>
+</ul>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.filter_line.kt_butter">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.filter_line.</span></span><span class="sig-name descname"><span class="pre">kt_butter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ts</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">order</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">btype</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'lowpass'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">filtfilt</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">True</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/filter_line.html#kt_butter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.filter_line.kt_butter" title="Link to this definition">¶</a></dt>
+<dd><p>Apply a Butterworth filter to a time series.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>ts</strong> (<em>ndarray</em>) – 1-D input time series to filter.</p></li>
+<li><p><strong>fc</strong> (<em>float or tuple of float</em>) – Cut-off frequency in Hz. Use a float for lowpass/highpass filters,
+or a tuple of two floats (e.g., <code class="docutils literal notranslate"><span class="pre">(10.,</span> <span class="pre">13.)</span></code>) for bandpass/bandstop.</p></li>
+<li><p><strong>fs</strong> (<em>float</em>) – Sampling frequency in Hz.</p></li>
+<li><p><strong>order</strong> (<em>int, optional</em>) – Order of the Butterworth filter. Default is 2.</p></li>
+<li><p><strong>btype</strong> (<em>{‘lowpass’, ‘highpass’, ‘bandpass’, ‘bandstop’}, optional</em>) – Type of filter. Default is ‘lowpass’.</p></li>
+<li><p><strong>filtfilt</strong> (<em>bool, optional</em>) – If True, the filter is applied twice (forward and backward) to
+eliminate phase lag. If False, only a forward pass is applied.
+Default is True.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>ts_f</strong> (<em>ndarray</em>) – Filtered copy of the input time series.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>This function was adapted from kineticstoolkit. Thanks &#64;felxi.</p>
+</dd></dl>
+
+</section>
+<section id="module-biomechzoo.biomech_ops.phase_angle_data">
+<span id="phase-angle"></span><h2>Phase Angle<a class="headerlink" href="#module-biomechzoo.biomech_ops.phase_angle_data" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.phase_angle_data.phase_angle_data">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.phase_angle_data.</span></span><span class="sig-name descname"><span class="pre">phase_angle_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channels</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/phase_angle_data.html#phase_angle_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.phase_angle_data.phase_angle_data" title="Link to this definition">¶</a></dt>
+<dd><p>Compute phase angle for one or more channels using the Hilbert transform.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Biomechanical data dictionary loaded from a zoo file.</p></li>
+<li><p><strong>channels</strong> (<em>list of str</em>) – Channel names on which to compute the phase angle.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>dict</em> – Updated data dictionary with phase angle results appended as new
+channels named ‘&lt;channel&gt;_phase_angle’.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If a specified channel is not found in the data dictionary.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">phase_angle_line</span></code></dt><dd><p>Core line-level phase angle computation.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">continuous_relative_phase_data</span></code></dt><dd><p>Compute CRP from phase angle channels.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py function" id="module-biomechzoo.biomech_ops.phase_angle_line">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.phase_angle_line.phase_angle_line">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.phase_angle_line.</span></span><span class="sig-name descname"><span class="pre">phase_angle_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">r</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/phase_angle_line.html#phase_angle_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.phase_angle_line.phase_angle_line" title="Link to this definition">¶</a></dt>
+<dd><p>Compute phase angle for a single kinematic waveform using the Hilbert transform.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><p><strong>r</strong> (<em>array_like</em>) – 1-D array of kinematic data (e.g., joint or segment angle).</p>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>PA</strong> (<em>ndarray</em>) – 1-D array of phase angle in degrees computed via the Hilbert transform.</p>
+</dd>
+</dl>
+<p class="rubric">References</p>
+<p>Lamb and Stöckl (2014). On the use of continuous relative phase.
+Clinical Biomechanics. <a class="reference external" href="https://doi.org/10.1016/j.clinbiomech.2014.03.008">https://doi.org/10.1016/j.clinbiomech.2014.03.008</a></p>
+</dd></dl>
+
+</section>
+<section id="module-biomechzoo.biomech_ops.continuous_relative_phase_data">
+<span id="continuous-relative-phase"></span><h2>Continuous Relative Phase<a class="headerlink" href="#module-biomechzoo.biomech_ops.continuous_relative_phase_data" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.continuous_relative_phase_data.continuous_relative_phase_data">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.continuous_relative_phase_data.</span></span><span class="sig-name descname"><span class="pre">continuous_relative_phase_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_dist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch_prox</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/continuous_relative_phase_data.html#continuous_relative_phase_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.continuous_relative_phase_data.continuous_relative_phase_data" title="Link to this definition">¶</a></dt>
+<dd><p>Compute continuous relative phase (CRP) between two kinematic channels.</p>
+<p>Determines the CRP on a 0-180 scale, correcting for discontinuities
+in signals greater than 180 degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Biomechanical data dictionary loaded from a zoo file.</p></li>
+<li><p><strong>ch_dist</strong> (<em>str</em>) – Name of the distal channel (e.g., knee angle).</p></li>
+<li><p><strong>ch_prox</strong> (<em>str</em>) – Name of the proximal channel (e.g., hip angle).</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>dict</em> – Updated data dictionary with a new CRP channel appended,
+named ‘&lt;ch_dist&gt;_&lt;ch_prox&gt;_crp’.</p>
+</dd>
+</dl>
+<div class="admonition seealso">
+<p class="admonition-title">See also</p>
+<dl class="simple">
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">phase_angle_data</span></code></dt><dd><p>Compute phase angle using the Hilbert transform.</p>
+</dd>
+<dt><code class="xref py py-obj docutils literal notranslate"><span class="pre">continuous_relative_phase_line</span></code></dt><dd><p>Core line-level CRP computation.</p>
+</dd>
+</dl>
+</div>
+</dd></dl>
+
+<dl class="py function" id="module-biomechzoo.biomech_ops.continuous_relative_phase_line">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.continuous_relative_phase_line.continuous_relative_phase_line">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.continuous_relative_phase_line.</span></span><span class="sig-name descname"><span class="pre">continuous_relative_phase_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">dist</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prox</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/continuous_relative_phase_line.html#continuous_relative_phase_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.continuous_relative_phase_line.continuous_relative_phase_line" title="Link to this definition">¶</a></dt>
+<dd><p>Compute continuous relative phase (CRP) between two kinematic waveforms.</p>
+<p>Determines CRP on a 0-180 scale, correcting for discontinuities
+in signals greater than 180 degrees.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>dist</strong> (<em>ndarray</em>) – Kinematic data of the distal segment or joint.</p></li>
+<li><p><strong>prox</strong> (<em>ndarray</em>) – Kinematic data of the proximal segment or joint.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>crp</strong> (<em>ndarray</em>) – Continuous relative phase between dist and prox data.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-biomechzoo.biomech_ops.normalize_data">
+<span id="normalisation"></span><h2>Normalisation<a class="headerlink" href="#module-biomechzoo.biomech_ops.normalize_data" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.normalize_data.normalize_data">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.normalize_data.</span></span><span class="sig-name descname"><span class="pre">normalize_data</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">101</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/normalize_data.html#normalize_data"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.normalize_data.normalize_data" title="Link to this definition">¶</a></dt>
+<dd><p>Normalize all channels in a zoo data dictionary to a target length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Biomechanical data dictionary loaded from a zoo file.</p></li>
+<li><p><strong>nlength</strong> (<em>int, optional</em>) – Target number of samples after normalization. Default is 101,
+which corresponds to 0-100% of a movement cycle.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>dict</em> – Deep copy of the input data with all channel ‘line’ arrays
+resampled to <code class="docutils literal notranslate"><span class="pre">nlength</span></code> samples.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>It is often necessary to partition data to a single cycle first
+(see <code class="xref py py-func docutils literal notranslate"><span class="pre">partition_data()</span></code>) before normalizing.</p>
+<p>Event data and zoosystem metadata are not fully updated in the
+current implementation; warnings are issued accordingly.</p>
+</dd></dl>
+
+<dl class="py function" id="module-biomechzoo.biomech_ops.normalize_line">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.normalize_line.normalize_line">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.normalize_line.</span></span><span class="sig-name descname"><span class="pre">normalize_line</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">channel_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">nlength</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">101</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/normalize_line.html#normalize_line"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.normalize_line.normalize_line" title="Link to this definition">¶</a></dt>
+<dd><p>Interpolate a channel array to a target length.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>channel_data</strong> (<em>ndarray</em>) – 1-D or 2-D numpy array of shape (n,) or (n, k) to be resampled.</p></li>
+<li><p><strong>nlength</strong> (<em>int, optional</em>) – Target number of samples. Default is 101.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>channel_data_norm</strong> (<em>ndarray</em>) – Array resampled to shape (nlength,) or (nlength, k) using
+linear interpolation.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+<section id="module-biomechzoo.biomech_ops.movement_onset">
+<span id="movement-onset"></span><h2>Movement Onset<a class="headerlink" href="#module-biomechzoo.biomech_ops.movement_onset" title="Link to this heading">¶</a></h2>
+<dl class="py function">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.movement_onset.movement_onset">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.movement_onset.</span></span><span class="sig-name descname"><span class="pre">movement_onset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constants</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/movement_onset.html#movement_onset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.movement_onset.movement_onset" title="Link to this definition">¶</a></dt>
+<dd><p>Detect the time of movement onset from an acceleration magnitude signal.</p>
+<p>Uses sliding-window mean and standard deviation to identify when sustained
+movement begins. Thresholds are relaxed iteratively if no onset is found.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>yd</strong> (<em>ndarray</em>) – 1-D array of the acceleration magnitude signal.</p></li>
+<li><p><strong>fsamp</strong> (<em>float</em>) – Sampling frequency in Hz.</p></li>
+<li><p><strong>constants</strong> (<em>list of float</em>) – Threshold constants <code class="docutils literal notranslate"><span class="pre">[mean_thresh,</span> <span class="pre">std_thresh]</span></code>. Recommended values:
+running — <code class="docutils literal notranslate"><span class="pre">[1.2,</span> <span class="pre">0.2]</span></code>; walking — <code class="docutils literal notranslate"><span class="pre">[0.6,</span> <span class="pre">0.2]</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>onset_time</strong> (<em>int or None</em>) – Sample index of detected movement onset, or None if not detected.</p>
+</dd>
+</dl>
+<p class="rubric">Notes</p>
+<p>The signal is low-pass filtered at 20 Hz (4th-order Butterworth) before
+feature extraction. Thresholds are halved each iteration until onset is
+found or the minimum threshold (0.1) is reached.</p>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.movement_onset.movement_offset">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.movement_onset.</span></span><span class="sig-name descname"><span class="pre">movement_offset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">yd</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">constants</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/movement_onset.html#movement_offset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.movement_onset.movement_offset" title="Link to this definition">¶</a></dt>
+<dd><p>Detect the time of movement offset from an acceleration magnitude signal.</p>
+<p>Mirrors the logic of <a class="reference internal" href="#biomechzoo.biomech_ops.movement_onset.movement_onset" title="biomechzoo.biomech_ops.movement_onset.movement_onset"><code class="xref py py-func docutils literal notranslate"><span class="pre">movement_onset()</span></code></a> by reversing the signal
+before detection, then mapping the result back to original time.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>yd</strong> (<em>ndarray</em>) – 1-D array of the acceleration magnitude signal.</p></li>
+<li><p><strong>fsamp</strong> (<em>float</em>) – Sampling frequency in Hz.</p></li>
+<li><p><strong>constants</strong> (<em>list of float</em>) – Threshold constants <code class="docutils literal notranslate"><span class="pre">[mean_thresh,</span> <span class="pre">std_thresh]</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>onset_time</strong> (<em>int or None</em>) – Sample index of detected movement offset, or None if not detected.</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.movement_onset.sliding_window_features">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.movement_onset.</span></span><span class="sig-name descname"><span class="pre">sliding_window_features</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">ch_data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsamp</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/movement_onset.html#sliding_window_features"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.movement_onset.sliding_window_features" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.movement_onset.check_already_moving">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.movement_onset.</span></span><span class="sig-name descname"><span class="pre">check_already_moving</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/movement_onset.html#check_already_moving"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.movement_onset.check_already_moving" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.movement_onset.detect_movement_onset">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.movement_onset.</span></span><span class="sig-name descname"><span class="pre">detect_movement_onset</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">features</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fs</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">mean_thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">std_thresh</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0.2</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">min_duration</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">3</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/movement_onset.html#detect_movement_onset"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.movement_onset.detect_movement_onset" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function">
+<dt class="sig sig-object py" id="biomechzoo.biomech_ops.movement_onset.bw_filter">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.biomech_ops.movement_onset.</span></span><span class="sig-name descname"><span class="pre">bw_filter</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fsamp</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">N</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">fc</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">btype</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'ba'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/biomech_ops/movement_onset.html#bw_filter"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.biomech_ops.movement_onset.bw_filter" title="Link to this definition">¶</a></dt>
+<dd><p>Apply a zero-phase Butterworth filter to a 1-D signal.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>ndarray</em>) – 1-D input signal array.</p></li>
+<li><p><strong>fsamp</strong> (<em>float</em>) – Sampling frequency in Hz.</p></li>
+<li><p><strong>N</strong> (<em>int</em>) – Filter order.</p></li>
+<li><p><strong>fc</strong> (<em>float</em>) – Cutoff frequency in Hz.</p></li>
+<li><p><strong>btype</strong> (<em>str</em>) – Filter type (e.g., ‘low’, ‘high’, ‘bandpass’).</p></li>
+<li><p><strong>output</strong> (<em>str, optional</em>) – Output format for scipy.signal.butter. Default is ‘ba’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><strong>filtered_data</strong> (<em>ndarray</em>) – Zero-phase filtered signal of the same shape as input.</p>
+</dd>
+</dl>
+</dd></dl>
+
+</section>
+</section>
+
+        </article>
+      </div>
+      <footer>
+        
+        <div class="related-pages">
+          <a class="next-page" href="processing.html">
+              <div class="page-info">
+                <div class="context">
+                  <span>Next</span>
+                </div>
+                <div class="title">Processing</div>
+              </div>
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+            </a>
+          <a class="prev-page" href="index.html">
+              <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
+              <div class="page-info">
+                <div class="context">
+                  <span>Previous</span>
+                </div>
+                
+                <div class="title">API Reference</div>
+                
+              </div>
+            </a>
+        </div>
+        <div class="bottom-of-page">
+          <div class="left-details">
+            <div class="copyright">
+                Copyright &#169; 2026, McGill Motion Lab
+            </div>
+            Made with <a href="https://www.sphinx-doc.org/">Sphinx</a> and <a class="muted-link" href="https://pradyunsg.me">@pradyunsg</a>'s
+            
+            <a href="https://github.com/pradyunsg/furo">Furo</a>
+            
+          </div>
+          <div class="right-details">
+            
+          </div>
+        </div>
+        
+      </footer>
+    </div>
+    <aside class="toc-drawer">
+      
+      
+      <div class="toc-sticky toc-scroll">
+        <div class="toc-title-container">
+          <span class="toc-title">
+            On this page
+          </span>
+        </div>
+        <div class="toc-tree-container">
+          <div class="toc-tree">
+            <ul>
+<li><a class="reference internal" href="#">Biomechanical Operations</a><ul>
+<li><a class="reference internal" href="#module-biomechzoo.biomech_ops.filter_data">Filtering</a><ul>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.filter_data.filter_data"><code class="docutils literal notranslate"><span class="pre">filter_data()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.filter_line.filter_line"><code class="docutils literal notranslate"><span class="pre">filter_line()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.filter_line.kt_butter"><code class="docutils literal notranslate"><span class="pre">kt_butter()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-biomechzoo.biomech_ops.phase_angle_data">Phase Angle</a><ul>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.phase_angle_data.phase_angle_data"><code class="docutils literal notranslate"><span class="pre">phase_angle_data()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.phase_angle_line.phase_angle_line"><code class="docutils literal notranslate"><span class="pre">phase_angle_line()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-biomechzoo.biomech_ops.continuous_relative_phase_data">Continuous Relative Phase</a><ul>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.continuous_relative_phase_data.continuous_relative_phase_data"><code class="docutils literal notranslate"><span class="pre">continuous_relative_phase_data()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.continuous_relative_phase_line.continuous_relative_phase_line"><code class="docutils literal notranslate"><span class="pre">continuous_relative_phase_line()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-biomechzoo.biomech_ops.normalize_data">Normalisation</a><ul>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.normalize_data.normalize_data"><code class="docutils literal notranslate"><span class="pre">normalize_data()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.normalize_line.normalize_line"><code class="docutils literal notranslate"><span class="pre">normalize_line()</span></code></a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-biomechzoo.biomech_ops.movement_onset">Movement Onset</a><ul>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.movement_onset.movement_onset"><code class="docutils literal notranslate"><span class="pre">movement_onset()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.movement_onset.movement_offset"><code class="docutils literal notranslate"><span class="pre">movement_offset()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.movement_onset.sliding_window_features"><code class="docutils literal notranslate"><span class="pre">sliding_window_features()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.movement_onset.check_already_moving"><code class="docutils literal notranslate"><span class="pre">check_already_moving()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.movement_onset.detect_movement_onset"><code class="docutils literal notranslate"><span class="pre">detect_movement_onset()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.biomech_ops.movement_onset.bw_filter"><code class="docutils literal notranslate"><span class="pre">bw_filter()</span></code></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+          </div>
+        </div>
+      </div>
+      
+      
+    </aside>
+  </div>
+</div><script src="../_static/documentation_options.js?v=d46e566c"></script>
+    <script src="../_static/doctools.js?v=fd6eb6e6"></script>
+    <script src="../_static/sphinx_highlight.js?v=6ffebe34"></script>
+    <script src="../_static/scripts/furo.js?v=46bd48cc"></script>
+    <script src="../_static/clipboard.min.js?v=a7894cd8"></script>
+    <script src="../_static/copybutton.js?v=f281be69"></script>
+    </body>
+</html>
