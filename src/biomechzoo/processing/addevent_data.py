@@ -1,12 +1,67 @@
 import numpy as np
 import copy
 import warnings
+from typing import Dict, List, Union, Optional, Any
 from scipy.signal import find_peaks
 from biomechzoo.utils.peak_sign import peak_sign
 from biomechzoo.biomech_ops.movement_onset import movement_onset, movement_offset
 from biomechzoo.imu.step_detection import imu_mcgrath
 
-def addevent_data(data, channels, ename, etype, fsamp = None, constant=None):
+def addevent_data(
+    data: Dict[str, Any],
+    channels: Union[str, List[str]],
+    ename: str,
+    etype: str,
+    fsamp: Optional[float] = None,
+    constant: Optional[float] = None
+) -> Dict[str, Any]:
+    """
+    Add events to specified channels in a biomechanical data structure.
+
+    This function creates events based on various event types (e.g., max, min, peaks,
+    movement onset/offset, force plate thresholds) and adds them to the specified
+    channels in the data dictionary.
+
+    Parameters
+    ----------
+    data : dict of str to Any
+        Biomechanical data dictionary containing channels and zoosystem metadata.
+    channels : str or list of str
+        Channel name(s) to add events to. Pass ``'all'`` to apply to all channels.
+    ename : str
+        Name of the event to add. Use empty string to clear all events.
+    etype : str
+        Event type, one of: 'max', 'min', 'absmax', 'first', 'last', 'rom',
+        'first peak', 'movement_onset', 'movement_offset', 'mcgrath_fs',
+        'mcgrath_fo', 'fs_fp', 'fo_fp'.
+    fsamp : float, optional
+        Sampling frequency in Hz. If None, extracted from zoosystem metadata.
+    constant : float, optional
+        Threshold or parameter value for certain event types (e.g., peak
+        height threshold, force plate threshold).
+
+    Returns
+    -------
+    dict of str to Any
+        Deep copy of input data with events added to specified channels.
+
+    Raises
+    ------
+    KeyError
+        If specified channel does not exist in data.
+    ValueError
+        If event type is unknown or if required peaks are not found.
+    Warning
+        If video and analog sampling rates differ for force plate events.
+
+    Notes
+    -----
+    Event format in data structure: [index, value, 0] where index is the frame
+    number, value is the signal value at that frame, and 0 is a placeholder.
+
+    For event types that find multiple events (mcgrath_fs, mcgrath_fo), events
+    are numbered sequentially (e.g., 'ename_1', 'ename_2', etc.).
+    """
 
     data_new = copy.deepcopy(data)
 
@@ -133,8 +188,27 @@ def addevent_data(data, channels, ename, etype, fsamp = None, constant=None):
 
     return data_new
 
-def find_first_peak(yd, constant):
-    """ extracts first peak from a series of 2 peaks """
+def find_first_peak(yd: np.ndarray, constant: Optional[float]) -> int:
+    """
+    Extract the index of the first peak from a multi-peak signal.
+
+    Parameters
+    ----------
+    yd : ndarray
+        1-D signal data array to search for peaks.
+    constant : float or None
+        Minimum height threshold for peak detection.
+
+    Returns
+    -------
+    int
+        Index of the first peak in the signal.
+
+    Raises
+    ------
+    ValueError
+        If fewer than 2 peaks are found.
+    """
     # Find peaks above threshold
     peaks, _ = find_peaks(yd, height=constant)
 

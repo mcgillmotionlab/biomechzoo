@@ -1,12 +1,20 @@
 def findfield(data, target_event):
-    """ searches in zoo data for the event value and channel name associated with target_event
+    """
+    Search zoo data for the value and channel associated with a target event.
 
-    Arguments:
-        data. dict. zoo data
-        target_event, str. Name of event to search for
-    Returns:
-        events, list of len 2. First is index (exd) and second is value (eyd)
-        channel, str. Name of channel associated with event
+    Parameters
+    ----------
+    data : dict
+        Biomechanical data dictionary loaded from a zoo file.
+    target_event : str
+        Name of the event to search for.
+
+    Returns
+    -------
+    events : list or None
+        Event data as ``[frame_index, value, 0]``, or None if not found.
+    channel : str or None
+        Name of the channel containing the event, or None if not found.
     """
     for channel, content in data.items():
         if channel == 'zoosystem':

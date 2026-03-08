@@ -1,3 +1,4 @@
+from typing import Dict, List, Union, Tuple
 import numpy as np
 
 from biomechzoo.processing.explodechannel_data import explodechannel_data
@@ -5,35 +6,46 @@ from biomechzoo.biomech_ops.normalize_line import normalize_line
 from biomechzoo.statistics.rmse import rmse
 from biomechzoo.processing.removechannel_data import removechannel_data
 
-def reptrial_data(gdata, channels, method='mean'):
+def reptrial_data(gdata: Dict, channels: Union[List[str], str], method: str = 'mean') -> Tuple[Dict, Union[int, str]]:
     """
     Compute a representative trial from a set of trials for a subject/condition.
 
     This function can operate in two modes:
-
+    
     1. 'mean': Computes the pointwise mean of each specified channel across all trials,
-                 producing a synthetic representative trial.
+       producing a synthetic representative trial.
     2. 'rmse': Computes the trial whose waveform is closest to the mean in the
-                 root-mean-squared error (RMSE) sense, per channel, and returns
-                 that trial as the representative.
+       root-mean-squared error (RMSE) sense, per channel, and returns
+       that trial as the representative.
 
-    Arguments:
-        gdata (dict): Dictionary of zoo data. Each key corresponds to a trial
-                      (e.g., 'data1', 'data2', ...)
-        channels (list or 'all'): List of channel names to include in the representative
-                                  trial computation. If 'all', all channels in the
-                                  first trial are used.
-        method (str): Method to compute the representative trial. Options:
-                      - 'mean': default. synthetic trial from pointwise mean
-                      - 'rmse': select existing trial closest to mean waveform
+    Parameters
+    ----------
+    gdata : dict
+        Dictionary of zoo data. Each key corresponds to a trial (e.g., 'data1', 'data2', ...).
+    channels : list of str or 'all'
+        List of channel names to include in the representative trial computation.
+        If 'all', all channels in the first trial are used.
+    method : {'mean', 'rmse'}, optional
+        Method to compute the representative trial. Default is 'mean'.
+        
+        - 'mean' : Synthetic trial from pointwise mean.
+        - 'rmse' : Select existing trial closest to mean waveform.
 
-    Returns:
-        rep (dict): Representative trial, in the same format as a single trial in `gdata`.
-        file_index (int or str): Index of the selected trial in `gdata` for 'rmse',
-                                 or 'mean' if method='mean'.
+    Returns
+    -------
+    rep : dict
+        Representative trial, in the same format as a single trial in gdata.
+    file_index : int or str
+        Index of the selected trial in gdata for 'rmse' method, or 'mean' string if method='mean'.
 
-    Notes:
-       - events are not handled here. Rather, the user could run event detection for the representative trial
+    Raises
+    ------
+    ValueError
+        If NaN values are found in channels or if unknown method is specified.
+
+    Notes
+    -----
+    Events are not handled here. Rather, the user could run event detection for the representative trial.
     """
     nlength = 101
     trials = list(gdata.keys())

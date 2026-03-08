@@ -1,15 +1,22 @@
 def update_channel_list(data, section='Video', ch_add=None, ch_remove=None):
     """
-    Updates the channel list of a section by adding or removing channels.
+    Update the channel list of a zoosystem section by adding or removing channels.
 
-    Args:
-        data (dict): Zoo data dictionary.
-        section (str): Section name ('Video', 'Analog', etc.).
-        ch_add (str or list of str, optional): Channel(s) to add.
-        ch_remove (str or list of str, optional): Channel(s) to remove.
+    Parameters
+    ----------
+    data : dict
+        Zoo data dictionary containing a 'zoosystem' key.
+    section : str, optional
+        Section name to update (e.g., 'Video' or 'Analog'). Default is 'Video'.
+    ch_add : str or list of str, optional
+        Channel name(s) to add to the section's channel list.
+    ch_remove : str or list of str, optional
+        Channel name(s) to remove from the section's channel list.
 
-    Returns:
-        dict: The updated zoo dictionary (same object as input).
+    Returns
+    -------
+    dict
+        The updated zoo dictionary (modified in place).
     """
     ch_list = data['zoosystem'][section]['Channels']
 
