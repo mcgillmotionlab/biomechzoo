@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>biomechzoo.biomech_ops.phase_angle_data - biomechzoo 0.7.10 documentation</title>
+        <title>biomechzoo.statistics.lineval_wide2arrays - biomechzoo 0.7.10 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -243,67 +243,55 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <h1>Source code for biomechzoo.biomech_ops.phase_angle_data</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">biomechzoo.biomech_ops.phase_angle_line</span><span class="w"> </span><span class="kn">import</span> <span class="n">phase_angle_line</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">biomechzoo.processing.addchannel_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">addchannel_data</span>
+          <h1>Source code for biomechzoo.statistics.lineval_wide2arrays</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">numpy</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">np</span>
+<span class="kn">import</span><span class="w"> </span><span class="nn">pandas</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">pd</span>
+<span class="kn">from</span><span class="w"> </span><span class="nn">typing</span><span class="w"> </span><span class="kn">import</span> <span class="n">Dict</span><span class="p">,</span> <span class="n">List</span><span class="p">,</span> <span class="n">Optional</span>
 
-
-<div class="viewcode-block" id="phase_angle_data">
-<a class="viewcode-back" href="../../../api/biomech_ops.html#biomechzoo.biomech_ops.phase_angle_data.phase_angle_data">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">phase_angle_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">channels</span><span class="p">):</span>
+<div class="viewcode-block" id="lineval_wide2arrays">
+<a class="viewcode-back" href="../../../api/statistics.html#biomechzoo.statistics.lineval_wide2arrays.lineval_wide2arrays">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">lineval_wide2arrays</span><span class="p">(</span>
+    <span class="n">df</span><span class="p">:</span> <span class="n">pd</span><span class="o">.</span><span class="n">DataFrame</span><span class="p">,</span>
+    <span class="n">condition_col</span><span class="p">:</span> <span class="nb">str</span> <span class="o">=</span> <span class="s1">&#39;condition&#39;</span><span class="p">,</span>
+    <span class="n">conditions</span><span class="p">:</span> <span class="n">Optional</span><span class="p">[</span><span class="n">List</span><span class="p">[</span><span class="nb">str</span><span class="p">]]</span> <span class="o">=</span> <span class="kc">None</span>
+<span class="p">)</span> <span class="o">-&gt;</span> <span class="n">Dict</span><span class="p">[</span><span class="nb">str</span><span class="p">,</span> <span class="n">np</span><span class="o">.</span><span class="n">ndarray</span><span class="p">]:</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute phase angle for one or more channels using the Hilbert transform.</span>
+<span class="sd">    Convert a wide-format DataFrame into arrays grouped by condition.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
-<span class="sd">    data : dict</span>
-<span class="sd">        Biomechanical data dictionary loaded from a zoo file.</span>
-<span class="sd">    channels : list of str</span>
-<span class="sd">        Channel names on which to compute the phase angle.</span>
+<span class="sd">    df : pd.DataFrame</span>
+<span class="sd">        DataFrame returned by `lineval(format=&#39;wide&#39;)`.</span>
+<span class="sd">        Must include columns for condition and timepoints (p0...pN).</span>
+<span class="sd">    condition_col : str</span>
+<span class="sd">        Column name containing condition labels. Default &#39;condition&#39;.</span>
+<span class="sd">    conditions : list of str, optional</span>
+<span class="sd">        List of condition labels in desired order.</span>
+<span class="sd">        If None, will use all unique conditions sorted alphabetically.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    dict</span>
-<span class="sd">        Updated data dictionary with phase angle results appended as new</span>
-<span class="sd">        channels named &#39;&lt;channel&gt;_phase_angle&#39;.</span>
-
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If a specified channel is not found in the data dictionary.</span>
-
-<span class="sd">    See Also</span>
-<span class="sd">    --------</span>
-<span class="sd">    phase_angle_line : Core line-level phase angle computation.</span>
-<span class="sd">    continuous_relative_phase_data : Compute CRP from phase angle channels.</span>
+<span class="sd">    Dict[str, np.ndarray]</span>
+<span class="sd">        Keys = condition labels</span>
+<span class="sd">        Values = 2D numpy arrays (n_trials x n_timepoints)</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">data_new</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">ch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data_new</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Channel </span><span class="si">{}</span><span class="s1"> not in data. Available keys: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">data_new</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">data_new</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="s1">&#39;line&#39;</span><span class="p">]</span>
-        <span class="n">phase_angle</span> <span class="o">=</span> <span class="n">phase_angle_line</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-        <span class="n">ch_new</span> <span class="o">=</span> <span class="n">ch</span> <span class="o">+</span> <span class="s1">&#39;_phase_angle&#39;</span>
-        <span class="n">data_new</span> <span class="o">=</span> <span class="n">addchannel_data</span><span class="p">(</span><span class="n">data_new</span><span class="p">,</span> <span class="n">ch_new_name</span><span class="o">=</span><span class="n">ch_new</span><span class="p">,</span> <span class="n">ch_new_data</span><span class="o">=</span><span class="n">phase_angle</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">data_new</span></div>
 
+    <span class="c1"># Identify timepoint columns</span>
+    <span class="n">time_cols</span> <span class="o">=</span> <span class="p">[</span><span class="n">c</span> <span class="k">for</span> <span class="n">c</span> <span class="ow">in</span> <span class="n">df</span><span class="o">.</span><span class="n">columns</span> <span class="k">if</span> <span class="n">c</span><span class="o">.</span><span class="n">startswith</span><span class="p">(</span><span class="s1">&#39;p&#39;</span><span class="p">)]</span>
 
+    <span class="c1"># Determine condition list</span>
+    <span class="k">if</span> <span class="n">conditions</span> <span class="ow">is</span> <span class="kc">None</span><span class="p">:</span>
+        <span class="n">conditions</span> <span class="o">=</span> <span class="nb">sorted</span><span class="p">(</span><span class="n">df</span><span class="p">[</span><span class="n">condition_col</span><span class="p">]</span><span class="o">.</span><span class="n">unique</span><span class="p">())</span>
 
-<span class="k">if</span> <span class="vm">__name__</span> <span class="o">==</span> <span class="s1">&#39;__main__&#39;</span><span class="p">:</span>
-    <span class="c1"># -------TESTING--------</span>
-    <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">biomechzoo.utils.zload</span><span class="w"> </span><span class="kn">import</span> <span class="n">zload</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">biomechzoo.utils.zplot</span><span class="w"> </span><span class="kn">import</span> <span class="n">zplot</span>
-    <span class="c1"># get path to sample zoo file</span>
-    <span class="n">current_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
-    <span class="n">project_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">current_dir</span><span class="p">)</span>
-    <span class="n">fl</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_root</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;other&#39;</span><span class="p">,</span> <span class="s1">&#39;HC032A18_exploded.zoo&#39;</span><span class="p">)</span>
+    <span class="n">cond_arrays</span> <span class="o">=</span> <span class="p">{}</span>
 
-    <span class="c1"># load  zoo file</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">zload</span><span class="p">(</span><span class="n">fl</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">phase_angle_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;RKneeAngles_x&#39;</span><span class="p">,</span> <span class="s1">&#39;RHipAngles_x&#39;</span><span class="p">])</span>
-    <span class="n">zplot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;RKneeAngles_x_phase_angle&#39;</span><span class="p">)</span>
+    <span class="k">for</span> <span class="n">cond</span> <span class="ow">in</span> <span class="n">conditions</span><span class="p">:</span>
+        <span class="n">group</span> <span class="o">=</span> <span class="n">df</span><span class="p">[</span><span class="n">df</span><span class="p">[</span><span class="n">condition_col</span><span class="p">]</span> <span class="o">==</span> <span class="n">cond</span><span class="p">]</span>
+        <span class="k">if</span> <span class="n">group</span><span class="o">.</span><span class="n">empty</span><span class="p">:</span>
+            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Condition &#39;</span><span class="si">{</span><span class="n">cond</span><span class="si">}</span><span class="s2">&#39; not found in DataFrame&quot;</span><span class="p">)</span>
+        <span class="n">cond_arrays</span><span class="p">[</span><span class="n">cond</span><span class="p">]</span> <span class="o">=</span> <span class="n">group</span><span class="p">[</span><span class="n">time_cols</span><span class="p">]</span><span class="o">.</span><span class="n">to_numpy</span><span class="p">()</span>
+
+    <span class="k">return</span> <span class="n">cond_arrays</span></div>
 
 </pre></div>
         </article>

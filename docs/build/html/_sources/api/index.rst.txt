@@ -11,3 +11,4 @@ API Reference
    linear_algebra_ops
    statistics
    utils
+   visualization

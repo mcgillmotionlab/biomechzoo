@@ -201,6 +201,7 @@
 <li class="toctree-l2"><a class="reference internal" href="linear_algebra_ops.html">Linear Algebra Operations</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Statistics</a></li>
 <li class="toctree-l2"><a class="reference internal" href="utils.html">Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">Visualization</a></li>
 </ul>
 </li>
 </ul>
@@ -274,6 +275,93 @@
 </dl>
 </dd></dl>
 
+<dl class="py function" id="module-biomechzoo.statistics.lineval">
+<dt class="sig sig-object py" id="biomechzoo.statistics.lineval.lineval">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.statistics.lineval.</span></span><span class="sig-name descname"><span class="pre">lineval</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">root_folder</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">channel_name</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">output_format</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'array'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">subject_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">0</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_level</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">1</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/statistics/lineval.html#lineval"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.statistics.lineval.lineval" title="Link to this definition">¶</a></dt>
+<dd><p>Extract time-normalized <code class="docutils literal notranslate"><span class="pre">line</span></code> arrays from Zoo files.</p>
+<p>Recursively searches <code class="docutils literal notranslate"><span class="pre">root_folder</span></code> for <code class="docutils literal notranslate"><span class="pre">.zoo</span></code> files and extracts
+the <code class="docutils literal notranslate"><span class="pre">line</span></code> field from the specified channel. Folder levels are used
+to assign subject and condition labels.</p>
+<p>Data must already be time-normalized. An error is raised if inconsistent
+signal lengths are detected across files.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>root_folder</strong> (<em>str</em>) – Root directory containing the Zoo data files.</p></li>
+<li><p><strong>channel_name</strong> (<em>str</em>) – Name of the channel to extract from each Zoo file.</p></li>
+<li><p><strong>output_format</strong> (<em>{‘array’, ‘wide’}, optional</em>) – Output format for the extracted data.
+- <code class="docutils literal notranslate"><span class="pre">'array'</span></code>: one column containing the full array (default).
+- <code class="docutils literal notranslate"><span class="pre">'wide'</span></code>: one column per timepoint (p0, p1, …).</p></li>
+<li><p><strong>subject_level</strong> (<em>int, optional</em>) – Folder depth index used to define the subject label
+(0 = first folder below root). Default is 0.</p></li>
+<li><p><strong>condition_level</strong> (<em>int, optional</em>) – Folder depth index used to define the condition label
+(0 = first folder below root). Default is 1.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>pandas.DataFrame</em> – DataFrame containing extracted line data with subject, condition,
+and trial columns.</p>
+</dd>
+<dt class="field-odd">Raises<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#KeyError" title="(in Python v3.14)"><strong>KeyError</strong></a> – If the specified channel is not found in a Zoo file.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#ValueError" title="(in Python v3.14)"><strong>ValueError</strong></a> – If signals are not of equal length (data not time-normalized),
+    or if an invalid <code class="docutils literal notranslate"><span class="pre">output_format</span></code> is provided.</p></li>
+<li><p><a class="reference external" href="https://docs.python.org/3/library/exceptions.html#IndexError" title="(in Python v3.14)"><strong>IndexError</strong></a> – If the folder depth is insufficient for the specified
+    <code class="docutils literal notranslate"><span class="pre">subject_level</span></code> or <code class="docutils literal notranslate"><span class="pre">condition_level</span></code>.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Parameters<span class="colon">:</span></dt>
+<dd class="field-even"><ul class="simple">
+<li><p><strong>root_folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>channel_name</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>output_format</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Literal" title="(in Python v3.14)"><em>Literal</em></a><em>[</em><em>'array'</em><em>, </em><em>'wide'</em><em>]</em>)</p></li>
+<li><p><strong>subject_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+<li><p><strong>condition_level</strong> (<a class="reference external" href="https://docs.python.org/3/library/functions.html#int" title="(in Python v3.14)"><em>int</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><em>DataFrame</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function" id="module-biomechzoo.statistics.lineval_wide2arrays">
+<dt class="sig sig-object py" id="biomechzoo.statistics.lineval_wide2arrays.lineval_wide2arrays">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.statistics.lineval_wide2arrays.</span></span><span class="sig-name descname"><span class="pre">lineval_wide2arrays</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">df</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">condition_col</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'condition'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">conditions</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/statistics/lineval_wide2arrays.html#lineval_wide2arrays"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.statistics.lineval_wide2arrays.lineval_wide2arrays" title="Link to this definition">¶</a></dt>
+<dd><p>Convert a wide-format DataFrame into arrays grouped by condition.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>pd.DataFrame</em>) – DataFrame returned by <cite>lineval(format=’wide’)</cite>.
+Must include columns for condition and timepoints (p0…pN).</p></li>
+<li><p><strong>condition_col</strong> (<em>str</em>) – Column name containing condition labels. Default ‘condition’.</p></li>
+<li><p><strong>conditions</strong> (<em>list of str, optional</em>) – List of condition labels in desired order.
+If None, will use all unique conditions sorted alphabetically.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>Dict[str, np.ndarray]</em> – Keys = condition labels
+Values = 2D numpy arrays (n_trials x n_timepoints)</p>
+</dd>
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>df</strong> (<em>DataFrame</em>)</p></li>
+<li><p><strong>condition_col</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>conditions</strong> (<a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.List" title="(in Python v3.14)"><em>List</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>] </em><em>| </em><em>None</em>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/typing.html#typing.Dict" title="(in Python v3.14)"><em>Dict</em></a>[<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a>, <a class="reference external" href="https://numpy.org/doc/stable/reference/generated/numpy.ndarray.html#numpy.ndarray" title="(in NumPy v2.4)"><em>ndarray</em></a>]</p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function" id="module-biomechzoo.statistics.rmse">
+<dt class="sig sig-object py" id="biomechzoo.statistics.rmse.rmse">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.statistics.rmse.</span></span><span class="sig-name descname"><span class="pre">rmse</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">a</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">b</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/statistics/rmse.html#rmse"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.statistics.rmse.rmse" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
 </section>
 
         </article>
@@ -333,6 +421,9 @@
             <ul>
 <li><a class="reference internal" href="#">Statistics</a><ul>
 <li><a class="reference internal" href="#biomechzoo.statistics.eventval.eventval"><code class="docutils literal notranslate"><span class="pre">eventval()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.statistics.lineval.lineval"><code class="docutils literal notranslate"><span class="pre">lineval()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.statistics.lineval_wide2arrays.lineval_wide2arrays"><code class="docutils literal notranslate"><span class="pre">lineval_wide2arrays()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.statistics.rmse.rmse"><code class="docutils literal notranslate"><span class="pre">rmse()</span></code></a></li>
 </ul>
 </li>
 </ul>

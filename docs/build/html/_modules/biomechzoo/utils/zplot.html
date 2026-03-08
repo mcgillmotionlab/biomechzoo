@@ -5,7 +5,7 @@
     <meta name="color-scheme" content="light dark"><link rel="index" title="Index" href="../../../genindex.html"><link rel="search" title="Search" href="../../../search.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
-        <title>biomechzoo.biomech_ops.phase_angle_data - biomechzoo 0.7.10 documentation</title>
+        <title>biomechzoo.utils.zplot - biomechzoo 0.7.10 documentation</title>
       <link rel="stylesheet" type="text/css" href="../../../_static/pygments.css?v=d111a655" />
     <link rel="stylesheet" type="text/css" href="../../../_static/styles/furo.css?v=7bdb33bb" />
     <link rel="stylesheet" type="text/css" href="../../../_static/copybutton.css?v=76b2166b" />
@@ -243,49 +243,54 @@
           </label>
         </div>
         <article role="main" id="furo-main-content">
-          <h1>Source code for biomechzoo.biomech_ops.phase_angle_data</h1><div class="highlight"><pre>
-<span></span><span class="kn">from</span><span class="w"> </span><span class="nn">biomechzoo.biomech_ops.phase_angle_line</span><span class="w"> </span><span class="kn">import</span> <span class="n">phase_angle_line</span>
-<span class="kn">from</span><span class="w"> </span><span class="nn">biomechzoo.processing.addchannel_data</span><span class="w"> </span><span class="kn">import</span> <span class="n">addchannel_data</span>
+          <h1>Source code for biomechzoo.utils.zplot</h1><div class="highlight"><pre>
+<span></span><span class="kn">import</span><span class="w"> </span><span class="nn">matplotlib.pyplot</span><span class="w"> </span><span class="k">as</span><span class="w"> </span><span class="nn">plt</span>
 
 
-<div class="viewcode-block" id="phase_angle_data">
-<a class="viewcode-back" href="../../../api/biomech_ops.html#biomechzoo.biomech_ops.phase_angle_data.phase_angle_data">[docs]</a>
-<span class="k">def</span><span class="w"> </span><span class="nf">phase_angle_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">channels</span><span class="p">):</span>
+<div class="viewcode-block" id="zplot">
+<a class="viewcode-back" href="../../../api/utils.html#biomechzoo.utils.zplot.zplot">[docs]</a>
+<span class="k">def</span><span class="w"> </span><span class="nf">zplot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ch</span><span class="p">,</span> <span class="n">xlabel</span><span class="o">=</span><span class="s1">&#39;frames&#39;</span><span class="p">,</span> <span class="n">ylabel</span><span class="o">=</span><span class="s1">&#39;angles (deg)&#39;</span><span class="p">):</span>
 <span class="w">    </span><span class="sd">&quot;&quot;&quot;</span>
-<span class="sd">    Compute phase angle for one or more channels using the Hilbert transform.</span>
+<span class="sd">    Plot a single channel of a zoo file, along with any existing events.</span>
 
 <span class="sd">    Parameters</span>
 <span class="sd">    ----------</span>
 <span class="sd">    data : dict</span>
-<span class="sd">        Biomechanical data dictionary loaded from a zoo file.</span>
-<span class="sd">    channels : list of str</span>
-<span class="sd">        Channel names on which to compute the phase angle.</span>
+<span class="sd">        Loaded zoo file.</span>
+<span class="sd">    ch : str</span>
+<span class="sd">        Name of the channel to plot, e.g., &#39;RkneeAngles&#39;.</span>
+<span class="sd">    xlabel : str</span>
+<span class="sd">        Label for x-axis. Default is &#39;frames&#39;.</span>
+<span class="sd">    ylabel : str</span>
+<span class="sd">        Label for y-axis. Default is &#39;angles (deg)&#39;.</span>
 
 <span class="sd">    Returns</span>
 <span class="sd">    -------</span>
-<span class="sd">    dict</span>
-<span class="sd">        Updated data dictionary with phase angle results appended as new</span>
-<span class="sd">        channels named &#39;&lt;channel&gt;_phase_angle&#39;.</span>
-
-<span class="sd">    Raises</span>
-<span class="sd">    ------</span>
-<span class="sd">    ValueError</span>
-<span class="sd">        If a specified channel is not found in the data dictionary.</span>
-
-<span class="sd">    See Also</span>
-<span class="sd">    --------</span>
-<span class="sd">    phase_angle_line : Core line-level phase angle computation.</span>
-<span class="sd">    continuous_relative_phase_data : Compute CRP from phase angle channels.</span>
+<span class="sd">    None</span>
 <span class="sd">    &quot;&quot;&quot;</span>
-    <span class="n">data_new</span> <span class="o">=</span> <span class="n">data</span><span class="o">.</span><span class="n">copy</span><span class="p">()</span>
-    <span class="k">for</span> <span class="n">ch</span> <span class="ow">in</span> <span class="n">channels</span><span class="p">:</span>
-        <span class="k">if</span> <span class="n">ch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data_new</span><span class="p">:</span>
-            <span class="k">raise</span> <span class="ne">ValueError</span><span class="p">(</span><span class="s1">&#39;Channel </span><span class="si">{}</span><span class="s1"> not in data. Available keys: </span><span class="si">{}</span><span class="s1">&#39;</span><span class="o">.</span><span class="n">format</span><span class="p">(</span><span class="n">ch</span><span class="p">,</span> <span class="nb">list</span><span class="p">(</span><span class="n">data_new</span><span class="o">.</span><span class="n">keys</span><span class="p">())))</span>
-        <span class="n">r</span> <span class="o">=</span> <span class="n">data_new</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="s1">&#39;line&#39;</span><span class="p">]</span>
-        <span class="n">phase_angle</span> <span class="o">=</span> <span class="n">phase_angle_line</span><span class="p">(</span><span class="n">r</span><span class="p">)</span>
-        <span class="n">ch_new</span> <span class="o">=</span> <span class="n">ch</span> <span class="o">+</span> <span class="s1">&#39;_phase_angle&#39;</span>
-        <span class="n">data_new</span> <span class="o">=</span> <span class="n">addchannel_data</span><span class="p">(</span><span class="n">data_new</span><span class="p">,</span> <span class="n">ch_new_name</span><span class="o">=</span><span class="n">ch_new</span><span class="p">,</span> <span class="n">ch_new_data</span><span class="o">=</span><span class="n">phase_angle</span><span class="p">)</span>
-    <span class="k">return</span> <span class="n">data_new</span></div>
+
+    <span class="k">if</span> <span class="n">ch</span> <span class="ow">not</span> <span class="ow">in</span> <span class="n">data</span><span class="p">:</span>
+        <span class="k">raise</span> <span class="ne">KeyError</span><span class="p">(</span><span class="sa">f</span><span class="s2">&quot;Channel &#39;</span><span class="si">{</span><span class="n">ch</span><span class="si">}</span><span class="s2">&#39; not found in data.&quot;</span><span class="p">)</span>
+
+    <span class="n">y</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">ch</span><span class="p">][</span><span class="s1">&#39;line&#39;</span><span class="p">]</span>
+    <span class="n">x</span> <span class="o">=</span> <span class="nb">range</span><span class="p">(</span><span class="nb">len</span><span class="p">(</span><span class="n">y</span><span class="p">))</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">figure</span><span class="p">(</span><span class="n">figsize</span><span class="o">=</span><span class="p">(</span><span class="mi">10</span><span class="p">,</span> <span class="mi">4</span><span class="p">))</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">x</span><span class="p">,</span> <span class="n">y</span><span class="p">,</span> <span class="n">label</span><span class="o">=</span><span class="s1">&#39;Signal&#39;</span><span class="p">,</span> <span class="n">linewidth</span><span class="o">=</span><span class="mi">2</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">title</span><span class="p">(</span><span class="n">ch</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">xlabel</span><span class="p">(</span><span class="n">xlabel</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">ylabel</span><span class="p">(</span><span class="n">ylabel</span><span class="p">)</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">grid</span><span class="p">(</span><span class="kc">True</span><span class="p">)</span>
+
+    <span class="c1"># Plot events if available</span>
+    <span class="n">events</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="n">ch</span><span class="p">]</span><span class="o">.</span><span class="n">get</span><span class="p">(</span><span class="s1">&#39;event&#39;</span><span class="p">,</span> <span class="p">{})</span>
+    <span class="k">for</span> <span class="n">name</span><span class="p">,</span> <span class="n">coords</span> <span class="ow">in</span> <span class="n">events</span><span class="o">.</span><span class="n">items</span><span class="p">():</span>
+        <span class="n">evtx</span><span class="p">,</span> <span class="n">evty</span> <span class="o">=</span> <span class="n">coords</span><span class="p">[</span><span class="mi">0</span><span class="p">],</span> <span class="n">coords</span><span class="p">[</span><span class="mi">1</span><span class="p">]</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">plot</span><span class="p">(</span><span class="n">evtx</span><span class="p">,</span> <span class="n">evty</span><span class="p">,</span> <span class="s1">&#39;ro&#39;</span><span class="p">)</span>
+        <span class="n">plt</span><span class="o">.</span><span class="n">text</span><span class="p">(</span><span class="n">evtx</span><span class="p">,</span> <span class="n">evty</span><span class="p">,</span> <span class="n">name</span><span class="p">,</span> <span class="n">fontsize</span><span class="o">=</span><span class="mi">8</span><span class="p">,</span> <span class="n">color</span><span class="o">=</span><span class="s1">&#39;red&#39;</span><span class="p">,</span> <span class="n">ha</span><span class="o">=</span><span class="s1">&#39;left&#39;</span><span class="p">,</span> <span class="n">va</span><span class="o">=</span><span class="s1">&#39;bottom&#39;</span><span class="p">)</span>
+
+    <span class="n">plt</span><span class="o">.</span><span class="n">tight_layout</span><span class="p">()</span>
+    <span class="n">plt</span><span class="o">.</span><span class="n">show</span><span class="p">()</span></div>
 
 
 
@@ -293,18 +298,16 @@
     <span class="c1"># -------TESTING--------</span>
     <span class="kn">import</span><span class="w"> </span><span class="nn">os</span>
     <span class="kn">from</span><span class="w"> </span><span class="nn">biomechzoo.utils.zload</span><span class="w"> </span><span class="kn">import</span> <span class="n">zload</span>
-    <span class="kn">from</span><span class="w"> </span><span class="nn">biomechzoo.utils.zplot</span><span class="w"> </span><span class="kn">import</span> <span class="n">zplot</span>
+
     <span class="c1"># get path to sample zoo file</span>
     <span class="n">current_dir</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">abspath</span><span class="p">(</span><span class="vm">__file__</span><span class="p">))</span>
     <span class="n">project_root</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">dirname</span><span class="p">(</span><span class="n">current_dir</span><span class="p">)</span>
-    <span class="n">fl</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_root</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;other&#39;</span><span class="p">,</span> <span class="s1">&#39;HC032A18_exploded.zoo&#39;</span><span class="p">)</span>
+    <span class="n">fl</span> <span class="o">=</span> <span class="n">os</span><span class="o">.</span><span class="n">path</span><span class="o">.</span><span class="n">join</span><span class="p">(</span><span class="n">project_root</span><span class="p">,</span> <span class="s1">&#39;data&#39;</span><span class="p">,</span> <span class="s1">&#39;other&#39;</span><span class="p">,</span> <span class="s1">&#39;HC030A05.zoo&#39;</span><span class="p">)</span>
 
     <span class="c1"># load  zoo file</span>
     <span class="n">data</span> <span class="o">=</span> <span class="n">zload</span><span class="p">(</span><span class="n">fl</span><span class="p">)</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">data</span><span class="p">[</span><span class="s1">&#39;data&#39;</span><span class="p">]</span>
-    <span class="n">data</span> <span class="o">=</span> <span class="n">phase_angle_data</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">channels</span><span class="o">=</span><span class="p">[</span><span class="s1">&#39;RKneeAngles_x&#39;</span><span class="p">,</span> <span class="s1">&#39;RHipAngles_x&#39;</span><span class="p">])</span>
-    <span class="n">zplot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="s1">&#39;RKneeAngles_x_phase_angle&#39;</span><span class="p">)</span>
-
+    <span class="n">ch</span> <span class="o">=</span> <span class="s1">&#39;SACR&#39;</span>
+    <span class="n">zplot</span><span class="p">(</span><span class="n">data</span><span class="p">,</span> <span class="n">ch</span><span class="p">)</span>
 </pre></div>
         </article>
       </div>

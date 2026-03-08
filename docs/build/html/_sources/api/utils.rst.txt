@@ -45,3 +45,15 @@ Signal Utilities
 
 .. automodule:: biomechzoo.utils.common_substring
    :members:
+
+.. automodule:: biomechzoo.utils.zplot
+   :members:
+
+.. automodule:: biomechzoo.utils.combine_xsens_csv
+   :members:
+
+.. automodule:: biomechzoo.utils.group_by_terminal_folder
+   :members:
+
+.. automodule:: biomechzoo.utils.version
+   :members:

@@ -19,6 +19,18 @@ that Sphinx can import the source code and read the docstrings::
 
     pip install -e .
 
+.. note::
+
+   The project targets Python 3.11.  If your virtual environment uses a newer
+   Python (e.g. 3.13) pip will refuse to install due to the version constraint
+   in ``pyproject.toml``.  Pass ``--ignore-requires-python`` to bypass this
+   check **without modifying** ``pyproject.toml``::
+
+       pip install -e . --ignore-requires-python
+
+   This is safe for documentation purposes — Sphinx only needs to import the
+   source code to read docstrings.
+
 Optionally, install ``sphinx-autobuild`` if you want live-reload during
 editing (see :ref:`livehtml`)::  
 

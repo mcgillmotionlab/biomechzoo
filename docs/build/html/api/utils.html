@@ -3,7 +3,7 @@
   <head><meta charset="utf-8">
     <meta name="viewport" content="width=device-width,initial-scale=1">
     <meta name="color-scheme" content="light dark"><meta name="viewport" content="width=device-width, initial-scale=1" />
-<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="How to Build the Documentation" href="../how_to_build.html"><link rel="prev" title="Statistics" href="statistics.html">
+<link rel="index" title="Index" href="../genindex.html"><link rel="search" title="Search" href="../search.html"><link rel="next" title="Visualization" href="visualization.html"><link rel="prev" title="Statistics" href="statistics.html">
 
     <!-- Generated with Sphinx 9.1.0 and Furo 2025.12.19 -->
         <title>Utilities - biomechzoo 0.7.10 documentation</title>
@@ -201,6 +201,7 @@
 <li class="toctree-l2"><a class="reference internal" href="linear_algebra_ops.html">Linear Algebra Operations</a></li>
 <li class="toctree-l2"><a class="reference internal" href="statistics.html">Statistics</a></li>
 <li class="toctree-l2 current current-page"><a class="current reference internal" href="#">Utilities</a></li>
+<li class="toctree-l2"><a class="reference internal" href="visualization.html">Visualization</a></li>
 </ul>
 </li>
 </ul>
@@ -412,6 +413,60 @@ Video, Analog, Anthro, Units, Version, and CompInfo sections.</p>
 <span class="sig-prename descclassname"><span class="pre">biomechzoo.utils.common_substring.</span></span><span class="sig-name descname"><span class="pre">common_substring_join</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">strings</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/utils/common_substring.html#common_substring_join"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.utils.common_substring.common_substring_join" title="Link to this definition">¶</a></dt>
 <dd></dd></dl>
 
+<dl class="py function" id="module-biomechzoo.utils.zplot">
+<dt class="sig sig-object py" id="biomechzoo.utils.zplot.zplot">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.utils.zplot.</span></span><span class="sig-name descname"><span class="pre">zplot</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">data</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ch</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">xlabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'frames'</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">ylabel</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">'angles</span> <span class="pre">(deg)'</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/utils/zplot.html#zplot"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.utils.zplot.zplot" title="Link to this definition">¶</a></dt>
+<dd><p>Plot a single channel of a zoo file, along with any existing events.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>data</strong> (<em>dict</em>) – Loaded zoo file.</p></li>
+<li><p><strong>ch</strong> (<em>str</em>) – Name of the channel to plot, e.g., ‘RkneeAngles’.</p></li>
+<li><p><strong>xlabel</strong> (<em>str</em>) – Label for x-axis. Default is ‘frames’.</p></li>
+<li><p><strong>ylabel</strong> (<em>str</em>) – Label for y-axis. Default is ‘angles (deg)’.</p></li>
+</ul>
+</dd>
+<dt class="field-even">Returns<span class="colon">:</span></dt>
+<dd class="field-even"><p><em>None</em></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function" id="module-biomechzoo.utils.combine_xsens_csv">
+<dt class="sig sig-object py" id="biomechzoo.utils.combine_xsens_csv.combine_quats_to_csv">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.utils.combine_xsens_csv.</span></span><span class="sig-name descname"><span class="pre">combine_quats_to_csv</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">csv_files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">prefixes</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_folder</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">out_filename</span></span><span class="o"><span class="pre">=</span></span><span class="default_value"><span class="pre">None</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/utils/combine_xsens_csv.html#combine_quats_to_csv"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.utils.combine_xsens_csv.combine_quats_to_csv" title="Link to this definition">¶</a></dt>
+<dd><p>Concatenates time, quaternions, gyroscope, and accelerometer data
+from multiple CSV files into a single CSV file with prefixes defining segment.</p>
+<dl class="field-list simple">
+<dt class="field-odd">Parameters<span class="colon">:</span></dt>
+<dd class="field-odd"><ul class="simple">
+<li><p><strong>csv_files</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>)</p></li>
+<li><p><strong>prefixes</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#list" title="(in Python v3.14)"><em>list</em></a><em>[</em><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a><em>]</em>)</p></li>
+<li><p><strong>out_folder</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+<li><p><strong>out_filename</strong> (<a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)"><em>str</em></a>)</p></li>
+</ul>
+</dd>
+<dt class="field-even">Return type<span class="colon">:</span></dt>
+<dd class="field-even"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="py function" id="module-biomechzoo.utils.group_by_terminal_folder">
+<dt class="sig sig-object py" id="biomechzoo.utils.group_by_terminal_folder.group_by_terminal_folder">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.utils.group_by_terminal_folder.</span></span><span class="sig-name descname"><span class="pre">group_by_terminal_folder</span></span><span class="sig-paren">(</span><em class="sig-param"><span class="n"><span class="pre">files</span></span></em>, <em class="sig-param"><span class="n"><span class="pre">root</span></span></em><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/utils/group_by_terminal_folder.html#group_by_terminal_folder"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.utils.group_by_terminal_folder.group_by_terminal_folder" title="Link to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="py function" id="module-biomechzoo.utils.version">
+<dt class="sig sig-object py" id="biomechzoo.utils.version.get_biomechzoo_version">
+<span class="sig-prename descclassname"><span class="pre">biomechzoo.utils.version.</span></span><span class="sig-name descname"><span class="pre">get_biomechzoo_version</span></span><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="reference internal" href="../_modules/biomechzoo/utils/version.html#get_biomechzoo_version"><span class="viewcode-link"><span class="pre">[source]</span></span></a><a class="headerlink" href="#biomechzoo.utils.version.get_biomechzoo_version" title="Link to this definition">¶</a></dt>
+<dd><dl class="field-list simple">
+<dt class="field-odd">Return type<span class="colon">:</span></dt>
+<dd class="field-odd"><p><a class="reference external" href="https://docs.python.org/3/library/stdtypes.html#str" title="(in Python v3.14)">str</a></p>
+</dd>
+</dl>
+</dd></dl>
+
 </section>
 </section>
 
@@ -420,12 +475,12 @@ Video, Analog, Anthro, Units, Version, and CompInfo sections.</p>
       <footer>
         
         <div class="related-pages">
-          <a class="next-page" href="../how_to_build.html">
+          <a class="next-page" href="visualization.html">
               <div class="page-info">
                 <div class="context">
                   <span>Next</span>
                 </div>
-                <div class="title">How to Build the Documentation</div>
+                <div class="title">Visualization</div>
               </div>
               <svg class="furo-related-icon"><use href="#svg-arrow-right"></use></svg>
             </a>
@@ -489,6 +544,10 @@ Video, Analog, Anthro, Units, Version, and CompInfo sections.</p>
 <li><a class="reference internal" href="#biomechzoo.utils.peak_sign.peak_sign"><code class="docutils literal notranslate"><span class="pre">peak_sign()</span></code></a></li>
 <li><a class="reference internal" href="#biomechzoo.utils.batchdisp.batchdisp"><code class="docutils literal notranslate"><span class="pre">batchdisp()</span></code></a></li>
 <li><a class="reference internal" href="#biomechzoo.utils.common_substring.common_substring_join"><code class="docutils literal notranslate"><span class="pre">common_substring_join()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.utils.zplot.zplot"><code class="docutils literal notranslate"><span class="pre">zplot()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.utils.combine_xsens_csv.combine_quats_to_csv"><code class="docutils literal notranslate"><span class="pre">combine_quats_to_csv()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.utils.group_by_terminal_folder.group_by_terminal_folder"><code class="docutils literal notranslate"><span class="pre">group_by_terminal_folder()</span></code></a></li>
+<li><a class="reference internal" href="#biomechzoo.utils.version.get_biomechzoo_version"><code class="docutils literal notranslate"><span class="pre">get_biomechzoo_version()</span></code></a></li>
 </ul>
 </li>
 </ul>
