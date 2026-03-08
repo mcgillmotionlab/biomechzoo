@@ -11,46 +11,36 @@ def lineval(root_folder: str, channel_name: str, output_format: Literal['array',
     """
     Extract time-normalized ``line`` arrays from Zoo files.
 
-    Recursively searches ``root_folder`` for ``.zoo`` files and extracts
-    the ``line`` field from the specified channel. Folder levels are used
-    to assign subject and condition labels.
+    This function recursively searches ``root_folder`` for ``.zoo`` files
+    and extracts the ``line`` field from the specified channel. Folder
+    levels are used to assign subject and condition labels.
 
-    Data must already be time-normalized. An error is raised if inconsistent
-    signal lengths are detected across files.
+    Data must already be time-normalized. The function will raise
+    an error if inconsistent signal lengths are detected.
 
-    Parameters
-    ----------
-    root_folder : str
-        Root directory containing the Zoo data files.
-    channel_name : str
-        Name of the channel to extract from each Zoo file.
-    output_format : {'array', 'wide'}, optional
-        Output format for the extracted data.
-        - ``'array'``: one column containing the full array (default).
-        - ``'wide'``: one column per timepoint (p0, p1, ...).
-    subject_level : int, optional
-        Folder depth index used to define the subject label
-        (0 = first folder below root). Default is 0.
-    condition_level : int, optional
-        Folder depth index used to define the condition label
-        (0 = first folder below root). Default is 1.
+    :param root_folder: Root directory containing data.
+    :type root_folder: str
+    :param channel_name: Name of the channel to extract.
+    :type channel_name: str
+    :param output_format: Output format.
+                   - ``'array'``: one column containing the full array (default)
+                   - ``'wide'``: one column per timepoint (p0, p1, ...)
+    :type output_format: Literal['array', 'wide']
+    :param subject_level: Folder index used to define subject label
+                          (0 = first folder below root).
+    :type subject_level: int
+    :param condition_level: Folder index used to define condition label
+                            (0 = first folder below root).
+    :type condition_level: int
 
-    Returns
-    -------
-    pandas.DataFrame
-        DataFrame containing extracted line data with subject, condition,
-        and trial columns.
+    :raises KeyError: If the specified channel or ``line`` field is missing.
+    :raises ValueError: If signals are not equal length (not normalized).
+    :raises ValueError: If invalid format is provided.
+    :raises IndexError: If folder depth is insufficient for specified levels.
 
-    Raises
-    ------
-    KeyError
-        If the specified channel is not found in a Zoo file.
-    ValueError
-        If signals are not of equal length (data not time-normalized),
-        or if an invalid ``output_format`` is provided.
-    IndexError
-        If the folder depth is insufficient for the specified
-        ``subject_level`` or ``condition_level``.
+    :return: DataFrame containing extracted line data with subject,
+             condition, and trial references.
+    :rtype: pandas.DataFrame
     """
 
     if output_format not in ['array', 'wide']:
