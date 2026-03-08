@@ -13,10 +13,16 @@ Install them once with::
 
     pip install -r docs/requirements.txt
 
-Then install the project's own dependencies so that Sphinx can import the
-source code and read the docstrings::
+Then install the project itself (this also pulls in all runtime dependencies
+such as ``scipy``, ``numpy``, ``pandas``, ``ezc3d``, and ``matplotlib``) so
+that Sphinx can import the source code and read the docstrings::
 
-    pip install scipy numpy pandas ezc3d matplotlib
+    pip install -e .
+
+Optionally, install ``sphinx-autobuild`` if you want live-reload during
+editing (see :ref:`livehtml`)::  
+
+    pip install sphinx-autobuild
 
 Step 1 — Understand the folder layout
 --------------------------------------
@@ -54,10 +60,12 @@ The key settings are:
 
     # Extensions used
     extensions = [
-        'sphinx.ext.autodoc',    # pulls docstrings automatically
-        'sphinx.ext.napoleon',   # understands NumPy-style docstrings
-        'sphinx.ext.viewcode',   # adds "View source" links
-        'sphinx_copybutton',     # copy button on code blocks
+        'sphinx.ext.autodoc',      # pulls docstrings automatically
+        'sphinx.ext.napoleon',     # understands NumPy-style docstrings
+        'sphinx.ext.viewcode',     # adds "View source" links
+        'sphinx.ext.autosummary',  # generates summary tables for modules
+        'sphinx.ext.intersphinx',  # cross-links to NumPy / SciPy / Python docs
+        'sphinx_copybutton',       # copy button on code blocks
     ]
 
     # Enable NumPy docstring parsing (not Google style)
@@ -92,11 +100,33 @@ Step 4 — Build the HTML docs
 
 From inside the ``docs/`` directory, run::
 
-    python3 -m sphinx source build/html
+    cd docs
+    make html
 
-Or, if ``sphinx-build`` is available on your PATH, you can use the Makefile::
+This calls ``sphinx-build -M html source build`` and writes the output to
+``docs/build/html/``.  Open ``docs/build/html/index.html`` in a browser to
+view the result.
+
+Alternatively, you can call Sphinx directly without the Makefile::
+
+    sphinx-build -M html docs/source docs/build
+
+.. _livehtml:
+
+Live-reload during editing
+^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+If you have ``sphinx-autobuild`` installed, the following command rebuilds the
+docs automatically whenever a source file changes and serves them at
+``http://127.0.0.1:8000``::
 
     cd docs
+    make livehtml
+
+To remove all generated files and force a clean rebuild::
+
+    cd docs
+    make clean
     make html
 
 Then open the output in a browser::

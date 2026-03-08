@@ -261,9 +261,15 @@ Install them once with:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">r</span> <span class="n">docs</span><span class="o">/</span><span class="n">requirements</span><span class="o">.</span><span class="n">txt</span>
 </pre></div>
 </div>
-<p>Then install the project’s own dependencies so that Sphinx can import the
-source code and read the docstrings:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">scipy</span> <span class="n">numpy</span> <span class="n">pandas</span> <span class="n">ezc3d</span> <span class="n">matplotlib</span>
+<p>Then install the project itself (this also pulls in all runtime dependencies
+such as <code class="docutils literal notranslate"><span class="pre">scipy</span></code>, <code class="docutils literal notranslate"><span class="pre">numpy</span></code>, <code class="docutils literal notranslate"><span class="pre">pandas</span></code>, <code class="docutils literal notranslate"><span class="pre">ezc3d</span></code>, and <code class="docutils literal notranslate"><span class="pre">matplotlib</span></code>) so
+that Sphinx can import the source code and read the docstrings:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="o">-</span><span class="n">e</span> <span class="o">.</span>
+</pre></div>
+</div>
+<p>Optionally, install <code class="docutils literal notranslate"><span class="pre">sphinx-autobuild</span></code> if you want live-reload during
+editing (see <a class="reference internal" href="#livehtml"><span class="std std-ref">Live-reload during editing</span></a>):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pip</span> <span class="n">install</span> <span class="n">sphinx</span><span class="o">-</span><span class="n">autobuild</span>
 </pre></div>
 </div>
 </section>
@@ -298,10 +304,12 @@ The key settings are:</p>
 
 <span class="c1"># Extensions used</span>
 <span class="n">extensions</span> <span class="o">=</span> <span class="p">[</span>
-    <span class="s1">&#39;sphinx.ext.autodoc&#39;</span><span class="p">,</span>    <span class="c1"># pulls docstrings automatically</span>
-    <span class="s1">&#39;sphinx.ext.napoleon&#39;</span><span class="p">,</span>   <span class="c1"># understands NumPy-style docstrings</span>
-    <span class="s1">&#39;sphinx.ext.viewcode&#39;</span><span class="p">,</span>   <span class="c1"># adds &quot;View source&quot; links</span>
-    <span class="s1">&#39;sphinx_copybutton&#39;</span><span class="p">,</span>     <span class="c1"># copy button on code blocks</span>
+    <span class="s1">&#39;sphinx.ext.autodoc&#39;</span><span class="p">,</span>      <span class="c1"># pulls docstrings automatically</span>
+    <span class="s1">&#39;sphinx.ext.napoleon&#39;</span><span class="p">,</span>     <span class="c1"># understands NumPy-style docstrings</span>
+    <span class="s1">&#39;sphinx.ext.viewcode&#39;</span><span class="p">,</span>     <span class="c1"># adds &quot;View source&quot; links</span>
+    <span class="s1">&#39;sphinx.ext.autosummary&#39;</span><span class="p">,</span>  <span class="c1"># generates summary tables for modules</span>
+    <span class="s1">&#39;sphinx.ext.intersphinx&#39;</span><span class="p">,</span>  <span class="c1"># cross-links to NumPy / SciPy / Python docs</span>
+    <span class="s1">&#39;sphinx_copybutton&#39;</span><span class="p">,</span>       <span class="c1"># copy button on code blocks</span>
 <span class="p">]</span>
 
 <span class="c1"># Enable NumPy docstring parsing (not Google style)</span>
@@ -333,11 +341,29 @@ from the source code and renders it as HTML automatically:</p>
 <section id="step-4-build-the-html-docs">
 <h2>Step 4 — Build the HTML docs<a class="headerlink" href="#step-4-build-the-html-docs" title="Link to this heading">¶</a></h2>
 <p>From inside the <code class="docutils literal notranslate"><span class="pre">docs/</span></code> directory, run:</p>
-<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">python3</span> <span class="o">-</span><span class="n">m</span> <span class="n">sphinx</span> <span class="n">source</span> <span class="n">build</span><span class="o">/</span><span class="n">html</span>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">docs</span>
+<span class="n">make</span> <span class="n">html</span>
 </pre></div>
 </div>
-<p>Or, if <code class="docutils literal notranslate"><span class="pre">sphinx-build</span></code> is available on your PATH, you can use the Makefile:</p>
+<p>This calls <code class="docutils literal notranslate"><span class="pre">sphinx-build</span> <span class="pre">-M</span> <span class="pre">html</span> <span class="pre">source</span> <span class="pre">build</span></code> and writes the output to
+<code class="docutils literal notranslate"><span class="pre">docs/build/html/</span></code>.  Open <code class="docutils literal notranslate"><span class="pre">docs/build/html/index.html</span></code> in a browser to
+view the result.</p>
+<p>Alternatively, you can call Sphinx directly without the Makefile:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">sphinx</span><span class="o">-</span><span class="n">build</span> <span class="o">-</span><span class="n">M</span> <span class="n">html</span> <span class="n">docs</span><span class="o">/</span><span class="n">source</span> <span class="n">docs</span><span class="o">/</span><span class="n">build</span>
+</pre></div>
+</div>
+<section id="live-reload-during-editing">
+<span id="livehtml"></span><h3>Live-reload during editing<a class="headerlink" href="#live-reload-during-editing" title="Link to this heading">¶</a></h3>
+<p>If you have <code class="docutils literal notranslate"><span class="pre">sphinx-autobuild</span></code> installed, the following command rebuilds the
+docs automatically whenever a source file changes and serves them at
+<code class="docutils literal notranslate"><span class="pre">http://127.0.0.1:8000</span></code>:</p>
 <div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">docs</span>
+<span class="n">make</span> <span class="n">livehtml</span>
+</pre></div>
+</div>
+<p>To remove all generated files and force a clean rebuild:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">cd</span> <span class="n">docs</span>
+<span class="n">make</span> <span class="n">clean</span>
 <span class="n">make</span> <span class="n">html</span>
 </pre></div>
 </div>
@@ -347,6 +373,7 @@ from the source code and renders it as HTML automatically:</p>
 <span class="n">xdg</span><span class="o">-</span><span class="nb">open</span> <span class="n">docs</span><span class="o">/</span><span class="n">build</span><span class="o">/</span><span class="n">html</span><span class="o">/</span><span class="n">index</span><span class="o">.</span><span class="n">html</span>  <span class="c1"># Linux</span>
 </pre></div>
 </div>
+</section>
 </section>
 <section id="step-5-keeping-docs-in-sync-with-code">
 <h2>Step 5 — Keeping docs in sync with code<a class="headerlink" href="#step-5-keeping-docs-in-sync-with-code" title="Link to this heading">¶</a></h2>
@@ -448,7 +475,10 @@ parse them correctly.  Example:</p>
 <li><a class="reference internal" href="#step-1-understand-the-folder-layout">Step 1 — Understand the folder layout</a></li>
 <li><a class="reference internal" href="#step-2-how-conf-py-works">Step 2 — How <code class="docutils literal notranslate"><span class="pre">conf.py</span></code> works</a></li>
 <li><a class="reference internal" href="#step-3-how-rst-api-pages-work">Step 3 — How <code class="docutils literal notranslate"><span class="pre">.rst</span></code> API pages work</a></li>
-<li><a class="reference internal" href="#step-4-build-the-html-docs">Step 4 — Build the HTML docs</a></li>
+<li><a class="reference internal" href="#step-4-build-the-html-docs">Step 4 — Build the HTML docs</a><ul>
+<li><a class="reference internal" href="#live-reload-during-editing">Live-reload during editing</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#step-5-keeping-docs-in-sync-with-code">Step 5 — Keeping docs in sync with code</a></li>
 <li><a class="reference internal" href="#step-6-numpy-docstring-format-required">Step 6 — NumPy docstring format (required)</a></li>
 </ul>
