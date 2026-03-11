@@ -6,7 +6,7 @@ from typing import Any, Dict, Literal
 from biomechzoo.utils.zload import zload
 
 
-def lineval(root_folder: str, channel_name: str, output_format: Literal['array', 'wide'] = 'array',
+def lineval(root_folder: str, channel_list: list, output_format: Literal['array', 'wide', 'long'] = 'array',
             subject_level: int = 0, condition_level: int = 1) -> pd.DataFrame:
     """
     Extract time-normalized ``line`` arrays from Zoo files.
@@ -43,11 +43,13 @@ def lineval(root_folder: str, channel_name: str, output_format: Literal['array',
     :rtype: pandas.DataFrame
     """
 
-    if output_format not in ['array', 'wide']:
-        raise ValueError("format must be 'array' or 'wide'")
+    if output_format not in ['array', 'wide', 'long']:
+        raise ValueError("format must be 'array', 'wide', or 'long'")
 
     results = []
     line_lengths = []
+    line_array = pd.DataFrame()
+    df = pd.DataFrame()
 
     for dirpath, _, files in os.walk(root_folder):
 
@@ -75,19 +77,24 @@ def lineval(root_folder: str, channel_name: str, output_format: Literal['array',
 
             data = zload(file_path)
 
-            if channel_name not in data:
-                raise KeyError(
-                    'Channel {} not found in {}'.format(channel_name, file_path)
-                )
+            for channel_name in channel_list:
 
-            line_array = np.asarray(data[channel_name]['line']).squeeze()
+                if channel_name not in data:
+                    raise KeyError(
+                        'Channel {} not found in {}'.format(channel_name, file_path)
+                    )
 
-            line_lengths.append(len(line_array))
+                if len(channel_list) > 1:
+                    line_array[channel_name] = data[channel_name]['line']
+                else:
+                    line_array = np.asarray(data[channel_name]['line']).squeeze()
+
+                line_lengths.append(len(line_array))
 
             base_row: Dict[str, Any] = {
                 'subject': subject,
                 'condition': condition,
-                'trial': file
+                'trial': file[:-4]
             }
 
             if output_format == 'array':
@@ -97,19 +104,29 @@ def lineval(root_folder: str, channel_name: str, output_format: Literal['array',
             elif output_format == 'wide':
                 for i in range(len(line_array)):
                     base_row['p{}'.format(i)] = line_array[i]
-
                 results.append(base_row)
+
+            if output_format == 'long':
+                for channel_name in channel_list:
+                    base_row[channel_name] = line_array[channel_name]
+                base_data = pd.DataFrame.from_dict(base_row)
+
+                df = pd.concat([df,base_data])
 
             print('Line extracted from {}'.format(file_path))
 
-    # Strict normalization check
-    if len(set(line_lengths)) > 1:
-        raise ValueError(
-            'Line arrays are not equal length. '
-            'Data must be time-normalized before calling lineval().'
-        )
+        # Strict normalization check
+        if len(set(line_lengths)) > 1:
+            raise ValueError(
+                'Line arrays are not equal length. '
+                'Data must be time-normalized before calling lineval().'
+            )
 
-    df = pd.DataFrame(results)
+    if output_format == 'long':
+        None
+
+    else:
+        df = pd.DataFrame(results)
 
     return df
 
