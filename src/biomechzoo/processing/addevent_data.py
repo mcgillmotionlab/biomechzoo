@@ -175,6 +175,26 @@ def addevent_data(
                 exd_array = np.where(threshold_signal > constant)[0]
                 exd = exd_array[-1] + 1
                 eyd = yd[exd]
+        elif etype == 'heel_mrkr':
+
+            if fsamp is None:
+                raise ValueError(f'Sampling frequency missing')
+
+            # --- Extract marker trajectory ---
+            yd = data_new[channel]['line']
+
+            # --- Find local minimums ---
+            exd_array = find_peaks(yd * -1, prominence=1, distance=fsamp)[0]
+            exd = list(exd_array)
+            eyd = yd[exd]
+
+            # --- Visualize identified peaks ---
+            # x = np.linspace(0, 10, len(yd))
+            # plt.plot(x, yd, color='black')
+            # plt.plot(x[exd_array], yd[exd_array], 'x', label='mins')
+            # plt.legend()
+            # plt.show()
+
         else:
             raise ValueError(f'Unknown event type: {etype}')
 
