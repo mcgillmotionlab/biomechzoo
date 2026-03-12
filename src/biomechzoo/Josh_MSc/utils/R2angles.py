@@ -30,9 +30,14 @@ def R2angles_data(data:dict, prox_key:str, dist_key:str, order:str, rot_prox_axi
                             in the 'order' argument, respectively.
     """
 
-    R_prox = R.from_matrix(
-        matrix = data[prox_key]['matrix']
-    )
+    if 'matrix' in data[prox_key]:
+        R_prox = R.from_matrix(
+            matrix = data[prox_key]['matrix']
+        )
+    else:
+        R_prox = R.from_matrix(
+            matrix = data[prox_key]['line']
+        )
 
     if rot_prox_axis is not None:
 
@@ -45,9 +50,15 @@ def R2angles_data(data:dict, prox_key:str, dist_key:str, order:str, rot_prox_axi
 
         R_prox = R_prox * transform
 
-    R_dist = R.from_matrix(
-        matrix = data[dist_key]['matrix']
-    )
+    if 'matrix' in data[dist_key]:
+        R_dist = R.from_matrix(
+            matrix = data[dist_key]['matrix']
+        )
+    else:
+        R_dist = R.from_matrix(
+            matrix = data[dist_key]['line']
+        )
+
 
     if rot_dist_axis is not None:
         transform = R.from_matrix(
@@ -60,6 +71,12 @@ def R2angles_data(data:dict, prox_key:str, dist_key:str, order:str, rot_prox_axi
         R_dist = R_dist * transform
 
     R_rel = R_prox.inv() * R_dist
+
+    DCM = {
+        f"{prox_key}_{dist_key}_R": {'matrix': R.as_matrix(R_rel)},
+    }
+
+    data.update(DCM)
 
     euler = R_rel.as_euler(order, degrees=True)
 
