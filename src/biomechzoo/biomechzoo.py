@@ -4,7 +4,7 @@ import time
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
 from biomechzoo.imu.kinematics import imu_angles_data
-from biomechzoo.Josh_MSc.utils.R2angles import R2angles_data
+from biomechzoo.imu.kinematics import R2angles_data
 from biomechzoo.biomech_ops.resample import resample_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
