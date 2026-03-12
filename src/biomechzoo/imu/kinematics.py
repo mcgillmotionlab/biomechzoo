@@ -3,18 +3,27 @@ import numpy as np
 
 def load_quats(data:dict, prefix:str) -> np.ndarray:
     """
-    Returns a stacked np.ndarray containing the w, x, y, z components of a quaternion in scalar first order.
+    Load quaternion components for a segment into a stacked array.
 
-    Note:           the function assumes that data will have a prefix before quaternions from different segments.
-                    For example:
+    Assumes channel keys follow the pattern ``<prefix>_Quat_W``,
+    ``<prefix>_Quat_X``, ``<prefix>_Quat_Y``, ``<prefix>_Quat_Z``.
 
-                    data.keys() = [LSh_Quat_W, LSh_Quat_X, ... LF_Quat_W, LF_Quat_X, ...]
+    Parameters
+    ----------
+    data : dict
+        Zoo data dictionary containing quaternion channels.
+    prefix : str
+        Segment prefix (e.g., ``'LF'``) identifying which sensor to load.
 
-                    load_quats(data, prefix='LF_') -> returns LF_Quat_W, LF_Quat_X, LF_Quat_Y, LF_Quat_Z
+    Returns
+    -------
+    ndarray of shape (n, 4)
+        Stacked quaternion components in scalar-first order [W, X, Y, Z].
 
-    :param data:    dict containing the sensor data
-    :param prefix:  the prefix defining the segment that is being loaded
-    :return:        stacked np.ndarray containing the w, x, y, z components of the sensor from the desired sensor
+    Notes
+    -----
+    Example: ``load_quats(data, prefix='LF')`` returns the columns
+    corresponding to ``LF_Quat_W``, ``LF_Quat_X``, ``LF_Quat_Y``, ``LF_Quat_Z``.
     """
 
     # Define the keys to search for segment data
@@ -68,17 +77,32 @@ def create_rot_matrix(axis: str, degrees: float) -> np.ndarray:
 
 def imu_angles_data(data:dict, prox_prefix:str, dist_prefix:str, order:str) -> dict:
     """
-    Compute Euler angles describing the orientation of the distal segment with respect to the proximal segment.
+    Compute Euler angles of the distal segment relative to the proximal segment.
 
-    :param data:            dict containing the quaternions for each sensor
-    :param prox_prefix:     prefix defining the proximal segment
-    :param dist_prefix:     prefix defining the distal segment
-    :param order:           order of the IMU sensors. Note, the case of the order changes between intrinsic or extrinsic rotations.
-                            For more information please reference the scipy.spatial.transform documentation:
-                            https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
+    Parameters
+    ----------
+    data : dict
+        Zoo data dictionary containing quaternion channels for each sensor.
+    prox_prefix : str
+        Channel prefix for the proximal segment (e.g., ``'LSh'``).
+    dist_prefix : str
+        Channel prefix for the distal segment (e.g., ``'LF'``).
+    order : str
+        Euler angle rotation order passed to
+        :meth:`scipy.spatial.transform.Rotation.as_euler`. Case determines
+        intrinsic (uppercase) vs extrinsic (lowercase) rotations.
 
-    :return:                dict containing the Euler angles with alpha, beta, and gamma representing the first, second,
-                            and third rotations in the sequence, respectively. Results are in degrees.
+    Returns
+    -------
+    dict
+        Dictionary with keys ``'<prox>_<dist>_alpha'``, ``'<prox>_<dist>_beta'``,
+        and ``'<prox>_<dist>_gamma'``, each containing a ``'line'`` array of
+        Euler angles in degrees for the first, second, and third rotation
+        in the sequence, respectively.
+
+    References
+    ----------
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
     """
     q_prox = load_quats(data, prefix=prox_prefix)
     q_dist = load_quats(data, prefix=dist_prefix)

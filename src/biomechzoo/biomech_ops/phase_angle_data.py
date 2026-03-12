@@ -3,12 +3,31 @@ from biomechzoo.processing.addchannel_data import addchannel_data
 
 
 def phase_angle_data(data, channels):
-    """Compute phase angle using Hilbert Transform.
-    Arguments
-        data: dict, zoo data to operate on
-        channels, list. Channel names on which to apply calculations
-    Returns:
-        data: dict, zoo data with calculations appended to new channel(s)
+    """
+    Compute phase angle for one or more channels using the Hilbert transform.
+
+    Parameters
+    ----------
+    data : dict
+        Biomechanical data dictionary loaded from a zoo file.
+    channels : list of str
+        Channel names on which to compute the phase angle.
+
+    Returns
+    -------
+    dict
+        Updated data dictionary with phase angle results appended as new
+        channels named '<channel>_phase_angle'.
+
+    Raises
+    ------
+    ValueError
+        If a specified channel is not found in the data dictionary.
+
+    See Also
+    --------
+    phase_angle_line : Core line-level phase angle computation.
+    continuous_relative_phase_data : Compute CRP from phase angle channels.
     """
     data_new = data.copy()
     for ch in channels:

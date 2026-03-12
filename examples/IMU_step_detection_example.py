@@ -19,8 +19,9 @@ bmech.split_trial_by_gait_cycle(first_event_name="FS_1", out_folder="split_trial
 bmech.normalize(out_folder="normalized")
 
 #%% Plot
+subject_pattern = [r"\b\d{3}[A-Z]{2}\b", r"\b\d{3}[A-Z]{3}\b"]
 
-ensembler = Ensembler(fld=bmech.in_folder, ch=["gy_shank"],name_contains=["Jogging", "002"], conditions=["pre"])
+ensembler = Ensembler(fld=bmech.in_folder, ch=["gy_shank"],name_contains=["Jogging", "002"], conditions=["pre"], subject_pattern=subject_pattern)
 ensembler.cycles()
 
 ensembler.save("cycles")

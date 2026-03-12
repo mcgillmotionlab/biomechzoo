@@ -4,14 +4,30 @@ from biomechzoo.biomech_ops.normalize_line import normalize_line
 
 
 def normalize_data(data, nlength=101):
-    """normalize all channels in the loaded zoo dict to nlen.
-    Arguments
-        data: dict, loaded zoo file
-        nlength: int: new length of data. Default = 101, usually a movement cycle
-    Returns:
-        None
-    Notes:
-        -It is often needed to partition data to a single cycle first (see partition_data)
+    """
+    Normalize all channels in a zoo data dictionary to a target length.
+
+    Parameters
+    ----------
+    data : dict
+        Biomechanical data dictionary loaded from a zoo file.
+    nlength : int, optional
+        Target number of samples after normalization. Default is 101,
+        which corresponds to 0-100% of a movement cycle.
+
+    Returns
+    -------
+    dict
+        Deep copy of the input data with all channel 'line' arrays
+        resampled to ``nlength`` samples.
+
+    Notes
+    -----
+    It is often necessary to partition data to a single cycle first
+    (see :func:`partition_data`) before normalizing.
+
+    Event data and zoosystem metadata are not fully updated in the
+    current implementation; warnings are issued accordingly.
     """
 
     # normalize channel length

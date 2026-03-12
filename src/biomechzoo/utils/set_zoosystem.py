@@ -5,15 +5,18 @@ from biomechzoo.utils.version import get_biomechzoo_version
 
 def set_zoosystem(fl=None):
     """
-    Create the 'zoosystem' branch for data being imported to BiomechZoo.
+    Create the 'zoosystem' metadata branch for data imported into BiomechZoo.
 
-    Args:
-        fl: str
-            Path to the source file (e.g., C3D or CSV).
+    Parameters
+    ----------
+    fl : str, optional
+        Path to the source file (e.g., a C3D or CSV file).
 
-    Returns:
-        zoosystem: dict
-            Dictionary containing default BiomechZoo system parameters.
+    Returns
+    -------
+    dict
+        Dictionary containing default BiomechZoo system parameters including
+        Video, Analog, Anthro, Units, Version, and CompInfo sections.
     """
 
     # Default top-level fields

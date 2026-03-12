@@ -4,7 +4,7 @@ requires-python = "==3.11.*"
 
 [[package]]
 name = "biomechzoo"
-version = "0.7.0"
+version = "0.7.12"
 source = { editable = "." }
 dependencies = [
     { name = "dash" },
@@ -20,13 +20,13 @@ dependencies = [
 
 [package.metadata]
 requires-dist = [
-    { name = "dash", specifier = "==3.3.0" },
+    { name = "dash", specifier = ">=3.3.0" },
     { name = "ezc3d", specifier = ">=1.5.19" },
-    { name = "kaleido", specifier = "==1.2.0" },
+    { name = "kaleido", specifier = ">=1.2.0" },
     { name = "matplotlib", specifier = ">=3.10.6" },
     { name = "numpy", specifier = "==2.2.6" },
     { name = "pandas", specifier = ">=2.3.2" },
-    { name = "plotly", specifier = "==6.4.0" },
+    { name = "plotly", specifier = ">=6.4.0" },
     { name = "pyarrow", specifier = ">=19.0.0" },
     { name = "scipy", specifier = ">=1.16.2" },
 ]

@@ -5,7 +5,7 @@ def filter_data(data, ch, filt=None):
     """
     Filter one or more channels from a zoo data dictionary using specified filter parameters.
 
-    Arguments
+    Parameters
     ----------
     data : dict
         The zoo data dictionary containing signal channels.

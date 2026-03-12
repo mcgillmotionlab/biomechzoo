@@ -1,13 +1,21 @@
 def continuous_relative_phase_line(dist, prox):
-    """ This function determines the CRP on a 0-180 scale, correcting for
-       discontinuity in the signals >180.
+    """
+    Compute continuous relative phase (CRP) between two kinematic waveforms.
 
-    Arguments
-    dist, ndarray: data of distal segment or joint
-    prox, ndarray: data of proximal segment or joibt
+    Determines CRP on a 0-180 scale, correcting for discontinuities
+    in signals greater than 180 degrees.
+
+    Parameters
+    ----------
+    dist : ndarray
+        Kinematic data of the distal segment or joint.
+    prox : ndarray
+        Kinematic data of the proximal segment or joint.
 
     Returns
-    crp, ndarray: continous relative phase betweeen dist and prox data
+    -------
+    crp : ndarray
+        Continuous relative phase between dist and prox data.
     """
     temp_CRP = abs(dist - prox)
     idx = temp_CRP > 180  # This corrects discontinuity in the data and puts everything on a 0-180 scale.

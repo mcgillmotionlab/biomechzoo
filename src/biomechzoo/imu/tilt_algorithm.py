@@ -19,9 +19,10 @@ def tilt_algorithm_data(data,ch_vert, ch_medlat, ch_antpost, plot_or_not=None):
     return data
 
 
-def tilt_algorithm_line(avert, amedlat, aantpost, plot_or_not=None):
+def tilt_algorithm_line(avert, amedlat, aantpost):
     """
     TiltAlgorithm - to account for gravity and improper tilt alignment of a tri-axial trunk accelerometer.
+
     Step 1: Extract raw measured (mean) accelerations
     Step 2: Calculate tilt angles
     Step 3: Calculate horizontal dynamic accelerations vectors
@@ -31,12 +32,29 @@ def tilt_algorithm_line(avert, amedlat, aantpost, plot_or_not=None):
     step 6.2 Transpose static component matrices
     step 7: Remove the static components from the templates of pre and post
 
-    :param avert: signal predominantly in vertical direction
-    :param amedlat: signal predominantly in medio-lateral direction
-    :param aantpost: signal predominantly in anterior-posterior direction
-    :param plot_or_not: whether to plot the results
-    :return: dataframe of the tilt corrected and gravity subtracted vertical, medio-lateral and anterior-posterior
-    acceleration signals
+    Parameters
+    ----------
+    avert : 1D-array
+        data predominantly in vertical direction. Expressed in g's
+    amedlat : 1D-array:
+        data predominantly in medio-lateral direction. Expressed in g's
+    aantpost : 1D-array
+        data predominantly in anterior-posterior direction. Expressed in g's
+    Returns
+    -------
+    df_corrected : Nx3 DataFrame
+        the tilt corrected and gravity subtracted vertical, medio-lateral and anterior-posterior
+        acceleration signals
+    avert2: 1D-array
+        the tilt corrected acceleration data in vertical direction
+    amedlat2 : 1D-array
+        the tilt corrected acceleration data in medio-lateral direction
+    aantpost2: 1D-array
+        the tilt corrected acceleration data in anterior-posterior direction
+    Notes
+    -----
+    -  If average acceleration is above 5m/s^2, the signal will be corrected.
+
     """
 
     a_vt = avert.mean()
@@ -98,27 +116,5 @@ def tilt_algorithm_line(avert, amedlat, aantpost, plot_or_not=None):
             'amedlat': amedlat2,
             'aantpost': aantpost2}
     df_corrected = pd.DataFrame(data)
-
-    # if plot_or_not:
-    #     f, ax = plt.subplots(nrows=3, ncols=1, sharex=True, dpi=300)
-    #     sns.despine(offset=10)
-    #     f.tight_layout()
-    #     offset = 0.1
-    #     f.subplots_adjust(left=0.15, top=0.95)
-    #
-    #     sns.lineplot(avert, ax=ax[0], label='Raw')
-    #     sns.lineplot(avert2, ax=ax[0], label='tilt corrected')
-    #     ax[0].set_ylabel('vert acc (g)')
-    #     ax[0].set_title('Vertical acceleration corrected with {}'.format(np.round(a_VT_static, 2)))
-    #
-    #     sns.lineplot(amedlat, ax=ax[1], label='Raw')
-    #     sns.lineplot(amedlat2, ax=ax[1], label='Tilt corrected')
-    #     ax[1].set_ylabel('ml acc (g)')
-    #     ax[1].set_title('Medio-lateral tilt angle corrected with {} degrees'.format(np.round(TiltAngle_ml_deg, 2)))
-    #
-    #     sns.lineplot(aantpost, ax=ax[2], label='Raw')
-    #     sns.lineplot(aantpost2, ax=ax[2], label='Tilt corrected')
-    #     ax[2].set_ylabel('ap acc (g)')
-    #     ax[2].set_title('Anterior-posterior tilt angle corrected with {} degrees'.format(np.round(TiltAngle_ap_deg, 2)))
 
     return df_corrected, avert2, amedlat2, aantpost2

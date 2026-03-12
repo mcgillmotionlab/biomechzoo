@@ -6,10 +6,10 @@ from biomechzoo.utils.set_zoosystem import set_zoosystem
 from biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_rate_from_time
 
 
-def table2zoo_data(fl, extension, skip_rows=0, freq=None, data_type='Video'):
+def table2zoo_data(fl, extension, skip_rows=0, freq=None, data_type='Video', sep=None):
 
     if 'csv' in extension:
-        df, metadata = _csv2zoo(fl, skip_rows=skip_rows, freq=freq)
+        df, metadata = _csv2zoo(fl, skip_rows=skip_rows, sep=sep)
 
     elif 'parquet' in extension:
         df, metadata= _parquet2zoo(fl)
@@ -57,7 +57,7 @@ def _parquet2zoo(fl):
     metadata = None
     return df, metadata
 
-def _csv2zoo(fl, skip_rows=0, freq=None):
+def _csv2zoo(fl, skip_rows, sep):
     header_lines = []
     with open(fl, 'r') as f:
         for line in f:
@@ -68,7 +68,7 @@ def _csv2zoo(fl, skip_rows=0, freq=None):
     metadata = _parse_metadata(header_lines)
 
     # read csv
-    df = pd.read_csv(fl, skiprows=skip_rows)
+    df = pd.read_csv(fl, skiprows=skip_rows, sep=sep)
 
     return df, metadata
 
