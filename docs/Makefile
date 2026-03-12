@@ -1,0 +1,27 @@
+# Minimal Makefile for Sphinx documentation
+#
+# Usage:
+#   make html      — build HTML docs into docs/build/html/
+#   make clean     — remove the build directory
+#   make livehtml  — auto-rebuild on file changes (requires sphinx-autobuild)
+
+SPHINXOPTS    ?=
+SPHINXBUILD   ?= sphinx-build
+SOURCEDIR     = source
+BUILDDIR      = build
+
+.PHONY: help html clean livehtml
+
+help:
+	@$(SPHINXBUILD) -M help "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+html:
+	@$(SPHINXBUILD) -M html "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+	@echo ""
+	@echo "Build finished. Open build/html/index.html to view the docs."
+
+clean:
+	@$(SPHINXBUILD) -M clean "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
+
+livehtml:
+	sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS) $(O)

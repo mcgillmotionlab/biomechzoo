@@ -3,6 +3,7 @@ import inspect
 import time
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
+from biomechzoo.imu.kinematics import imu_angles_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
@@ -26,20 +27,26 @@ from biomechzoo.biomech_ops.continuous_relative_phase_data import continuous_rel
 from biomechzoo.biomech_ops.filter_data import filter_data
 from biomechzoo.linear_algebra_ops.compute_magnitude_data import compute_magnitude_data
 from biomechzoo.linear_algebra_ops.rectify import rectify_data
+from biomechzoo.utils.group_by_terminal_folder import group_by_terminal_folder
+from biomechzoo.processing.rep_trial_data import reptrial_data
+
 class BiomechZoo:
-    def __init__(self, in_folder, inplace=False, subfolders=None, name_contains=None, verbose=0):
+    def __init__(self, in_folder, inplace=False, subfolders=None, name_contains=None, name_excludes=None, verbose=0):
         self.verbose = verbose
         self.in_folder = in_folder
         self.verbose = verbose
         self.inplace = inplace               # choice to save processed files to new folder
         self.subfolders = subfolders         # only run processes on list in subfolder
         self.name_contains = name_contains   # only run processes on files with name_contains in file name
-
+        self.name_excludes = name_excludes   # only run processes on files without name_excludes in file name
         batchdisp('BiomechZoo initialized', level=1, verbose=verbose)
         batchdisp('verbosity set to: {}'.format(verbose), level=1, verbose=verbose)
         batchdisp('root processing folder set to: {}'.format(self.in_folder), level=1, verbose=verbose)
         if name_contains is not None:
             batchdisp('only include files containing name_contains string: {}'.format(self.name_contains), level=1, verbose=verbose)
+        if name_excludes is not None:
+            batchdisp('excludes files containing name_excludes string: {}'.format(self.name_excludes), level=1,
+                      verbose=verbose)
         if subfolders is not None:
             if type(subfolders) is list:
                 batchdisp('only process files in subfolder(s):', level=1, verbose=verbose)
@@ -97,7 +104,6 @@ class BiomechZoo:
     #             data = zload(f)
 
 
-
     def mvnx2zoo(self, out_folder=None, inplace=False):
         """ Converts all .mvnx files in the folder to .zoo format """
         start_time = time.time()
@@ -105,7 +111,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.mvnx', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.mvnx', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             batchdisp('converting mvnx to zoo for {}'.format(f), level=2, verbose=verbose)
             data = mvnx2zoo_data(f)
@@ -124,7 +131,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.c3d', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.c3d', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             batchdisp('converting c3d to zoo for {}'.format(f), level=2, verbose=verbose)
             c3d_obj = c3d(f)
@@ -147,7 +155,8 @@ class BiomechZoo:
 
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension=extension, name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension=extension, name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             batchdisp('converting {} to zoo for {}'.format(extension, f), level=2, verbose=verbose)
             data = table2zoo_data(f, extension=extension, skip_rows=skip_rows, freq=freq, sep=sep)
@@ -194,7 +203,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             batchdisp('tilt correction of acceleration channels for {}'.format(f), level=2, verbose=verbose)
             data = zload(f)
@@ -207,18 +217,100 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def compute_magnitude(self, chname1, chname2, chname3, out_folder=None, inplace=False):
-        """ compute euclidean magnitude  """
+    def rep_trial(self, channels='all', method='mean', out_folder=None, inplace=False):
+        """
+        Extract representative trial per subject/condition folder.
+
+        Parameters
+        ----------
+        channels : list of str or 'all', optional
+            Channels used to compute the representative trial. Default is 'all'.
+        method : {'mean', 'rmse'}, optional
+            Method for computing the representative trial. Default is 'mean'.
+        out_folder : str, optional
+            Output folder path.
+        inplace : bool, optional
+            If True, overwrite existing files. Default is False.
+        """
+
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+
+        if inplace is None:
+            inplace = self.inplace
+
+        method = method.lower()
+
+        # find all zoo files
+        fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
+
+        if len(fl) == 0:
+            batchdisp('rep_trial: no zoo files found', level=1, verbose=verbose)
+            return
+
+        # group files by terminal folder
+        groups = group_by_terminal_folder(fl, in_folder)
+
+        for folder, files in groups.items():
+            if len(files) == 0:
+                batchdisp('{} : no trials found'.format(folder), level=2, verbose=verbose)
+                continue
+
+            if len(files) == 1:
+                batchdisp('{} : only 1 trial, keeping single trial'.format(folder), level=2, verbose=verbose)
+                continue
+
+            batchdisp('{} : building rep trial from {} trials'.format(folder, len(files)),
+                      level=2, verbose=verbose)
+
+            # load data
+            gdata = {}
+            for i, f in enumerate(files):
+                gdata['data{}'.format(i + 1)] = zload(f)
+
+            # compute representative trial
+            data, file_index = reptrial_data(gdata, channels, method)
+
+            # delete old trials
+            for f in files:
+                os.remove(f)
+
+            # output filename
+            if method == 'mean':
+                fout = files[0].replace('.zoo', '_mean.zoo')
+            elif method == 'rmse':
+                fout = files[file_index]
+            else:
+                raise ValueError('Method {} not implemented'.format(method))
+
+            batchdisp('saving representative trial {}'.format(fout),
+                      level=2, verbose=verbose)
+
+            zsave(fout, data, inplace=inplace,
+                  out_folder=out_folder, root_folder=in_folder)
+
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp('{} process complete in {:.2f} secs'.format(method_name, time.time() - start_time),
+            level=1, verbose=verbose)
+
+        # Update folder after processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def compute_magnitude(self, chname1, chname2, chname3, ch_new_name=None, out_folder=None, inplace=False):
+        """ compute euclidean magnitude as a new channel  """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             batchdisp('compute magnitude from channels {}, {}, {} for {}'.format(chname1, chname2, chname3, f), level=2, verbose=verbose)
             data = zload(f)
-            data = compute_magnitude_data(data, chname1, chname2, chname3)
+            data = compute_magnitude_data(data, chname1, chname2, chname3, ch_new_name)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp(
@@ -234,7 +326,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             batchdisp('rectifying signal for channels {} for {}'.format(chs, f), level=2, verbose=verbose)
             data = zload(f)
@@ -253,7 +346,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             if verbose:
                 batchdisp('computing phase angles for {}'.format(f), level=2, verbose=verbose)
@@ -273,7 +367,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             if verbose:
                 batchdisp('computing CRP angles between channel {} (prox) and {} (dist) for {}'.format(ch_prox, ch_dist, f), level=2, verbose=verbose)
@@ -293,7 +388,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             f_name = os.path.splitext(os.path.basename(f))[0]
             data = zload(f)
@@ -317,24 +413,6 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-
-    # def mean_absolute_relative_phase_deviation_phase(self, channels, out_folder=None, inplace=None):
-    #     verbose = self.verbose
-    #     in_folder = self.in_folder
-    #     if inplace is None:
-    #         inplace = self.inplace
-    #
-    #     fl = engine(in_folder)
-    #     for f in fl:
-    #         for channel in channels:
-    #             batchdisp('collecting trials for marp and dp for {}'.format(f), level=2, verbose=verbose)
-    #             data = zload(f)
-    #             data = removechannel_data(data, ch, mode)
-    #             zsave(f, data, inplace=inplace, root_folder=in_folder, out_folder=out_folder)
-    #             batchdisp('remove channel complete', level=1, verbose=verbose)
-    #
-    #     # Update self.folder after  processing
-    #     self._update_folder(out_folder, inplace, in_folder)
     def renameevent(self, evt, nevt, out_folder=None, inplace=None):
         """ renames event evt to nevt in all zoo files """
         start_time = time.time()
@@ -342,7 +420,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             batchdisp('renaming events from {} to {} for {}'.format(evt, nevt ,f), level=2, verbose=verbose)
             data = zload(f)
@@ -361,7 +440,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             batchdisp('renaming channels from {} to {} for {}'.format(ch, ch_new ,f), level=2, verbose=verbose)
             data = zload(f)
@@ -380,7 +460,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             batchdisp('removing channels for {}'.format(f), level=2, verbose=verbose)
             data = zload(f)
@@ -400,7 +481,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             batchdisp('removing events {} for {}'.format(events, f), level=2, verbose=verbose)
             data = zload(f)
@@ -420,7 +502,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             if verbose:
                 batchdisp('removing channels for {}'.format(f), level=2, verbose=verbose)
@@ -440,7 +523,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             if verbose:
                 batchdisp('normalizing channels to length {} for {}'.format(nlen, f), level=2, verbose=verbose)
@@ -453,19 +537,20 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def addevent(self, ch, event_type, event_name, out_folder=None, inplace=None, constant=None):
+    def addevent(self, ch, event_type, event_name, out_folder=None, inplace=None, fsamp = None, constant=None):
         """ adds events of type evt_type with name evt_name to channel ch """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             if verbose:
                 batchdisp('adding event {} to channel {} for {}'.format(event_type, ch, f), level=2, verbose=verbose)
             data = zload(f)
-            data = addevent_data(data, ch, event_name, event_type, constant)
+            data = addevent_data(data, ch, event_name, event_type, fsamp, constant)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
@@ -480,7 +565,8 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             if verbose:
                 batchdisp('partitioning data between events {} and {} for {}'.format(evt_start, evt_end, f), level=2, verbose=verbose)
@@ -499,12 +585,36 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
         for f in fl:
             if verbose:
                 batchdisp('filtering data for channel {} in {}'.format(ch, f), level=2, verbose=verbose)
             data = zload(f)
             data = filter_data(data, ch, filt)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
+            level=1, verbose=verbose)
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def imu_angles(self, prox_prefix:str, dist_prefix:str, order: str, out_folder=None, inplace=None):
+
+        """
+        Determines the 3D angles between two IMUs
+        """
+
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,  subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('imu_angles for channel {}'.format(f), level=2, verbose=verbose)
+            data = zload(f)
+            data = imu_angles_data(data, prox_prefix, dist_prefix, order)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),

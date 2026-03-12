@@ -3,7 +3,37 @@ import scipy.signal as sgl
 
 
 def filter_line(signal_raw, filt=None, fs=None):
-    """Filter an array using a Butterworth filter."""
+    """
+    Filter a 1-D signal array using a Butterworth filter.
+
+    Parameters
+    ----------
+    signal_raw : ndarray
+        Raw 1-D signal to be filtered.
+    filt : dict, optional
+        Filter parameter dictionary with keys:
+        - 'ftype' : str — filter type, e.g. 'butter' (default)
+        - 'order' : int — filter order (default: 4)
+        - 'cutoff' : float or tuple — cutoff frequency in Hz
+        - 'btype' : str — 'lowpass', 'highpass', 'bandpass', or 'bandstop'
+        - 'filtfilt' : bool — zero-phase filtering if True
+        - 'fs' : float — sampling frequency in Hz (required)
+    fs : float, optional
+        Sampling frequency in Hz. Only used when filt is not provided.
+
+    Returns
+    -------
+    signal_filtered : ndarray
+        Filtered signal array.
+
+    Raises
+    ------
+    ValueError
+        If 'fs' is not provided when filt is None, or if 'fs' key is
+        missing from the filt dictionary.
+    NotImplementedError
+        If a filter type other than 'butter' is specified.
+    """
     #todo: verify that filter is working correctly
     #todo add more filters
     #todo: consider using kineticstoolkit
@@ -52,27 +82,34 @@ def filter_line(signal_raw, filt=None, fs=None):
 
 def kt_butter(ts, fc, fs, order=2, btype='lowpass', filtfilt=True):
     """
-    Apply a Butterworth filter to data.
+    Apply a Butterworth filter to a time series.
 
     Parameters
     ----------
-    ts, ndarray, 1d.
-    fc, Cut-off frequency in Hz. This is a float for single-frequency filters
-        (lowpass, highpass), or a tuple of two floats (e.g., (10., 13.)
-        for two-frequency filters (bandpass, bandstop)).
-    order, Optional. Order of the filter. Default is 2.
-    btype, Optional. Can be either "lowpass", "highpass", "bandpass" or
-        "bandstop". Default is "lowpass".
-    filtfilt, Optional. If True, the filter is applied two times in reverse direction
-        to eliminate time lag. If False, the filter is applied only in forward
-        direction. Default is True.
+    ts : ndarray
+        1-D input time series to filter.
+    fc : float or tuple of float
+        Cut-off frequency in Hz. Use a float for lowpass/highpass filters,
+        or a tuple of two floats (e.g., ``(10., 13.)``) for bandpass/bandstop.
+    fs : float
+        Sampling frequency in Hz.
+    order : int, optional
+        Order of the Butterworth filter. Default is 2.
+    btype : {'lowpass', 'highpass', 'bandpass', 'bandstop'}, optional
+        Type of filter. Default is 'lowpass'.
+    filtfilt : bool, optional
+        If True, the filter is applied twice (forward and backward) to
+        eliminate phase lag. If False, only a forward pass is applied.
+        Default is True.
 
     Returns
     -------
-    ts_f,  A copy of the input data which each data being filtered.
-    
-    Notes: 
-    - This code was adapted from kineticstoolkit Thanks @felxi
+    ts_f : ndarray
+        Filtered copy of the input time series.
+
+    Notes
+    -----
+    This function was adapted from kineticstoolkit. Thanks @felxi.
     """
 
     sos = sgl.butter(order, fc, btype, analog=False, output="sos", fs=fs)

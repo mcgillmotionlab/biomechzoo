@@ -1,24 +1,50 @@
 import copy
 import warnings
+from typing import Dict, List, Union, Any
 from biomechzoo.utils.findfield import findfield
 
-def removeevent_data(data, events, mode='remove'):
+def removeevent_data(
+    data: Dict[str, Any],
+    events: Union[str, List[str]],
+    mode: str = 'remove'
+) -> Dict[str, Any]:
     """
-    Remove or keep specified events in all channels of a zoo dictionary.
+    Remove or retain specified events across all channels in a biomechanical
+    data structure.
+
+    This function operates on every channel in the input data dictionary,
+    either removing the specified events or keeping only the specified
+    events (removing all others). Events not found in the data generate
+    a warning and are skipped.
 
     Parameters
     ----------
-    data : dict
-        Zoo data loaded from a file
-    events : list of str
-        Events to remove or keep
-    mode : str
-        'remove' or 'keep'
+    data : dict of str to Any
+        Biomechanical data dictionary loaded from a .zoo file.
+    events : str or list of str
+        Event name or list of event names to remove or retain.
+    mode : {'remove', 'keep'}, optional
+        Operation mode. If 'remove', specified events are deleted.
+        If 'keep', only the specified events are retained and all
+        others are removed. Default is 'remove'.
 
     Returns
     -------
-    dict
-        Modified zoo dictionary with events removed or kept
+    dict of str to Any
+        Deep copy of the input data with events modified according
+        to the selected mode.
+
+    Raises
+    ------
+    ValueError
+        If `mode` is not 'remove' or 'keep'.
+
+    Notes
+    -----
+    Events not found in the data generate a warning but do not
+    raise an error.
+
+    The operation is applied to all channels in the data structure.
     """
     if mode not in ['remove', 'keep']:
         raise ValueError("mode must be 'remove' or 'keep'.")

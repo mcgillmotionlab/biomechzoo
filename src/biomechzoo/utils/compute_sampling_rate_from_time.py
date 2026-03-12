@@ -2,12 +2,20 @@ import numpy as np
 
 
 def compute_sampling_rate_from_time(t, verbose=False):
-    """ computes sampling rate from time column
-    Arguments
-    t, 1D numpy array, recorded times
+    """
+    Compute the sampling rate from a time column.
+
+    Parameters
+    ----------
+    t : ndarray
+        1-D array of recorded timestamps in seconds.
+    verbose : bool, optional
+        If True, print the computed sampling rate. Default is False.
 
     Returns
-    fsamp, int: sampling rate of capture
+    -------
+    fsamp : int
+        Sampling rate in Hz, rounded to the nearest integer.
     """
     # Calculate differences between consecutive time points
     dt = np.diff(t)
