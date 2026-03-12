@@ -39,7 +39,7 @@ def main():
     )
 
     # STEP 2: Calculate the 3D angles between the IMU sensors ##########################################
-    bmech.imu_angles(
+    bmech.quats2euler(
         prox_prefix="RSh",
         dist_prefix="RF",
         order="XZY",
@@ -47,7 +47,7 @@ def main():
         inplace=False
     )
 
-    bmech.imu_angles(
+    bmech.quats2euler(
         prox_prefix="RSh",
         dist_prefix="RH",
         order="XZY",
@@ -55,7 +55,7 @@ def main():
         inplace=False
     )
 
-    bmech.imu_angles(
+    bmech.quats2euler(
         prox_prefix="RH",
         dist_prefix="RF",
         order="XZY",
@@ -63,7 +63,7 @@ def main():
         inplace=False
     )
 
-    bmech.imu_angles(
+    bmech.quats2euler(
         prox_prefix="RF",
         dist_prefix="RT",
         order="XZY",

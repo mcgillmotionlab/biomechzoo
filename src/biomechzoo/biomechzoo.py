@@ -3,8 +3,8 @@ import inspect
 import time
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
-from biomechzoo.imu.kinematics import imu_angles_data
-from biomechzoo.imu.kinematics import R2angles_data
+from biomechzoo.linear_algebra_ops.kinematics import quats2euler
+from biomechzoo.linear_algebra_ops.kinematics import dcms2euler_data
 from biomechzoo.biomech_ops.resample import resample_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
@@ -621,10 +621,10 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def imu_angles(self, prox_prefix:str, dist_prefix:str, order: str, out_folder=None, inplace=False):
+    def quats2euler(self, prox_prefix:str, dist_prefix:str, order: str, out_folder=None, inplace=False):
 
         """
-        Determines the 3D angles between two IMUs
+        Generates joint angles given proximal and distal quaterion orientation representations.
         """
 
         start_time = time.time()
@@ -634,9 +634,10 @@ class BiomechZoo:
             inplace = self.inplace
         fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,  subfolders=self.subfolders)
         for f in fl:
-            batchdisp('imu_angles for channel {}'.format(f), level=2, verbose=verbose)
+            batchdisp('quats2euler for distal channel {} with respect to proximal channel {} using sequence {} for {}'.
+                      format(dist_prefix, prox_prefix, order, f), level=2, verbose=verbose)
             data = zload(f)
-            data = imu_angles_data(data, prox_prefix, dist_prefix, order)
+            data = quats2euler(data, prox_prefix, dist_prefix, order)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
@@ -644,10 +645,10 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def R2angles(self, prox_key, dist_key, order, rot_prox_axis = None, rot_dist_axis = None, rot_deg = None,
-                 out_folder=None, inplace=False):
+    def dcms2euler(self, prox_key, dist_key, order, rot_prox_axis = None, rot_dist_axis = None, rot_deg = None,
+                   out_folder=None, inplace=False):
         """
-        Generates joint angles given a direction cosine matrix.
+        Generates joint angles given proximal and distal direction cosine matrix orientation representations.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -657,9 +658,10 @@ class BiomechZoo:
 
         fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
         for f in fl:
-            batchdisp('R2angles for channel {}'.format(f), level=2, verbose=verbose)
+            batchdisp('DCMs2euler for distal channel {} with respect to proximal channel {} using sequence {} for {}'.
+                      format(dist_key, prox_key, order, f), level=2, verbose=verbose)
             data = zload(f)
-            data = R2angles_data(data, prox_key, dist_key, order, rot_prox_axis, rot_dist_axis, rot_deg)
+            data = dcms2euler_data(data, prox_key, dist_key, order, rot_prox_axis, rot_dist_axis, rot_deg)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp(
