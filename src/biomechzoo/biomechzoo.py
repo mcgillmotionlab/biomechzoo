@@ -13,7 +13,7 @@ from biomechzoo.processing.split_trial_data import split_trial_data
 from biomechzoo.conversion.c3d2zoo_data import c3d2zoo_data
 from biomechzoo.conversion.table2zoo_data import table2zoo_data
 from biomechzoo.conversion.mvnx2zoo_data import mvnx2zoo_data
-from biomechzoo.conversion.combine_zoo_data import combine_files_within, combine_files_between
+from biomechzoo.processing.combine_files_data import combine_files_within, combine_files_between
 from biomechzoo.processing.removechannel_data import removechannel_data
 from biomechzoo.processing.renamechannel_data import renamechannel_data
 from biomechzoo.processing.removeevent_data import removeevent_data
@@ -178,7 +178,7 @@ class BiomechZoo:
 
     def combine_files(self, within=True, suffix=None, out_folder=None, inplace=None,
                       fld1=None, fld2=None, method=None, fl1exlude=None, fl2exclude=None, strmatch=None):
-        """Merge .zoo file into 1 zoo-file."""
+        """Merge multiple .zoo file into 1 zoo-file."""
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
