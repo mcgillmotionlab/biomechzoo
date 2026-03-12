@@ -1,36 +1,20 @@
-from biomechzoo.utils.combine_xsens_csv import combine_quats_to_csv
+from biomechzoo.Josh_MSc.utils.csv_combine import combine_imu_to_csv
 from biomechzoo.visualization.ensembler import Ensembler
 from biomechzoo.biomechzoo import BiomechZoo
 import os
-
-# Defining the desired file paths:
-example_root = os.path.dirname(os.path.dirname(__file__))
-common_root = os.path.join(example_root, 'data', 'imu_xsens_dot', 'raw data')
-lsh_data_short = os.path.join(common_root, 'short_example ', 'LSh_20250818_114924.csv')
-lf_data_short = os.path.join(common_root, 'short_example ','LF_20250818_114924.csv')
-rsh_data_long_2 = os.path.join(common_root, 'long_example', '123AA_RSh.csv')
-rf_data_long_2 = os.path.join(common_root, 'long_example','123AA_RF.csv')
-rt_data_long_2 = os.path.join(common_root, 'long_example','123AA_RT.csv')
-rh_data_long_2 = os.path.join(common_root, 'long_example','123AA_RH.csv')
-rsh_data_long_3 = os.path.join(common_root, 'long_example', '123AB_RSh.csv')
-rf_data_long_3 = os.path.join(common_root, 'long_example','123AB_RF.csv')
-rt_data_long_3 = os.path.join(common_root, 'long_example','123AB_RT.csv')
-rh_data_long_3 = os.path.join(common_root, 'long_example','123AB_RH.csv')
-out_fld = os.path.join(example_root, 'data', 'imu_xsens_dot', '0-create_combined_data')
-
 
 def main():
 
     # Combine the quaternions from our two sensors #####################################################
 
-    combine_quats_to_csv(
+    combine_imu_to_csv(
         csv_files=[rsh_data_long_2, rf_data_long_2, rt_data_long_2, rh_data_long_2],
         prefixes=["RSh", "RF", "RT", "RH"],
         out_folder= out_fld,
         out_filename="123AA_combined.csv"
     )
 
-    combine_quats_to_csv(
+    combine_imu_to_csv(
         csv_files=[rsh_data_long_3, rf_data_long_3, rt_data_long_3, rh_data_long_3],
         prefixes=["RSh", "RF", "RT", "RH"],
         out_folder= out_fld,
@@ -126,7 +110,7 @@ def main():
     ensembler.save(
         file_name="Combined Waveforms",
         extension="jpeg",
-        folder = os.path.join(example_root, 'data', 'imu_xsens_dot', '6 - Figures')
+        folder = os.path.join(example_root, 'data', 'imu_do_not_upload', '6 - Figures')
     )
 
     ensembler.average()
@@ -134,9 +118,23 @@ def main():
     ensembler.save(
         file_name="Mean(SD) Waveforms",
         extension="jpeg",
-        folder = os.path.join(example_root, 'data', 'imu_xsens_dot', '6 - Figures')
+        folder = os.path.join(example_root, 'data', 'imu_do_not_upload', '6 - Figures')
     )
 
+# Defining the desired file paths:
+example_root = os.path.dirname(os.path.dirname(__file__))
+common_root = os.path.join(example_root, 'data', 'imu_do_not_upload', 'raw data')
+lsh_data_short = os.path.join(common_root, 'short_example ', 'LSh_20250818_114924.csv')
+lf_data_short = os.path.join(common_root, 'short_example ','LF_20250818_114924.csv')
+rsh_data_long_2 = os.path.join(common_root, 'long_example', '123AA_RSh.csv')
+rf_data_long_2 = os.path.join(common_root, 'long_example','123AA_RF.csv')
+rt_data_long_2 = os.path.join(common_root, 'long_example','123AA_RT.csv')
+rh_data_long_2 = os.path.join(common_root, 'long_example','123AA_RH.csv')
+rsh_data_long_3 = os.path.join(common_root, 'long_example', '123AB_RSh.csv')
+rf_data_long_3 = os.path.join(common_root, 'long_example','123AB_RF.csv')
+rt_data_long_3 = os.path.join(common_root, 'long_example','123AB_RT.csv')
+rh_data_long_3 = os.path.join(common_root, 'long_example','123AB_RH.csv')
+out_fld = os.path.join(example_root, 'data', 'imu_do_not_upload', '0-create_combined_data')
 
 if __name__ == "__main__":
     main()
