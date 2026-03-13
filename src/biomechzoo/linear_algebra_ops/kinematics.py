@@ -1,5 +1,6 @@
 from scipy.spatial.transform import Rotation as R
 import numpy as np
+from biomechzoo.processing.addchannel_data import addchannel_data
 
 
 def load_quats(data:dict, prefix:str) -> np.ndarray:
@@ -115,13 +116,9 @@ def quats2euler(data:dict, prox_prefix:str, dist_prefix:str, order:str) -> dict:
 
     euler = R_rel.as_euler(order, degrees=True)
 
-    angles = {
-        f"{prox_prefix}_{dist_prefix}_alpha": {"line": euler[:, 0]},
-        f"{prox_prefix}_{dist_prefix}_beta":  {"line": euler[:, 1]},
-        f"{prox_prefix}_{dist_prefix}_gamma": {"line": euler[:, 2]},
-    }
-
-    data.update(angles)
+    data = addchannel_data(data=data,ch_new_name=(f'{prox_prefix}_{dist_prefix}_alpha'), ch_new_data= euler[:,0])
+    data = addchannel_data(data=data,ch_new_name=(f'{prox_prefix}_{dist_prefix}_beta'), ch_new_data= euler[:,1])
+    data = addchannel_data(data=data,ch_new_name=(f'{prox_prefix}_{dist_prefix}_gamma'), ch_new_data= euler[:,2])
 
     return data
 
@@ -201,12 +198,8 @@ def dcms2euler_data(data:dict, prox_key:str, dist_key:str, order:str, rot_prox_a
 
     euler = R_rel.as_euler(order, degrees=True)
 
-    angles = {
-        f"{prox_key}_{dist_key}_alpha": {"line": euler[:, 0]},
-        f"{prox_key}_{dist_key}_beta":  {"line": euler[:, 1]},
-        f"{prox_key}_{dist_key}_gamma": {"line": euler[:, 2]},
-    }
-
-    data.update(angles)
+    data = addchannel_data(data=data,ch_new_name=(f'{prox_key}_{dist_key}_alpha'), ch_new_data= euler[:,0])
+    data = addchannel_data(data=data,ch_new_name=(f'{prox_key}_{dist_key}_beta'), ch_new_data= euler[:,1])
+    data = addchannel_data(data=data,ch_new_name=(f'{prox_key}_{dist_key}_gamma'), ch_new_data= euler[:,2])
 
     return data
