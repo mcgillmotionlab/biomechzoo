@@ -162,14 +162,12 @@ def dcms2euler_data(data:dict, prox_key:str, dist_key:str, order:str, rot_prox_a
                             in the 'order' argument, respectively.
     """
 
-    if 'matrix' in data[prox_key]:
-        R_prox = R.from_matrix(
-            matrix = data[prox_key]['matrix']
-        )
-    else:
-        R_prox = R.from_matrix(
-            matrix = data[prox_key]['line']
-        )
+    R_prox_array = np.stack(
+        [data[f'{prox_key}_x']['line'], data[f'{prox_key}_y']['line'], data[f'{prox_key}_z']['line']],
+        axis=-1
+    )
+
+    R_prox = R.from_matrix(R_prox_array)
 
     if rot_prox_axis is not None:
 
@@ -182,15 +180,12 @@ def dcms2euler_data(data:dict, prox_key:str, dist_key:str, order:str, rot_prox_a
 
         R_prox = R_prox * transform
 
-    if 'matrix' in data[dist_key]:
-        R_dist = R.from_matrix(
-            matrix = data[dist_key]['matrix']
-        )
-    else:
-        R_dist = R.from_matrix(
-            matrix = data[dist_key]['line']
-        )
+    R_dist_array = np.stack(
+        [data[f'{dist_key}_x']['line'], data[f'{dist_key}_y']['line'], data[f'{dist_key}_z']['line']],
+        axis=-1
+    )
 
+    R_dist = R.from_matrix(R_dist_array)
 
     if rot_dist_axis is not None:
         transform = R.from_matrix(
@@ -203,12 +198,6 @@ def dcms2euler_data(data:dict, prox_key:str, dist_key:str, order:str, rot_prox_a
         R_dist = R_dist * transform
 
     R_rel = R_prox.inv() * R_dist
-
-    DCM = {
-        f"{prox_key}_{dist_key}_R": {'matrix': R.as_matrix(R_rel)},
-    }
-
-    data.update(DCM)
 
     euler = R_rel.as_euler(order, degrees=True)
 
