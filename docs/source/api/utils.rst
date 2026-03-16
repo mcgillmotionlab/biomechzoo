@@ -16,6 +16,9 @@ File I/O
 .. automodule:: biomechzoo.utils.engine
    :members:
 
+.. automodule:: biomechzoo.utils.fileparts
+   :members:
+
 Data Structure
 --------------
 
