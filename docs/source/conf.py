@@ -1,5 +1,6 @@
 import os
 import sys
+from importlib.metadata import version as _pkg_version
 
 # Make the src/ package importable by Sphinx
 sys.path.insert(0, os.path.abspath('../../src'))
@@ -10,7 +11,9 @@ sys.path.insert(0, os.path.abspath('../../src'))
 project = 'biomechzoo'
 copyright = '2026, McGill Motion Lab'
 author = 'McGill Motion Lab'
-release = '0.7.10'
+# Automatically read the version from pyproject.toml (via the installed package)
+# so you only need to update the version in one place.
+release = _pkg_version('biomechzoo')
 
 # ---------------------------------------------------------------------------
 # Extensions

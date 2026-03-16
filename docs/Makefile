@@ -1,12 +1,15 @@
 # Minimal Makefile for Sphinx documentation
 #
-# Usage:
-#   make html      — build HTML docs into docs/build/html/
-#   make clean     — remove the build directory
-#   make livehtml  — auto-rebuild on file changes (requires sphinx-autobuild)
+# Usage (from the project root, using uv — no manual pip install needed):
+#   make -C docs html      — build HTML docs into docs/build/html/
+#   make -C docs clean     — remove the build directory
+#   make -C docs livehtml  — auto-rebuild on file changes (serves at http://127.0.0.1:8000)
+#
+# uv automatically installs sphinx and related tools from the [dependency-groups] docs
+# section in pyproject.toml. No need to run `pip install -r requirements.txt` manually.
 
 SPHINXOPTS    ?=
-SPHINXBUILD   ?= sphinx-build
+SPHINXBUILD   ?= uv run --group docs sphinx-build
 SOURCEDIR     = source
 BUILDDIR      = build
 
@@ -24,4 +27,4 @@ clean:
 	@$(SPHINXBUILD) -M clean "$(SOURCEDIR)" "$(BUILDDIR)" $(SPHINXOPTS) $(O)
 
 livehtml:
-	sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS) $(O)
+	uv run --group docs sphinx-autobuild "$(SOURCEDIR)" "$(BUILDDIR)/html" $(SPHINXOPTS) $(O)

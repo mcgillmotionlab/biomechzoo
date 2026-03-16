@@ -28,6 +28,14 @@ biomechzoo = "main:main"
 requires = ["setuptools>=78.1.0", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
 
+[dependency-groups]
+docs = [
+    "sphinx>=7.0",
+    "furo>=2024.1.29",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-autobuild>=2024.0.0",
+]
+
 [[tool.uv.index]]
 name = "testbiomechzoo"
 url = "https://test.pypi.org/simple/"
