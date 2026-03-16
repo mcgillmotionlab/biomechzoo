@@ -39,12 +39,24 @@ def load_quats(data:dict, prefix:str) -> np.ndarray:
 
 def create_rot_matrix(axis: str, degrees: float) -> np.ndarray:
     """
-    Creates a 3 x 3 matrix describing a rotation around the given axis.
+    Create a 3x3 rotation matrix for a rotation about a principal axis.
 
-    :param      axis: 'X', 'Y', or 'Z'
-    :param      degrees: rotation angle in degrees
+    Parameters
+    ----------
+    axis : {'X', 'Y', 'Z'}
+        The axis to rotate about (case-insensitive).
+    degrees : float
+        Rotation angle in degrees.
 
-    :return:    3 x 3 matrix
+    Returns
+    -------
+    ndarray of shape (3, 3)
+        Rotation matrix describing the rotation about the given axis.
+
+    Raises
+    ------
+    ValueError
+        If ``axis`` is not ``'X'``, ``'Y'``, or ``'Z'``.
     """
 
     axis = axis.upper()
@@ -126,37 +138,49 @@ def quats2euler(data:dict, prox_prefix:str, dist_prefix:str, order:str) -> dict:
 def dcms2euler_data(data:dict, prox_key:str, dist_key:str, order:str, rot_prox_axis:str = None,
                     rot_dist_axis:str = None, rot_deg:float = None) -> dict:
     """
-    Determines joint angles given a direction cosine matrix and a rotation order.
-
-    #todo: fix docstrings to numpy style
+    Compute joint angles from direction cosine matrices (DCMs) stored in a zoo file.
 
     Parameters
     ----------
-
-    data:            .zoo file containing the direction cosine matrix representing the orientations of the
-                            proximal and distal segments with respect to a global reference frame.
-    rox_key:        The key distinguishing the proximal segment's direction cosine matrix.
-    dist_key:        The key distinguishing the distal segment's direction cosine matrix.
-    order:           The rotation order to be used. Note that case determines if this rotation in intrinsic
-                            or extrinsic. For more information, please refer to scipy.spatial.transform.Rotation docs:
-                            https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
-    rot_prox_axis:   Optional. Determines if one of the segment's proximal local coordinate systems is to be
-                            rotated before the calculation of joint angles. If this rotation is desired, the user must
-                            input the axis they desire to rotate about (i.e., either "X", "Y" or "Z". For more
-                            information, please refer to the 'create_rot_matrix' function.
-    rot_dist_axis:   Optional. Determines if one of the segment's distal local coordinate systems is to be
-                            rotated before the calculation of joint angles. If this rotation is desired, the user must
-                            input the axis they desire to rotate about (i.e., either "X", "Y" or "Z". For more
-                            information, please refer to the 'create_rot_matrix' function.
-    rot_deg:         Optional. If either 'rot_prox_axis' or 'rot_dist_axis' are specified, this argument will
-                            determine the magnitude of the rotation of the coordinate system (in degrees)
+    data : dict
+        Zoo data dictionary containing DCM channels for the proximal and
+        distal segments.
+    prox_key : str
+        Channel key for the proximal segment's direction cosine matrix
+        (e.g., ``'Thigh'``).
+    dist_key : str
+        Channel key for the distal segment's direction cosine matrix
+        (e.g., ``'Shank'``).
+    order : str
+        Euler angle rotation order passed to
+        :meth:`scipy.spatial.transform.Rotation.as_euler`. Case determines
+        intrinsic (uppercase) vs extrinsic (lowercase) rotations.
+    rot_prox_axis : {'X', 'Y', 'Z'} or None, optional
+        If provided, the proximal segment's coordinate system is rotated
+        about this axis before computing joint angles. Requires
+        ``rot_deg`` to be set. Default is ``None``.
+    rot_dist_axis : {'X', 'Y', 'Z'} or None, optional
+        If provided, the distal segment's coordinate system is rotated
+        about this axis before computing joint angles. Requires
+        ``rot_deg`` to be set. Default is ``None``.
+    rot_deg : float or None, optional
+        Magnitude of the coordinate system rotation in degrees. Required
+        when ``rot_prox_axis`` or ``rot_dist_axis`` is specified.
+        Default is ``None``.
 
     Returns
     -------
-                    The .zoo file will be returned with the addition of the joint angles added. The dictionary
-                            specifies the joint angle data through its keys containing the proximal and distal segment,
-                            as well as 'alpha', 'beta', and 'gamma', specifying the first, second, and third rotations
-                            in the 'order' argument, respectively.
+    dict
+        The input ``data`` dictionary updated with three new channels:
+        ``'<prox_key>_<dist_key>_alpha'``, ``'<prox_key>_<dist_key>_beta'``,
+        and ``'<prox_key>_<dist_key>_gamma'``, containing the first, second,
+        and third Euler angles (in degrees) respectively.
+        The relative rotation matrix is also stored under
+        ``'<prox_key>_<dist_key>_R'``.
+
+    References
+    ----------
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
     """
 
     R_prox_array = np.stack(

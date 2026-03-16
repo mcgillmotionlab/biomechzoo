@@ -3,13 +3,21 @@ import os
 
 def fileparts(file):
     """
-    Splits the file path into directory, filename, extension and subject folder.
+    Split a file path into its directory, filename, and extension.
 
-    Arguments:
-    file_path -- str. The full file path.
+    Parameters
+    ----------
+    file : str
+        Full path to the file.
 
-    Returns:
-    tuple -- (directory, filename, extension)
+    Returns
+    -------
+    directory : str
+        Directory containing the file.
+    filename : str
+        Base filename without extension.
+    extension : str
+        File extension including the leading dot (e.g. ``'.zoo'``).
     """
 
     directory = os.path.dirname(file)
