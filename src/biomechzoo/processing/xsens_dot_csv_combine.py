@@ -13,6 +13,35 @@ def combine_quats_to_csv():
 
 def combine_imu_to_csv_data(csv_files: list[str], prefixes: list[str], skip_rows:int = None ,out_folder: str = None, out_filename: str = None,
     verbose: int = 1) -> str:
+    """
+    Merge multiple Xsens DOT CSV files into a single combined CSV file.
+
+    Each sensor file is identified by a prefix. Quaternion, gyroscope, and
+    accelerometer columns from every file are renamed with the corresponding
+    prefix and concatenated side-by-side.
+
+    Parameters
+    ----------
+    csv_files : list of str
+        Ordered list of paths to the individual sensor CSV files.
+    prefixes : list of str
+        Ordered list of sensor prefixes (e.g. ``['LF', 'RF', 'Trunk']``).
+        Must be the same length as ``csv_files``.
+    skip_rows : int or None, optional
+        Number of header rows to skip when reading each CSV. Default is ``None``.
+    out_folder : str or None, optional
+        Directory to write the combined CSV. Defaults to ``'combined_csvs'``
+        inside the current working directory.
+    out_filename : str or None, optional
+        Name of the output CSV file. Defaults to ``'combined_sensors.csv'``.
+    verbose : int, optional
+        If non-zero, prints the path of the saved file. Default is ``1``.
+
+    Returns
+    -------
+    str
+        Absolute path to the saved combined CSV file.
+    """
 
     if out_folder is None:
         out_folder = "combined_csvs"
@@ -52,6 +81,40 @@ def combine_imu_to_csv_data(csv_files: list[str], prefixes: list[str], skip_rows
 
 def combine_imu_to_csv(prefixes: list[str],in_folder,out_folder=None,inplace=False,name_contains=None,subfolders=None,
     verbose=1):
+    """
+    Batch-combine Xsens DOT CSV files for multiple subjects.
+
+    Searches ``in_folder`` recursively for CSV files, groups them by subject
+    (parent folder name), matches files to ``prefixes`` by filename suffix,
+    then calls :func:`combine_imu_to_csv_data` for each subject.
+
+    Parameters
+    ----------
+    prefixes : list of str
+        Sensor prefixes to match and order (e.g. ``['LF', 'RF', 'Trunk']``).
+        Files whose basename ends with a prefix will be selected.
+    in_folder : str
+        Root folder to search for CSV files.
+    out_folder : str or None, optional
+        Root output folder. Each subject gets its own subfolder. Defaults to
+        the subject's source folder.
+    inplace : bool, optional
+        Not currently used. Reserved for future in-place saving. Default is ``False``.
+    name_contains : str or list of str or None, optional
+        Only include files whose path contains this substring or all these
+        substrings. Default is ``None`` (no filter).
+    subfolders : str or list of str or None, optional
+        Only include files located inside these subfolder names. Default is
+        ``None`` (no filter).
+    verbose : int, optional
+        Verbosity level. ``0`` = silent, ``1`` = summary, ``2`` = per-subject.
+        Default is ``1``.
+
+    Returns
+    -------
+    None
+        Results are saved to disk; nothing is returned.
+    """
 
     start_time = time.time()
     files = list(engine(
