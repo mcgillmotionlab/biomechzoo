@@ -3,7 +3,7 @@ import numpy as np
 from biomechzoo.processing.addchannel_data import addchannel_data
 
 
-def load_quats(data:dict, prefix:str) -> np.ndarray:
+def load_quats(data:dict, suffix:str) -> np.ndarray:
     """
     Load quaternion components for a segment into a stacked array.
 
@@ -14,8 +14,8 @@ def load_quats(data:dict, prefix:str) -> np.ndarray:
     ----------
     data : dict
         Zoo data dictionary containing quaternion channels.
-    prefix : str
-        Segment prefix (e.g., ``'LF'``) identifying which sensor to load.
+    suffix : str
+        Segment suffix (e.g., ``'LF'``) identifying which sensor to load.
 
     Returns
     -------
@@ -24,13 +24,13 @@ def load_quats(data:dict, prefix:str) -> np.ndarray:
 
     Notes
     -----
-    Example: ``load_quats(data, prefix='LF')`` returns the columns
-    corresponding to ``LF_Quat_W``, ``LF_Quat_X``, ``LF_Quat_Y``, ``LF_Quat_Z``.
+    Example: ``load_quats(data, suffix='LF')`` returns the columns
+    corresponding to ``Quat_W_LF``, ``Quat_X_LF``, ``Quat_Y_LF``, ``Quat_Z_LF``.
     """
 
     # Define the keys to search for segment data
     base = ["W", "X", "Y", "Z"]
-    keys = [f"{prefix}_Quat_{b}" for b in base]
+    keys = [f"Quat_{b}_{suffix}" for b in base]
 
     # Extract keys
     quat_components = [data[k]['line'] for k in keys]
