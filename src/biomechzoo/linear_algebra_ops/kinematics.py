@@ -118,8 +118,8 @@ def quats2euler(data:dict, prox_prefix:str, dist_prefix:str, order:str) -> dict:
     ----------
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
     """
-    q_prox = load_quats(data, prefix=prox_prefix)
-    q_dist = load_quats(data, prefix=dist_prefix)
+    q_prox = load_quats(data, suffix=prox_prefix)
+    q_dist = load_quats(data, suffix=dist_prefix)
 
     R_prox = R.from_quat(q_prox, scalar_first=True)
     R_dist = R.from_quat(q_dist, scalar_first=True)
