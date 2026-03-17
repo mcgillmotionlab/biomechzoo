@@ -89,7 +89,7 @@ def create_rot_matrix(axis: str, degrees: float) -> np.ndarray:
 
     return R
 
-def quats2euler(data:dict, prox_prefix:str, dist_prefix:str, order:str) -> dict:
+def quats2euler(data:dict, prox_suffix:str, dist_suffix:str, order:str) -> dict:
     """
     Compute Euler angles of the distal segment relative to the proximal segment from quaterion data.
 
