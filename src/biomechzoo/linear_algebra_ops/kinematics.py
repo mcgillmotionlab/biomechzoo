@@ -89,7 +89,7 @@ def create_rot_matrix(axis: str, degrees: float) -> np.ndarray:
 
     return R
 
-def quats2euler(data:dict, prox_suffix:str, dist_suffix:str, order:str) -> dict:
+def quats2euler_data(data:dict, prox_suffix:str, dist_suffix:str, order:str) -> dict:
     """
     Compute Euler angles of the distal segment relative to the proximal segment from quaterion data.
 
@@ -118,8 +118,8 @@ def quats2euler(data:dict, prox_suffix:str, dist_suffix:str, order:str) -> dict:
     ----------
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
     """
-    q_prox = load_quats(data, suffix=prox_prefix)
-    q_dist = load_quats(data, suffix=dist_prefix)
+    q_prox = load_quats(data, suffix=prox_suffix)
+    q_dist = load_quats(data, suffix=dist_suffix)
 
     R_prox = R.from_quat(q_prox, scalar_first=True)
     R_dist = R.from_quat(q_dist, scalar_first=True)
@@ -128,9 +128,9 @@ def quats2euler(data:dict, prox_suffix:str, dist_suffix:str, order:str) -> dict:
 
     euler = R_rel.as_euler(order, degrees=True)
 
-    data = addchannel_data(data=data,ch_new_name=(f'{prox_prefix}_{dist_prefix}_alpha'), ch_new_data= euler[:,0])
-    data = addchannel_data(data=data,ch_new_name=(f'{prox_prefix}_{dist_prefix}_beta'), ch_new_data= euler[:,1])
-    data = addchannel_data(data=data,ch_new_name=(f'{prox_prefix}_{dist_prefix}_gamma'), ch_new_data= euler[:,2])
+    data = addchannel_data(data=data,ch_new_name=(f'{prox_suffix}_{dist_suffix}_alpha'), ch_new_data= euler[:,0])
+    data = addchannel_data(data=data,ch_new_name=(f'{prox_suffix}_{dist_suffix}_beta'), ch_new_data= euler[:,1])
+    data = addchannel_data(data=data,ch_new_name=(f'{prox_suffix}_{dist_suffix}_gamma'), ch_new_data= euler[:,2])
 
     return data
 

@@ -3,7 +3,7 @@ import inspect
 import time
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
-from biomechzoo.linear_algebra_ops.kinematics import quats2euler
+from biomechzoo.linear_algebra_ops.kinematics import quats2euler_data
 from biomechzoo.linear_algebra_ops.kinematics import dcms2euler_data
 from biomechzoo.biomech_ops.resample import resample_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
@@ -621,7 +621,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def quats2euler(self, prox_prefix:str, dist_prefix:str, order: str, out_folder=None, inplace=False):
+    def quats2euler(self, prox_suffix:str, dist_suffix:str, order: str, out_folder=None, inplace=False):
 
         """
         Generates joint angles given proximal and distal quaterion orientation representations.
@@ -635,9 +635,9 @@ class BiomechZoo:
         fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,  subfolders=self.subfolders)
         for f in fl:
             batchdisp('quats2euler for distal channel {} with respect to proximal channel {} using sequence {} for {}'.
-                      format(dist_prefix, prox_prefix, order, f), level=2, verbose=verbose)
+                      format(dist_suffix, prox_suffix, order, f), level=2, verbose=verbose)
             data = zload(f)
-            data = quats2euler(data, prox_prefix, dist_prefix, order)
+            data = quats2euler_data(data, prox_suffix, dist_suffix, order)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
