@@ -1,4 +1,3 @@
-from biomechzoo.utils.combine_xsens_csv import combine_quats_to_csv
 from biomechzoo.visualization.ensembler import Ensembler
 from biomechzoo.biomechzoo import BiomechZoo
 import os
