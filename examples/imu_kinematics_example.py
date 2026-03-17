@@ -3,77 +3,70 @@ from biomechzoo.visualization.ensembler import Ensembler
 from biomechzoo.biomechzoo import BiomechZoo
 import os
 
+
+# Defining the desired file paths:
+example_root = os.path.dirname(os.path.dirname(__file__))
+
 def main():
 
-    # Combine the quaternions from our two sensors #####################################################
-
-    combine_quats_to_csv(
-        csv_files=[rsh_data_long_2, rf_data_long_2, rt_data_long_2, rh_data_long_2],
-        prefixes=["RSh", "RF", "RT", "RH"],
-        out_folder= out_fld,
-        out_filename="123AA_combined.csv"
-    )
-
-    combine_quats_to_csv(
-        csv_files=[rsh_data_long_3, rf_data_long_3, rt_data_long_3, rh_data_long_3],
-        prefixes=["RSh", "RF", "RT", "RH"],
-        out_folder= out_fld,
-        out_filename="123AB_combined.csv"
-    )
-
     # STEP 0: Initialize our BiomechZoo object #########################################################
-    root = os.getcwd()
-    fld = os.path.join(root, out_fld)
 
     bmech = BiomechZoo(
-        in_folder=fld,
+        in_folder=os.path.join(example_root, 'data', 'imu_xsens_dot', 'raw data'),
         inplace = False,
         verbose=2
     )
 
     # STEP 1: Convert out combined quaternion file into a .zoo file ####################################
     bmech.table2zoo(
-        out_folder= "1 - table2zoo_combined",
+        out_folder= "1 - table2zoo",
         extension='.csv',
         freq = 120
     )
 
-    # STEP 2: Calculate the 3D angles between the IMU sensors ##########################################
+    # STEP 2: Convert out combined quaternion file into a .zoo file ####################################
+    bmech.combine_files(
+        within=True,
+        suffix=['RF', 'RH', 'RSh', 'RT'],
+        out_folder="2 - combined",
+    )
+
+    # STEP 3: Calculate the 3D angles between the IMU sensors ##########################################
     bmech.quats2euler(
-        prox_prefix="RSh",
-        dist_prefix="RF",
+        prox_suffix="RSh",
+        dist_suffix="RF",
         order="XZY",
-        out_folder= "2 - relative_angles_combined",
+        out_folder= "3 - relative_angles_combined",
         inplace=False
     )
 
     bmech.quats2euler(
-        prox_prefix="RSh",
-        dist_prefix="RH",
+        prox_suffix="RSh",
+        dist_suffix="RH",
         order="XZY",
-        out_folder= "2 - relative_angles_combined",
+        out_folder= "3 - relative_angles_combined",
         inplace=False
     )
 
     bmech.quats2euler(
-        prox_prefix="RH",
-        dist_prefix="RF",
+        prox_suffix="RH",
+        dist_suffix="RF",
         order="XZY",
-        out_folder= "2 - relative_angles_combined",
+        out_folder= "3 - relative_angles_combined",
         inplace=False
     )
 
     bmech.quats2euler(
-        prox_prefix="RF",
-        dist_prefix="RT",
+        prox_suffix="RF",
+        dist_suffix="RT",
         order="XZY",
-        out_folder= "2 - relative_angles_combined",
+        out_folder= "3 - relative_angles_combined",
         inplace=False
     )
 
     # STEP 3: Add heel strikes using the mcgrath method ###########################################
     bmech.addevent(
-        ch="RSh_Gyr_Y",
+        ch="Gyr_Y_RSh",
         event_type="mcgrath_fs",
         event_name="FS",
         out_folder= "3 - add_event"
@@ -100,7 +93,7 @@ def main():
             'RH_RF_alpha', 'RH_RF_beta', 'RH_RF_gamma',
             'RF_RT_alpha', 'RF_RT_beta', 'RF_RT_gamma'
         ],
-        conditions = [''],
+        conditions = ['123AA','123AB'],
         show_legend = True,
         subj_pattern=r"\d{3}[A-Z]{2}"
     )
@@ -110,7 +103,7 @@ def main():
     ensembler.save(
         file_name="Combined Waveforms",
         extension="jpeg",
-        folder = os.path.join(example_root, 'data', 'imu_do_not_upload', '6 - Figures')
+        folder = os.path.join(example_root, 'data', 'imu_xsens_dot', '6 - Figures')
     )
 
     ensembler.average()
@@ -118,23 +111,8 @@ def main():
     ensembler.save(
         file_name="Mean(SD) Waveforms",
         extension="jpeg",
-        folder = os.path.join(example_root, 'data', 'imu_do_not_upload', '6 - Figures')
+        folder = os.path.join(example_root, 'data', 'imu_xsens_dot', '6 - Figures')
     )
-
-# Defining the desired file paths:
-example_root = os.path.dirname(os.path.dirname(__file__))
-common_root = os.path.join(example_root, 'data', 'imu_do_not_upload', 'raw data')
-lsh_data_short = os.path.join(common_root, 'short_example ', 'LSh_20250818_114924.csv')
-lf_data_short = os.path.join(common_root, 'short_example ','LF_20250818_114924.csv')
-rsh_data_long_2 = os.path.join(common_root, 'long_example', '123AA_RSh.csv')
-rf_data_long_2 = os.path.join(common_root, 'long_example','123AA_RF.csv')
-rt_data_long_2 = os.path.join(common_root, 'long_example','123AA_RT.csv')
-rh_data_long_2 = os.path.join(common_root, 'long_example','123AA_RH.csv')
-rsh_data_long_3 = os.path.join(common_root, 'long_example', '123AB_RSh.csv')
-rf_data_long_3 = os.path.join(common_root, 'long_example','123AB_RF.csv')
-rt_data_long_3 = os.path.join(common_root, 'long_example','123AB_RT.csv')
-rh_data_long_3 = os.path.join(common_root, 'long_example','123AB_RH.csv')
-out_fld = os.path.join(example_root, 'data', 'imu_do_not_upload', '0-create_combined_data')
 
 if __name__ == "__main__":
     main()
