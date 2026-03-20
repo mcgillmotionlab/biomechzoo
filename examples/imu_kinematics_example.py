@@ -31,37 +31,29 @@ def main():
     )
 
     # STEP 3: Calculate the 3D angles between the IMU sensors ##########################################
-    bmech.quats2euler(
-        prox_suffix="RSh",
-        dist_suffix="RF",
-        order="XZY",
-        out_folder= "3 - relative_angles_combined",
-        inplace=False
-    )
+    bmech.quats2euler(prox_ch=['Quat_W_RSh', 'Quat_X_RSh', 'Quat_Y_RSh', 'Quat_Z_RSh'],
+                      dist_ch=['Quat_W_RF', 'Quat_X_RF', 'Quat_Y_RF', 'Quat_Z_RF'],
+                      sequence="XZY",
+                      out_folder="3 - relative_angles_combined",
+                      inplace=False)
 
-    bmech.quats2euler(
-        prox_suffix="RSh",
-        dist_suffix="RH",
-        order="XZY",
-        out_folder= "3 - relative_angles_combined",
-        inplace=False
-    )
+    bmech.quats2euler(prox_ch=['Quat_W_RSh', 'Quat_X_RSh', 'Quat_Y_RSh', 'Quat_Z_RSh'],
+                      dist_ch=['Quat_W_RH', 'Quat_X_RH', 'Quat_Y_RH', 'Quat_Z_RH'],
+                      sequence="XZY",
+                      out_folder="3 - relative_angles_combined",
+                      inplace=False)
 
-    bmech.quats2euler(
-        prox_suffix="RH",
-        dist_suffix="RF",
-        order="XZY",
-        out_folder= "3 - relative_angles_combined",
-        inplace=False
-    )
+    bmech.quats2euler(prox_ch=['Quat_W_RH', 'Quat_X_RH', 'Quat_Y_RH', 'Quat_Z_RH'],
+                      dist_ch=['Quat_W_RF', 'Quat_X_RF', 'Quat_Y_RF', 'Quat_Z_RF'],
+                      sequence="XZY",
+                      out_folder="3 - relative_angles_combined",
+                      inplace=False)
 
-    bmech.quats2euler(
-        prox_suffix="RF",
-        dist_suffix="RT",
-        order="XZY",
-        out_folder= "3 - relative_angles_combined",
-        inplace=False
-    )
+    bmech.quats2euler(prox_ch=['Quat_W_RF', 'Quat_X_RF', 'Quat_Y_RF', 'Quat_Z_RF'],
+                      dist_ch=['Quat_W_RT', 'Quat_X_RT', 'Quat_Y_RT', 'Quat_Z_RT'],
+                      sequence="XZY",
+                      out_folder="3 - relative_angles_combined",
+                      inplace=False)
 
     # STEP 3: Add heel strikes using the mcgrath method ###########################################
     bmech.addevent(

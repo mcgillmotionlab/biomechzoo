@@ -3,8 +3,7 @@ import inspect
 import time
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
-from biomechzoo.linear_algebra_ops.kinematics import quats2euler_data
-from biomechzoo.linear_algebra_ops.kinematics import dcms2euler_data
+from biomechzoo.linear_algebra_ops.kinematics import quats2euler_data, dcms2euler_data, marker2dcm_data, quats2dcm_data
 from biomechzoo.biomech_ops.resample import resample_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
@@ -621,7 +620,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def quats2euler(self, prox_suffix:str, dist_suffix:str, order: str, out_folder=None, inplace=False):
+    def quats2euler(self, prox_ch: list[str], dist_ch: list[str], sequence: str, out_folder=None, inplace=False):
 
         """
         Generates joint angles given proximal and distal quaterion orientation representations.
@@ -635,9 +634,9 @@ class BiomechZoo:
         fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,  subfolders=self.subfolders)
         for f in fl:
             batchdisp('quats2euler for distal channel {} with respect to proximal channel {} using sequence {} for {}'.
-                      format(dist_suffix, prox_suffix, order, f), level=2, verbose=verbose)
+                      format(dist_ch, prox_ch, sequence, f), level=2, verbose=verbose)
             data = zload(f)
-            data = quats2euler_data(data, prox_suffix, dist_suffix, order)
+            data = quats2euler_data(data, prox_ch, dist_ch, sequence)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
@@ -645,8 +644,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def dcms2euler(self, prox_key, dist_key, order, rot_prox_axis = None, rot_dist_axis = None, rot_deg = None,
-                   out_folder=None, inplace=False):
+    def dcms2euler(self, prox_ch: list[str], dist_ch: list[str], sequence:str, out_folder=None, inplace=False):
         """
         Generates joint angles given proximal and distal direction cosine matrix orientation representations.
         """
@@ -659,14 +657,61 @@ class BiomechZoo:
         fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
         for f in fl:
             batchdisp('DCMs2euler for distal channel {} with respect to proximal channel {} using sequence {} for {}'.
-                      format(dist_key, prox_key, order, f), level=2, verbose=verbose)
+                      format(dist_ch, prox_ch, sequence, f), level=2, verbose=verbose)
             data = zload(f)
-            data = dcms2euler_data(data, prox_key, dist_key, order, rot_prox_axis, rot_dist_axis, rot_deg)
+            data = dcms2euler_data(data, prox_ch, dist_ch, sequence,)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp(
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
             level=1, verbose=verbose)
+        batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def marker2dcm(self, seg: str, origin: str, marker_1: str, marker_2: str, out_folder=None, inplace=False):
+        """
+        Biomechzoo style implementation of marker2dcm_data
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('marker2dcm for segment {} in file {}'.format(seg, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = marker2dcm_data(data, seg=seg, origin=origin, marker_1=marker_1, marker_2=marker_2)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
+            level=1, verbose=self.verbose)
+        batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def quats2dcm(self, seg: str, ch:list[str], out_folder=None, inplace=False):
+        """
+        Biomechzoo style implementation of quats2dcm_data
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('quats2dcm for segment {} in file {}'.format(seg, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = quats2dcm_data(data, seg=seg, ch=ch)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl),
+                                                                       time.time() - start_time),
+            level=1, verbose=self.verbose)
         batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
         self._update_folder(out_folder, inplace, in_folder)
 
