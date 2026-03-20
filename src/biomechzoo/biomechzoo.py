@@ -3,7 +3,8 @@ import inspect
 import time
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
-from biomechzoo.linear_algebra_ops.kinematics import quats2euler_data, dcms2euler_data, marker2dcm_data, quats2dcm_data
+from biomechzoo.linear_algebra_ops.kinematics import (quats2euler_data, dcms2euler_data, marker2dcm_data, quats2dcm_data,
+                                                      rotate_dcm_data)
 from biomechzoo.biomech_ops.resample import resample_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
@@ -715,3 +716,26 @@ class BiomechZoo:
         batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
         self._update_folder(out_folder, inplace, in_folder)
 
+    def rotate_dcm(self, ch: list[str], axis: str, degrees: float, out_folder=None, inplace=False):
+        """
+        Biomechzoo style implementation of rotate_dcm_data
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('rotating dcm segment {} in file {}'.format(ch, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = rotate_dcm_data(data, ch=ch, axis=axis, degrees=degrees)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl),
+                                                                       time.time() - start_time),
+            level=1, verbose=self.verbose)
+        batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
+        self._update_folder(out_folder, inplace, in_folder)

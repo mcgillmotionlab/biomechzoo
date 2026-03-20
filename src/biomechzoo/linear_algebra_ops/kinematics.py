@@ -7,14 +7,31 @@ from biomechzoo.linear_algebra_ops.make_unit import make_unit
 def _resolve_marker_label(data: dict, marker: str) -> str:
 
     """
-    Finds the correct marker label in data -- created to handle different labelling conventions in our data (e.g., we
-    want to make LShank1 and LeftShank1 work for indexing our marker data within our zoo files).
+    Resolve a marker label to the key that exists in the zoo data dictionary.
 
-    :params data:       dictionary containing out marker data
-    :params marker:     marker label
+    Handles differing naming conventions by trying abbreviated and full
+    lateral prefixes interchangeably (e.g., ``'LShank1'`` and
+    ``'LeftShank1'`` are treated as equivalent).
 
-    :returns:           label, a string that exists as a key in 'data'
+    Parameters
+    ----------
+    data : dict
+        Zoo data dictionary containing marker channels.
+    marker : str
+        Marker label to resolve. Accepted formats include full lateral prefix
+        (e.g., ``'LeftShank1'``, ``'RightHeel2'``) or abbreviated prefix
+        (e.g., ``'LShank1'``, ``'RHeel2'``).
 
+    Returns
+    -------
+    str
+        The matching key as it exists in ``data``.
+
+    Raises
+    ------
+    KeyError
+        If no matching key can be found in ``data`` after trying all
+        naming convention variants.
     """
 
     marker_keys = [k for k in data]
@@ -49,9 +66,37 @@ def _resolve_marker_label(data: dict, marker: str) -> str:
 def _decomp2euler(R_rel, data:dict, prox_ch: list[str], dist_ch: list[str], sequence: str)-> dict:
 
     """
-    Decomposes a direction cosine matrix (DCM) to euler angles.
-    """
+    Decompose a relative rotation into Euler angles and store them in a zoo
+    data dictionary.
 
+    Parameters
+    ----------
+    R_rel : scipy.spatial.transform.Rotation
+        Relative rotation object representing the distal segment's orientation
+        with respect to the proximal segment.
+    data : dict
+        Zoo data dictionary to store the Euler angle channels in.
+    prox_ch : list[str]
+        Channel names for the proximal segment. The segment label is extracted
+        from the last ``'_'``-delimited token of the first channel name
+        (e.g., ``'i_LSh'`` yields ``'LSh'``).
+    dist_ch : list[str]
+        Channel names for the distal segment. Same label extraction convention
+        as ``prox_ch``.
+    sequence : str
+        Euler angle rotation sequence passed to
+        :meth:`scipy.spatial.transform.Rotation.as_euler`. Case determines
+        intrinsic (uppercase) vs extrinsic (lowercase) rotations
+        (e.g., ``'ZXY'`` for intrinsic, ``'zxy'`` for extrinsic).
+
+    Returns
+    -------
+    dict
+        The input ``data`` dictionary updated with three new channels:
+        ``'<prox>_<dist>_alpha'``, ``'<prox>_<dist>_beta'``,
+        and ``'<prox>_<dist>_gamma'``, containing the first, second,
+        and third Euler angles (in degrees) respectively.
+    """
     euler = R_rel.as_euler(sequence, degrees=True)
 
     # Convention for finding labels assumes that bmech.combine_files is being used for combining
@@ -66,6 +111,28 @@ def _decomp2euler(R_rel, data:dict, prox_ch: list[str], dist_ch: list[str], sequ
     return data
 
 def _decompdcm(data:dict, dcm:np.ndarray, seg:str)-> dict:
+
+    """
+     Store the column vectors of a direction cosine matrix (DCM) as separate
+     channels in a zoo data dictionary.
+
+     Parameters
+     ----------
+     data : dict
+         Zoo data dictionary to store the DCM column vectors in.
+     dcm : np.ndarray
+         Array of shape (N, 3, 3) containing the DCM for each frame.
+     seg : str
+         Segment label used to name the output channels
+         (e.g., ``'LSh'`` produces ``'i_LSh'``, ``'j_LSh'``, ``'k_LSh'``).
+
+     Returns
+     -------
+     dict
+         The input ``data`` dictionary updated with three new channels:
+         ``'i_<seg>'``, ``'j_<seg>'``, and ``'k_<seg>'``, containing the
+         first, second, and third column vectors of the DCM respectively.
+     """
 
     i = dcm[:, :, 0]
     j = dcm[:, :, 1]
@@ -117,49 +184,92 @@ def _create_rot_matrix(axis: str, degrees: float) -> np.ndarray:
 
     return R
 
-def rotate_DCM_data(data, ch: list[str], axis: str, degrees: float):
+def rotate_dcm_data(data, ch: list[str], axis: str, degrees: float):
 
-    # TODO: make this into BMECH function
+    """
+    Apply a rotation about a principal axis to one segment's DCM.
+
+    Parameters
+    ----------
+    data : dict
+        Zoo data dictionary containing DCM channels for the segment(s)
+        to be rotated.
+    ch : list[str]
+        List of 3 channel names identifying the DCM to rotate, ordered
+        i, j, k (e.g., ``['i_LSh', 'j_LSh', 'k_LSh']``).
+    axis : {'X', 'Y', 'Z'}
+        Principal axis to rotate about (case-insensitive).
+    degrees : float
+        Rotation angle in degrees.
+
+    Returns
+    -------
+    dict
+        The input ``data`` dictionary with the DCM channels updated in place
+        to reflect the applied rotation.
+
+    Raises
+    ------
+    ValueError
+        If ``ch`` does not have exactly 3 elements, or if ``axis`` is not
+        ``'X'``, ``'Y'``, or ``'Z'``.
+    """
+
+    if len(ch) != 3:
+        raise ValueError("ch must have 3 elements corresponding to the X, Y, Z DCM components of one segment.")
 
     transform = R.from_matrix(matrix=
     _create_rot_matrix( axis=axis, degrees=degrees)
     )
 
-    segs = dict.fromkeys(channel.rsplit(sep = '_', maxsplit= 1)[0] for channel in ch)
+    segs = dict.fromkeys(channel.rsplit(sep = '_', maxsplit= 1)[-1] for channel in ch)
 
     for seg in segs:
-        dcm = np.stack(arrays=[data[f'{seg}_x']['line'], data[f'{seg}_y']['line'], data[f'{seg}_z']['line']], axis=-1)
+        dcm = np.stack(arrays=[data[f'i_{seg}']['line'], data[f'j_{seg}']['line'], data[f'k_{seg}']['line']], axis=-1)
         dcm = R.from_matrix(dcm)
         rotated_dcm = dcm * transform
 
-        data = _decompdcm(data, dcm=rotated_dcm, seg=seg)
+        data = _decompdcm(data, dcm=rotated_dcm.as_matrix(), seg=seg)
 
     return data
 
 def quats2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence: str) -> dict:
+
     """
-    Compute Euler angles of the distal segment relative to the proximal segment from quaterion data.
+    Compute Euler angles of the distal segment relative to the proximal segment
+    from quaternion data stored in a zoo data dictionary.
 
     Parameters
     ----------
     data : dict
-        Zoo data dictionary containing quaternion channels for each sensor.
+        Zoo data dictionary containing quaternion channels for the proximal and
+        distal segments.
     prox_ch : list[str]
-        Channels for the proximal segment (e.g., ``['Quat_W_LSh, 'Quat_X_LSh'...]``).
+        List of 4 channel names for the proximal segment's quaternion components,
+        ordered W, X, Y, Z (e.g., ``['Quat_W_LSh', 'Quat_X_LSh', 'Quat_Y_LSh', 'Quat_Z_LSh']``).
     dist_ch : list[str]
-        Channels for the distal segment (e.g., ``'['Quat_W_LF, 'Quat_X_LF'...]'``).
+        List of 4 channel names for the distal segment's quaternion components,
+        ordered W, X, Y, Z (e.g., ``['Quat_W_LH', 'Quat_X_LH', 'Quat_Y_LH', 'Quat_Z_LH']``).
     sequence : str
         Euler angle rotation sequence passed to
         :meth:`scipy.spatial.transform.Rotation.as_euler`. Case determines
-        intrinsic (uppercase) vs extrinsic (lowercase) rotations.
+        intrinsic (uppercase) vs extrinsic (lowercase) rotations
+        (e.g., ``'ZXY'`` for intrinsic, ``'zxy'`` for extrinsic).
 
     Returns
     -------
     dict
-        Dictionary with keys ``'<prox>_<dist>_alpha'``, ``'<prox>_<dist>_beta'``,
-        and ``'<prox>_<dist>_gamma'``, each containing a ``'line'`` array of
-        Euler angles in degrees for the first, second, and third rotation
-        in the sequence, respectively.
+        The input ``data`` dictionary updated with three new channels:
+        ``'<prox>_<dist>_alpha'``, ``'<prox>_<dist>_beta'``,
+        and ``'<prox>_<dist>_gamma'``, containing the first, second,
+        and third Euler angles (in degrees) respectively, where ``<prox>``
+        and ``<dist>`` are the segment labels extracted from ``prox_ch``
+        and ``dist_ch``.
+
+    Raises
+    ------
+    ValueError
+        If ``prox_ch`` or ``dist_ch`` do not have exactly 4 elements.
 
     References
     ----------
@@ -185,8 +295,10 @@ def quats2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequenc
 
 
 def dcms2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence: str) -> dict:
+
     """
-    Compute joint angles from direction cosine matrices (DCMs) stored in a zoo file.
+    Compute Euler angles of the distal segment relative to the proximal segment
+    from direction cosine matrices (DCMs) stored in a zoo data dictionary.
 
     Parameters
     ----------
@@ -194,25 +306,31 @@ def dcms2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence
         Zoo data dictionary containing DCM channels for the proximal and
         distal segments.
     prox_ch : list[str]
-        Channel key for the proximal segment's direction cosine matrix
-        (e.g., ``'Thigh'``).
+        List of 3 channel names for the proximal segment's DCM column vectors,
+        ordered i, j, k (e.g., ``['i_LSh', 'j_LSh', 'k_LSh']``).
     dist_ch : list[str]
-        Channel key for the distal segment's direction cosine matrix
-        (e.g., ``'Shank'``).
+        List of 3 channel names for the distal segment's DCM column vectors,
+        ordered i, j, k (e.g., ``['i_LH', 'j_LH', 'k_LH']``).
     sequence : str
         Euler angle rotation sequence passed to
         :meth:`scipy.spatial.transform.Rotation.as_euler`. Case determines
-        intrinsic (uppercase) vs extrinsic (lowercase) rotations.
+        intrinsic (uppercase) vs extrinsic (lowercase) rotations
+        (e.g., ``'ZXY'`` for intrinsic, ``'zxy'`` for extrinsic).
 
     Returns
     -------
     dict
         The input ``data`` dictionary updated with three new channels:
-        ``'<prox_key>_<dist_key>_alpha'``, ``'<prox_key>_<dist_key>_beta'``,
-        and ``'<prox_key>_<dist_key>_gamma'``, containing the first, second,
-        and third Euler angles (in degrees) respectively.
-        The relative rotation matrix is also stored under
-        ``'<prox_key>_<dist_key>_R'``.
+        ``'<prox>_<dist>_alpha'``, ``'<prox>_<dist>_beta'``,
+        and ``'<prox>_<dist>_gamma'``, containing the first, second,
+        and third Euler angles (in degrees) respectively, where ``<prox>``
+        and ``<dist>`` are the segment labels extracted from ``prox_ch``
+        and ``dist_ch``.
+
+    Raises
+    ------
+    ValueError
+        If ``prox_ch`` or ``dist_ch`` do not have exactly 3 elements.
 
     References
     ----------
@@ -237,29 +355,48 @@ def dcms2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence
     return data
 
 def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: str)-> dict:
-   # TODO: Update docstrings
+
     """
-    Create a right-handed local coordinate system (LCS) using positional data from motion capture trajectories.
+    Compute a right-handed local coordinate system (LCS) from motion capture marker positions
+    and store it as a direction cosine matrix (DCM) in the zoo data dictionary.
 
     Parameters
     ----------
     data : dict
-        Dictionary containing motion capture marker data.
+        Zoo data dictionary containing motion capture marker channels.
+    seg : str
+        Segment label used to name the output DCM channels
+        (e.g., ``'LSh'`` produces ``'i_LSh'``, ``'j_LSh'``, ``'k_LSh'``).
     origin : str
-        Label of the origin marker for the segment.
+        Label of the marker defining the origin of the local coordinate system.
+        Supports both full (e.g., ``'LeftShank1'``) and abbreviated
+        (e.g., ``'LShank1'``) naming conventions.
     marker_1 : str
-        Label of the first marker defining the primary axis (i axis).
+        Label of the marker defining the primary axis (i). Same naming
+        conventions as ``origin``.
     marker_2 : str
-        Label of the second marker used to define the temporary vector for orthogonal axes.
+        Label of the marker used to define the temporary vector for
+        computing the orthogonal axes via cross product. Same naming
+        conventions as ``origin``.
 
     Returns
     -------
-    x_axis : np.ndarray
-        n_frames x 3 array of the X-axis (i) unit vectors over time.
-    y_axis : np.ndarray
-        n_frames x 3 array of the Y-axis (j) unit vectors over time.
-    z_axis : np.ndarray
-        n_frames x 3 array of the Z-axis (k) unit vectors over time.
+    dict
+        The input ``data`` dictionary updated with three new channels:
+        ``'i_<seg>'``, ``'j_<seg>'``, and ``'k_<seg>'``, containing the
+        first, second, and third column vectors of the DCM respectively.
+
+    Notes
+    -----
+    The LCS is constructed as follows:
+
+    - ``i`` = unit vector from ``origin`` to ``marker_1``
+    - ``j_temp`` = unit vector from ``origin`` to ``marker_2``
+    - ``k`` = unit vector of ``i`` × ``j_temp``
+    - ``j`` = ``k`` × ``i``
+
+    Orthonormality is verified by passing the resulting matrix through
+    :class:`scipy.spatial.transform.Rotation` before storing.
     """
 
     # TODO: we want to get rid of resolve marker.
@@ -278,8 +415,6 @@ def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: 
 
     dcm = np.stack((i, j, k), axis=-1)
 
-    # Redundant in some sort - but turning it into a rotation object automatically checks
-    # orthonormality before moving on...we can get rid of this if we wanted.
     dcm_mat = R.from_matrix(matrix = dcm).as_matrix()
 
     data = _decompdcm(data, dcm_mat, seg)
@@ -287,6 +422,40 @@ def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: 
     return data
 
 def quats2dcm_data(data:dict, seg:str, ch:str) -> dict:
+
+    """
+    Compute a direction cosine matrix (DCM) from quaternion data and store it in the zoo data dictionary.
+
+    Parameters
+    ----------
+    data : dict
+        Zoo data dictionary containing quaternion channels for the segment.
+    seg : str
+        Segment label used to name the output DCM channels
+        (e.g., ``'LSh'`` produces ``'i_LSh'``, ``'j_LSh'``, ``'k_LSh'``).
+    ch : list[str]
+        List of 4 quaternion channel names ordered W, X, Y, Z
+        (e.g., ``['Quat_W_LSh', 'Quat_X_LSh', 'Quat_Y_LSh', 'Quat_Z_LSh']``).
+
+    Returns
+    -------
+    dict
+        The input ``data`` dictionary updated with three new channels:
+        ``'i_<seg>'``, ``'j_<seg>'``, and ``'k_<seg>'``, containing the
+        first, second, and third column vectors of the DCM respectively.
+
+    Raises
+    ------
+    ValueError
+        If ``ch`` does not have exactly 4 elements.
+
+    References
+    ----------
+    https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
+    """
+
+    if len(ch) != 4:
+        raise ValueError("prox_ch must have 4 elements corresponding to the W, X, Y, Z quaternion components")
 
     q = np.stack(arrays=[data[channel]['line'] for channel in ch], axis=-1)
 
