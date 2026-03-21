@@ -1,7 +1,6 @@
-from scipy.spatial.transform import Rotation as R
 import numpy as np
+from scipy.spatial.transform import Rotation as R
 from biomechzoo.processing.addchannel_data import addchannel_data
-from biomechzoo.processing.removechannel_data import removechannel_data
 from biomechzoo.linear_algebra_ops.make_unit import make_unit
 
 def _resolve_marker_label(data: dict, marker: str) -> str:
@@ -59,14 +58,12 @@ def _resolve_marker_label(data: dict, marker: str) -> str:
         if label in marker_keys:
             return label
 
-    raise KeyError(
-        f"Marker '{marker}' not found. Available markers: {marker_keys}"
-    )
+    raise KeyError(f"Trajectory '{marker}' not found. Available markers: {marker_keys}")
 
 def _decomp2euler(R_rel, data:dict, prox_ch: list[str], dist_ch: list[str], sequence: str)-> dict:
 
     """
-    Decompose a relative rotation into Euler angles and store them in a zoo
+    Decompose a relative DCM into Euler angles and store them in a zoo
     data dictionary.
 
     Parameters
@@ -101,8 +98,8 @@ def _decomp2euler(R_rel, data:dict, prox_ch: list[str], dist_ch: list[str], sequ
 
     # Convention for finding labels assumes that bmech.combine_files is being used for combining
     # (i.e., the line data for each quaternion components contains the segment as a suffix divided by '_').
-    prox_label = prox_ch[0].split('_')[-1]
-    dist_label = dist_ch[0].split('_')[-1]
+    prox_label = prox_ch[0].rsplit('_', maxsplit=1)[-1]
+    dist_label = dist_ch[0].rsplit('_', maxsplit=1)[-1]
 
     data = addchannel_data(data=data, ch_new_name=(f'{prox_label}_{dist_label}_alpha'), ch_new_data= euler[:,0])
     data = addchannel_data(data=data, ch_new_name=(f'{prox_label}_{dist_label}_beta'), ch_new_data= euler[:,1])
@@ -110,7 +107,7 @@ def _decomp2euler(R_rel, data:dict, prox_ch: list[str], dist_ch: list[str], sequ
 
     return data
 
-def _decompdcm(data:dict, dcm:np.ndarray, seg:str)-> dict:
+def _explodedcm(data:dict, dcm:np.ndarray, seg:str)-> dict:
 
     """
      Store the column vectors of a direction cosine matrix (DCM) as separate
@@ -184,7 +181,7 @@ def _create_rot_matrix(axis: str, degrees: float) -> np.ndarray:
 
     return R
 
-def rotate_dcm_data(data, ch: list[str], axis: str, degrees: float):
+def rotate_dcm_data(data: dict, ch: list[str], axis: str, degrees: float)-> dict:
 
     """
     Apply a rotation about a principal axis to one segment's DCM.
@@ -192,7 +189,7 @@ def rotate_dcm_data(data, ch: list[str], axis: str, degrees: float):
     Parameters
     ----------
     data : dict
-        Zoo data dictionary containing DCM channels for the segment(s)
+        Zoo data dictionary containing DCM channels for the segment
         to be rotated.
     ch : list[str]
         List of 3 channel names identifying the DCM to rotate, ordered
@@ -211,25 +208,28 @@ def rotate_dcm_data(data, ch: list[str], axis: str, degrees: float):
     Raises
     ------
     ValueError
-        If ``ch`` does not have exactly 3 elements, or if ``axis`` is not
-        ``'X'``, ``'Y'``, or ``'Z'``.
+        If ``ch`` does not have exactly 3 elements, if all channels do not
+        belong to the same segment, or if ``axis`` is not ``'X'``, ``'Y'``,
+        or ``'Z'``.
     """
 
     if len(ch) != 3:
-        raise ValueError("ch must have 3 elements corresponding to the X, Y, Z DCM components of one segment.")
+        raise ValueError("ch must have exactly 3 elements: [i_seg, j_seg, k_seg].")
 
-    transform = R.from_matrix(matrix=
-    _create_rot_matrix( axis=axis, degrees=degrees)
-    )
+    segs = {channel.rsplit("_", maxsplit=1)[-1] for channel in ch}
 
-    segs = dict.fromkeys(channel.rsplit(sep = '_', maxsplit= 1)[-1] for channel in ch)
+    if len(segs) != 1:
+        raise ValueError(
+            f"All channels must belong to the same segment. Got segments: {segs}"
+        )
 
-    for seg in segs:
-        dcm = np.stack(arrays=[data[f'i_{seg}']['line'], data[f'j_{seg}']['line'], data[f'k_{seg}']['line']], axis=-1)
-        dcm = R.from_matrix(dcm)
-        rotated_dcm = dcm * transform
+    seg = segs.pop()
 
-        data = _decompdcm(data, dcm=rotated_dcm.as_matrix(), seg=seg)
+    dcm = np.stack(arrays=[data[f"i_{seg}"]["line"], data[f"j_{seg}"]["line"], data[f"k_{seg}"]["line"]], axis=-1)
+    transform = _create_rot_matrix(axis=axis, degrees=degrees)
+    rotated_dcm = dcm @ transform
+
+    data = _explodedcm(data, rotated_dcm, seg)
 
     return data
 
@@ -399,14 +399,9 @@ def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: 
     :class:`scipy.spatial.transform.Rotation` before storing.
     """
 
-    # TODO: we want to get rid of resolve marker.
-    origin = _resolve_marker_label(data, origin)
-    marker_1 = _resolve_marker_label(data, marker_1)
-    marker_2 = _resolve_marker_label(data, marker_2)
-
-    o = np.array(data[origin]['line'])
-    m1 = np.array(data[marker_1]['line'])
-    m2 = np.array(data[marker_2]['line'])
+    o = np.array(data[_resolve_marker_label(data, origin)]['line'])
+    m1 = np.array(data[_resolve_marker_label(data, marker_1)]['line'])
+    m2 = np.array(data[_resolve_marker_label(data, marker_2)]['line'])
 
     i = make_unit(m1 - o)
     j_temp = make_unit(m2 - o)
@@ -415,13 +410,13 @@ def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: 
 
     dcm = np.stack((i, j, k), axis=-1)
 
-    dcm_mat = R.from_matrix(matrix = dcm).as_matrix()
+    assert np.allclose(np.linalg.det(dcm), 1.0, atol=1e-6), f"DCM is not orthonormal- det = {np.linalg.det(dcm)}."
 
-    data = _decompdcm(data, dcm_mat, seg)
+    data = _explodedcm(data, dcm, seg)
 
     return data
 
-def quats2dcm_data(data:dict, seg:str, ch:str) -> dict:
+def quats2dcm_data(data:dict, seg:str, ch:list[str]) -> dict:
 
     """
     Compute a direction cosine matrix (DCM) from quaternion data and store it in the zoo data dictionary.
@@ -455,12 +450,12 @@ def quats2dcm_data(data:dict, seg:str, ch:str) -> dict:
     """
 
     if len(ch) != 4:
-        raise ValueError("prox_ch must have 4 elements corresponding to the W, X, Y, Z quaternion components")
+        raise ValueError("ch must have 4 elements corresponding to the W, X, Y, Z quaternion components")
 
     q = np.stack(arrays=[data[channel]['line'] for channel in ch], axis=-1)
 
-    dcm = R.from_quat(q, scalar_first=True).as_matrix()
+    dcm = R.from_quat(quat=q, scalar_first=True).as_matrix()
 
-    data = _decompdcm(data, dcm, seg)
+    data = _explodedcm(data, dcm, seg)
 
     return data
