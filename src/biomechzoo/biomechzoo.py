@@ -21,6 +21,7 @@ from biomechzoo.processing.renamechannel_data import renamechannel_data
 from biomechzoo.processing.removeevent_data import removeevent_data
 from biomechzoo.processing.explodechannel_data import explodechannel_data
 from biomechzoo.processing.addevent_data import addevent_data
+from biomechzoo.processing.sync_channels_data import sync_channels_data
 from biomechzoo.processing.partition_data import partition_data
 from biomechzoo.processing.renameevent_data import renameevent_data
 from biomechzoo.biomech_ops.normalize_data import normalize_data
@@ -557,6 +558,29 @@ class BiomechZoo:
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def sync_channels(self, method, ch_1, ch_2, out_folder=None, inplace=None):
+        """
+        Biomechzoo style implementation of 'sync_channels_data' function
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
+        for f in fl:
+            if verbose:
+                batchdisp('sync_channels for file {} using method: {}'.format(f, method), level=2, verbose=verbose)
+            data = zload(f)
+            data = sync_channels_data(data, method, ch_1, ch_2)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
