@@ -1,10 +1,54 @@
 import numpy as np
+from typing import Any
 from scipy.spatial.transform import Rotation as R
 from biomechzoo.processing.addchannel_data import addchannel_data
 from biomechzoo.linear_algebra_ops.make_unit import make_unit
 
-def _resolve_marker_label(data: dict, marker: str) -> str:
+def _extract_segment_label(channel_name: str) -> str:
+    """
+    Extract segment label from channel name. This assumes that segment labels
+    are distinguished by a suffix separated by '_', as is created by the
+    bmech.combine_files function.
 
+    Parameters
+    ----------
+    channel_name : str
+        Channel name with segment label as suffix (e.g., 'i_LSh').
+
+    Returns
+    -------
+    str
+        The segment label (e.g., 'LSh').
+    """
+    return channel_name.rsplit("_", maxsplit=1)[-1]
+
+
+def _stack_channel_data(data: dict, channels: list[str], axis: int = -1) -> np.ndarray:
+    """
+    Stack channel data from zoo dictionary into a single array.
+
+    Parameters
+    ----------
+    data : dict
+        Zoo data dictionary containing channels with 'line' key.
+    channels : list[str]
+        List of channel names to stack.
+    axis : int, optional
+        Axis along which to stack. Default is -1.
+
+    Returns
+    -------
+    np.ndarray
+        Stacked data array.
+
+    Raises
+    ------
+    KeyError
+        If any channel is not found in data.
+    """
+    return np.stack([data[ch]['line'] for ch in channels], axis=axis)
+
+def _resolve_marker_label(data: dict, marker: str) -> str:
     """
     Resolve a marker label to the key that exists in the zoo data dictionary.
 
@@ -33,35 +77,25 @@ def _resolve_marker_label(data: dict, marker: str) -> str:
         naming convention variants.
     """
 
-    marker_keys = [k for k in data]
-
-    if marker in marker_keys:
+    if marker in data:
         return marker
 
-    if marker.startswith("Left"):
-        label = "L" + marker[4:]
-        if label in marker_keys:
-            return label
+    prefixes = [("Left", "L"), ("Right", "R")]
 
-    if marker.startswith("Right"):
-        label = "R" + marker[5:]
-        if label in marker_keys:
-            return label
+    for full, abbr in prefixes:
+        if marker.startswith(full):
+            candidate = abbr + marker[len(full):]
+            if candidate in data:
+                return candidate
+        if marker.startswith(abbr):
+            candidate = full + marker[len(abbr):]
+            if candidate in data:
+                return candidate
 
-    if marker.startswith("L"):
-        label = "Left" + marker[1:]
-        if label in marker_keys:
-            return label
+    raise KeyError(f"Trajectory '{marker}' not found. Available markers: {list(data.keys())}")
 
-    if marker.startswith("R"):
-        label = "Right" + marker[1:]
-        if label in marker_keys:
-            return label
 
-    raise KeyError(f"Trajectory '{marker}' not found. Available markers: {marker_keys}")
-
-def _decomp2euler(R_rel, data:dict, prox_ch: list[str], dist_ch: list[str], sequence: str)-> dict:
-
+def _decomp2euler(R_rel: R, data: dict, prox_ch: list[str], dist_ch: list[str], sequence: str) -> dict:
     """
     Decompose a relative DCM into Euler angles and store them in a zoo
     data dictionary.
@@ -96,10 +130,8 @@ def _decomp2euler(R_rel, data:dict, prox_ch: list[str], dist_ch: list[str], sequ
     """
     euler = R_rel.as_euler(sequence, degrees=True)
 
-    # Convention for finding labels assumes that bmech.combine_files is being used for combining
-    # (i.e., the line data for each quaternion components contains the segment as a suffix divided by '_').
-    prox_label = prox_ch[0].rsplit('_', maxsplit=1)[-1]
-    dist_label = dist_ch[0].rsplit('_', maxsplit=1)[-1]
+    prox_label = _extract_segment_label(prox_ch[0])
+    dist_label = _extract_segment_label(dist_ch[0])
 
     data = addchannel_data(data=data, ch_new_name=(f'{prox_label}_{dist_label}_alpha'), ch_new_data= euler[:,0])
     data = addchannel_data(data=data, ch_new_name=(f'{prox_label}_{dist_label}_beta'), ch_new_data= euler[:,1])
@@ -182,7 +214,6 @@ def _create_rot_matrix(axis: str, degrees: float) -> np.ndarray:
     return R
 
 def rotate_dcm_data(data: dict, ch: list[str], axis: str, degrees: float)-> dict:
-
     """
     Apply a rotation about a principal axis to one segment's DCM.
 
@@ -234,7 +265,6 @@ def rotate_dcm_data(data: dict, ch: list[str], axis: str, degrees: float)-> dict
     return data
 
 def quats2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence: str) -> dict:
-
     """
     Compute Euler angles of the distal segment relative to the proximal segment
     from quaternion data stored in a zoo data dictionary.
@@ -281,8 +311,8 @@ def quats2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequenc
     if len(dist_ch) != 4:
         raise ValueError("dist_ch must have 4 elements corresponding to the W, X, Y, Z quaternion components")
 
-    q_prox = np.stack(arrays=[data[ch]['line'] for ch in prox_ch], axis=-1)
-    q_dist = np.stack(arrays=[data[ch]['line'] for ch in dist_ch], axis=-1)
+    q_prox = _stack_channel_data(data, prox_ch)
+    q_dist = _stack_channel_data(data, dist_ch)
 
     R_prox = R.from_quat(q_prox, scalar_first=True)
     R_dist = R.from_quat(q_dist, scalar_first=True)
@@ -293,9 +323,7 @@ def quats2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequenc
 
     return data
 
-
 def dcms2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence: str) -> dict:
-
     """
     Compute Euler angles of the distal segment relative to the proximal segment
     from direction cosine matrices (DCMs) stored in a zoo data dictionary.
@@ -338,12 +366,12 @@ def dcms2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence
     """
 
     if len(prox_ch) != 3:
-        raise ValueError("prox_ch must have 3 elements corresponding to the X, Y, Z DCM components")
+        raise ValueError(f"prox_ch must have 3 elements corresponding to the i, j, k DCM column vectors")
     if len(dist_ch) != 3:
-        raise ValueError("dist_ch must have 3 elements corresponding to the X, Y, Z DCM components")
+        raise ValueError(f"dist_ch must have 3 elements corresponding to the i, j, k DCM column vectors")
 
-    R_prox_array = np.stack(arrays=[data[ch]['line'] for ch in prox_ch], axis=-1)
-    R_dist_array = np.stack(arrays=[data[ch]['line'] for ch in dist_ch], axis=-1)
+    R_prox_array = _stack_channel_data(data, prox_ch)
+    R_dist_array = _stack_channel_data(data, dist_ch)
 
     R_prox = R.from_matrix(R_prox_array)
     R_dist = R.from_matrix(R_dist_array)
@@ -355,7 +383,6 @@ def dcms2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence
     return data
 
 def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: str)-> dict:
-
     """
     Compute a right-handed local coordinate system (LCS) from motion capture marker positions
     and store it as a direction cosine matrix (DCM) in the zoo data dictionary.
@@ -386,6 +413,11 @@ def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: 
         ``'i_<seg>'``, ``'j_<seg>'``, and ``'k_<seg>'``, containing the
         first, second, and third column vectors of the DCM respectively.
 
+    Raises
+    ------
+    ValueError
+        If the resulting DCM is not orthonormal.
+
     Notes
     -----
     The LCS is constructed as follows:
@@ -395,13 +427,16 @@ def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: 
     - ``k`` = unit vector of ``i`` × ``j_temp``
     - ``j`` = ``k`` × ``i``
 
-    Orthonormality is verified by passing the resulting matrix through
-    :class:`scipy.spatial.transform.Rotation` before storing.
+    Orthonormality is verified before storing.
     """
 
-    o = np.array(data[_resolve_marker_label(data, origin)]['line'])
-    m1 = np.array(data[_resolve_marker_label(data, marker_1)]['line'])
-    m2 = np.array(data[_resolve_marker_label(data, marker_2)]['line'])
+    origin_key = _resolve_marker_label(data, origin)
+    marker_1_key = _resolve_marker_label(data, marker_1)
+    marker_2_key = _resolve_marker_label(data, marker_2)
+
+    o = np.array(data[origin_key]['line'])
+    m1 = np.array(data[marker_1_key]['line'])
+    m2 = np.array(data[marker_2_key]['line'])
 
     i = make_unit(m1 - o)
     j_temp = make_unit(m2 - o)
@@ -410,14 +445,17 @@ def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: 
 
     dcm = np.stack((i, j, k), axis=-1)
 
-    assert np.allclose(np.linalg.det(dcm), 1.0, atol=1e-6), f"DCM is not orthonormal- det = {np.linalg.det(dcm)}."
+    det = np.linalg.det(dcm)
+    if not np.allclose(det, 1.0, atol=1e-6):
+        raise ValueError(
+            f"DCM is not orthonormal. Determinant: {det:.6e} (expected ~1.0)"
+        )
 
     data = _explodedcm(data, dcm, seg)
 
     return data
 
 def quats2dcm_data(data:dict, seg:str, ch:list[str]) -> dict:
-
     """
     Compute a direction cosine matrix (DCM) from quaternion data and store it in the zoo data dictionary.
 
@@ -452,9 +490,9 @@ def quats2dcm_data(data:dict, seg:str, ch:list[str]) -> dict:
     if len(ch) != 4:
         raise ValueError("ch must have 4 elements corresponding to the W, X, Y, Z quaternion components")
 
-    q = np.stack(arrays=[data[channel]['line'] for channel in ch], axis=-1)
+    quats = _stack_channel_data(data, ch)
 
-    dcm = R.from_quat(quat=q, scalar_first=True).as_matrix()
+    dcm = R.from_quat(quat=quats, scalar_first=True).as_matrix()
 
     data = _explodedcm(data, dcm, seg)
 
