@@ -645,7 +645,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def quats2euler(self, prox_ch: list[str], dist_ch: list[str], sequence: str, out_folder=None, inplace=False):
+    def quats2euler(self, ch_prox: list[str], ch_dist: list[str], sequence: str, out_folder=None, inplace=False):
 
         """
         Generates joint angles given proximal and distal quaterion orientation representations.
@@ -659,9 +659,9 @@ class BiomechZoo:
         fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,  subfolders=self.subfolders)
         for f in fl:
             batchdisp('quats2euler for distal channel {} with respect to proximal channel {} using sequence {} for {}'.
-                      format(dist_ch, prox_ch, sequence, f), level=2, verbose=verbose)
+                      format(ch_dist, ch_prox, sequence, f), level=2, verbose=verbose)
             data = zload(f)
-            data = quats2euler_data(data, prox_ch, dist_ch, sequence)
+            data = quats2euler_data(data, ch_prox, ch_dist, sequence)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
@@ -669,7 +669,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def dcms2euler(self, prox_ch: list[str], dist_ch: list[str], sequence:str, out_folder=None, inplace=False):
+    def dcms2euler(self, ch_prox: list[str], ch_dist: list[str], sequence: str, out_folder=None, inplace=False):
         """
         Generates joint angles given proximal and distal direction cosine matrix orientation representations.
         """
@@ -682,9 +682,9 @@ class BiomechZoo:
         fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
         for f in fl:
             batchdisp('DCMs2euler for distal channel {} with respect to proximal channel {} using sequence {} for {}'.
-                      format(dist_ch, prox_ch, sequence, f), level=2, verbose=verbose)
+                      format(ch_dist, ch_prox, sequence, f), level=2, verbose=verbose)
             data = zload(f)
-            data = dcms2euler_data(data, prox_ch, dist_ch, sequence,)
+            data = dcms2euler_data(data, ch_prox, ch_dist, sequence)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp(

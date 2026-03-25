@@ -95,7 +95,7 @@ def _resolve_marker_label(data: dict, marker: str) -> str:
     raise KeyError(f"Trajectory '{marker}' not found. Available markers: {list(data.keys())}")
 
 
-def _decomp2euler(R_rel: R, data: dict, prox_ch: list[str], dist_ch: list[str], sequence: str) -> dict:
+def _decomp2euler(R_rel: R, data: dict, ch_prox: list[str], ch_dist: list[str], sequence: str) -> dict:
     """
     Decompose a relative DCM into Euler angles and store them in a zoo
     data dictionary.
@@ -107,11 +107,11 @@ def _decomp2euler(R_rel: R, data: dict, prox_ch: list[str], dist_ch: list[str], 
         with respect to the proximal segment.
     data : dict
         Zoo data dictionary to store the Euler angle channels in.
-    prox_ch : list[str]
+    ch_prox : list[str]
         Channel names for the proximal segment. The segment label is extracted
         from the last ``'_'``-delimited token of the first channel name
         (e.g., ``'i_LSh'`` yields ``'LSh'``).
-    dist_ch : list[str]
+    ch_dist : list[str]
         Channel names for the distal segment. Same label extraction convention
         as ``prox_ch``.
     sequence : str
@@ -130,8 +130,8 @@ def _decomp2euler(R_rel: R, data: dict, prox_ch: list[str], dist_ch: list[str], 
     """
     euler = R_rel.as_euler(sequence, degrees=True)
 
-    prox_label = _extract_segment_label(prox_ch[0])
-    dist_label = _extract_segment_label(dist_ch[0])
+    prox_label = _extract_segment_label(ch_prox[0])
+    dist_label = _extract_segment_label(ch_dist[0])
 
     data = addchannel_data(data=data, ch_new_name=(f'{prox_label}_{dist_label}_alpha'), ch_new_data= euler[:,0])
     data = addchannel_data(data=data, ch_new_name=(f'{prox_label}_{dist_label}_beta'), ch_new_data= euler[:,1])
@@ -264,7 +264,7 @@ def rotate_dcm_data(data: dict, ch: list[str], axis: str, degrees: float)-> dict
 
     return data
 
-def quats2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence: str) -> dict:
+def quats2euler_data(data: dict, ch_prox: list[str], ch_dist: list[str], sequence: str) -> dict:
     """
     Compute Euler angles of the distal segment relative to the proximal segment
     from quaternion data stored in a zoo data dictionary.
@@ -274,10 +274,10 @@ def quats2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequenc
     data : dict
         Zoo data dictionary containing quaternion channels for the proximal and
         distal segments.
-    prox_ch : list[str]
+    ch_prox : list[str]
         List of 4 channel names for the proximal segment's quaternion components,
         ordered W, X, Y, Z (e.g., ``['Quat_W_LSh', 'Quat_X_LSh', 'Quat_Y_LSh', 'Quat_Z_LSh']``).
-    dist_ch : list[str]
+    ch_dist : list[str]
         List of 4 channel names for the distal segment's quaternion components,
         ordered W, X, Y, Z (e.g., ``['Quat_W_LH', 'Quat_X_LH', 'Quat_Y_LH', 'Quat_Z_LH']``).
     sequence : str
@@ -306,24 +306,24 @@ def quats2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequenc
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
     """
 
-    if len(prox_ch) != 4:
+    if len(ch_prox) != 4:
         raise ValueError("prox_ch must have 4 elements corresponding to the W, X, Y, Z quaternion components")
-    if len(dist_ch) != 4:
+    if len(ch_dist) != 4:
         raise ValueError("dist_ch must have 4 elements corresponding to the W, X, Y, Z quaternion components")
 
-    q_prox = _stack_channel_data(data, prox_ch)
-    q_dist = _stack_channel_data(data, dist_ch)
+    q_prox = _stack_channel_data(data, ch_prox)
+    q_dist = _stack_channel_data(data, ch_dist)
 
     R_prox = R.from_quat(q_prox, scalar_first=True)
     R_dist = R.from_quat(q_dist, scalar_first=True)
 
     R_rel = R_prox.inv() * R_dist
 
-    data = _decomp2euler(R_rel, data, prox_ch, dist_ch, sequence)
+    data = _decomp2euler(R_rel, data, ch_prox, ch_dist, sequence)
 
     return data
 
-def dcms2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence: str) -> dict:
+def dcms2euler_data(data: dict, ch_prox: list[str], ch_dist: list[str], sequence: str) -> dict:
     """
     Compute Euler angles of the distal segment relative to the proximal segment
     from direction cosine matrices (DCMs) stored in a zoo data dictionary.
@@ -333,10 +333,10 @@ def dcms2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence
     data : dict
         Zoo data dictionary containing DCM channels for the proximal and
         distal segments.
-    prox_ch : list[str]
+    ch_prox : list[str]
         List of 3 channel names for the proximal segment's DCM column vectors,
         ordered i, j, k (e.g., ``['i_LSh', 'j_LSh', 'k_LSh']``).
-    dist_ch : list[str]
+    ch_dist : list[str]
         List of 3 channel names for the distal segment's DCM column vectors,
         ordered i, j, k (e.g., ``['i_LH', 'j_LH', 'k_LH']``).
     sequence : str
@@ -365,20 +365,20 @@ def dcms2euler_data(data: dict, prox_ch: list[str], dist_ch: list[str], sequence
     https://docs.scipy.org/doc/scipy/reference/generated/scipy.spatial.transform.Rotation.html
     """
 
-    if len(prox_ch) != 3:
+    if len(ch_prox) != 3:
         raise ValueError(f"prox_ch must have 3 elements corresponding to the i, j, k DCM column vectors")
-    if len(dist_ch) != 3:
+    if len(ch_dist) != 3:
         raise ValueError(f"dist_ch must have 3 elements corresponding to the i, j, k DCM column vectors")
 
-    R_prox_array = _stack_channel_data(data, prox_ch)
-    R_dist_array = _stack_channel_data(data, dist_ch)
+    R_prox_array = _stack_channel_data(data, ch_prox)
+    R_dist_array = _stack_channel_data(data, ch_dist)
 
     R_prox = R.from_matrix(R_prox_array)
     R_dist = R.from_matrix(R_dist_array)
 
     R_rel = R_prox.inv() * R_dist
 
-    data = _decomp2euler(R_rel, data, prox_ch, dist_ch, sequence)
+    data = _decomp2euler(R_rel, data, ch_prox, ch_dist, sequence)
 
     return data
 
