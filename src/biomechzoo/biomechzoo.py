@@ -3,8 +3,8 @@ import inspect
 import time
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
-from biomechzoo.linear_algebra_ops.kinematics import quats2euler
-from biomechzoo.linear_algebra_ops.kinematics import dcms2euler_data
+from biomechzoo.linear_algebra_ops.kinematics import (quats2euler_data, dcms2euler_data, marker2dcm_data, quats2dcm_data,
+                                                      rotate_dcm_data)
 from biomechzoo.biomech_ops.resample import resample_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
@@ -21,6 +21,7 @@ from biomechzoo.processing.renamechannel_data import renamechannel_data
 from biomechzoo.processing.removeevent_data import removeevent_data
 from biomechzoo.processing.explodechannel_data import explodechannel_data
 from biomechzoo.processing.addevent_data import addevent_data
+from biomechzoo.processing.sync_channels_data import sync_channels_data
 from biomechzoo.processing.partition_data import partition_data
 from biomechzoo.processing.renameevent_data import renameevent_data
 from biomechzoo.biomech_ops.normalize_data import normalize_data
@@ -77,33 +78,6 @@ class BiomechZoo:
             self.in_folder = os.path.join(in_folder_path, out_folder)
 
         batchdisp('all files saved to: {}'.format(self.in_folder ), level=1, verbose=self.verbose)
-
-    # def combine_files(self, merge_by, out_folder=None, inplace=False, ):
-    #     """
-    #     Merge all .zoo files within each subject folder into a single .zoo file.
-    #     Assumes each zoo file contains synchronized but different channel sets
-    #     (e.g., data from different devices).
-    #
-    #     Parameters
-    #     ----------
-    #     out_folder : str or None
-    #         Optional output location for merged zoo files.
-    #     inplace : bool
-    #         If True, overwrite inside the subject folder. If False, save to out_folder.
-    #     merge_by : str
-    #     """
-    #     raise NotImplementedError('BiomechZoo combine_files is not implemented.')
-    #     start_time = time.time()
-    #     verbose = self.verbose
-    #
-    #     in_folder = self.in_folder
-    #     if inplace is None:
-    #         inplace = self.inplace
-    #
-    #     for p in merge_by:
-    #         fl = engine(in_folder,  subfolders=p)
-    #         for f in fl:
-    #             data = zload(f)
 
 
     def mvnx2zoo(self, out_folder=None, inplace=False):
@@ -341,6 +315,7 @@ class BiomechZoo:
             level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
+
     def phase_angle(self, ch, out_folder=None, inplace=None):
         """ computes phase angles"""
         start_time = time.time()
@@ -560,6 +535,29 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
+    def sync_channels(self, method, ch_1, ch_2, out_folder=None, inplace=None):
+        """
+        Biomechzoo style implementation of 'sync_channels_data' function
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
+        for f in fl:
+            if verbose:
+                batchdisp('sync_channels for file {} using method: {}'.format(f, method), level=2, verbose=verbose)
+            data = zload(f)
+            data = sync_channels_data(data, method, ch_1, ch_2)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
+        # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
     def partition(self, evt_start, evt_end, out_folder=None, inplace=None):
         """ partitions data between events evt_start and evt_end """
         start_time = time.time()
@@ -621,7 +619,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def quats2euler(self, prox_prefix:str, dist_prefix:str, order: str, out_folder=None, inplace=False):
+    def quats2euler(self, ch_prox: list[str], ch_dist: list[str], sequence: str, out_folder=None, inplace=False):
 
         """
         Generates joint angles given proximal and distal quaterion orientation representations.
@@ -635,9 +633,9 @@ class BiomechZoo:
         fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,  subfolders=self.subfolders)
         for f in fl:
             batchdisp('quats2euler for distal channel {} with respect to proximal channel {} using sequence {} for {}'.
-                      format(dist_prefix, prox_prefix, order, f), level=2, verbose=verbose)
+                      format(ch_dist, ch_prox, sequence, f), level=2, verbose=verbose)
             data = zload(f)
-            data = quats2euler(data, prox_prefix, dist_prefix, order)
+            data = quats2euler_data(data, ch_prox, ch_dist, sequence)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
@@ -645,8 +643,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def dcms2euler(self, prox_key, dist_key, order, rot_prox_axis = None, rot_dist_axis = None, rot_deg = None,
-                   out_folder=None, inplace=False):
+    def dcms2euler(self, ch_prox: list[str], ch_dist: list[str], sequence: str, out_folder=None, inplace=False):
         """
         Generates joint angles given proximal and distal direction cosine matrix orientation representations.
         """
@@ -659,9 +656,9 @@ class BiomechZoo:
         fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
         for f in fl:
             batchdisp('DCMs2euler for distal channel {} with respect to proximal channel {} using sequence {} for {}'.
-                      format(dist_key, prox_key, order, f), level=2, verbose=verbose)
+                      format(ch_dist, ch_prox, sequence, f), level=2, verbose=verbose)
             data = zload(f)
-            data = dcms2euler_data(data, prox_key, dist_key, order, rot_prox_axis, rot_dist_axis, rot_deg)
+            data = dcms2euler_data(data, ch_prox, ch_dist, sequence)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp(
@@ -670,3 +667,73 @@ class BiomechZoo:
         batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
         self._update_folder(out_folder, inplace, in_folder)
 
+    def marker2dcm(self, seg: str, origin: str, marker_1: str, marker_2: str, out_folder=None, inplace=False):
+        """
+        Biomechzoo style implementation of marker2dcm_data
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('marker2dcm for segment {} in file {}'.format(seg, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = marker2dcm_data(data, seg=seg, origin=origin, marker_1=marker_1, marker_2=marker_2)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
+            level=1, verbose=self.verbose)
+        batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def quats2dcm(self, seg: str, ch:list[str], out_folder=None, inplace=False):
+        """
+        Biomechzoo style implementation of quats2dcm_data
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('quats2dcm for segment {} in file {}'.format(seg, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = quats2dcm_data(data, seg=seg, ch=ch)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl),
+                                                                       time.time() - start_time),
+            level=1, verbose=self.verbose)
+        batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def rotate_dcm(self, ch: list[str], axis: str, degrees: float, out_folder=None, inplace=False):
+        """
+        Biomechzoo style implementation of rotate_dcm_data
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('rotating dcm segment {} in file {}'.format(ch, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = rotate_dcm_data(data, ch=ch, axis=axis, degrees=degrees)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl),
+                                                                       time.time() - start_time),
+            level=1, verbose=self.verbose)
+        batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
+        self._update_folder(out_folder, inplace, in_folder)

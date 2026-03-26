@@ -1,7 +1,7 @@
 import numpy as np
 from scipy.signal import resample_poly
 
-def resample_data(signal_dict:dict, up=1, down=1)-> dict:
+def resample_data(signal_dict:dict, up:int, down:int, axis:int = 0)-> dict:
     """
     Upsamples / downsamples data using scipy.signal.resample_poly
     """
@@ -20,14 +20,11 @@ def resample_data(signal_dict:dict, up=1, down=1)-> dict:
         for subkey, array in subdict.items():
             if isinstance(array, (np.ndarray, list)):
                 array = np.asarray(array)
-                if array.size == 0:
-                    new_dict[key][subkey] = array
-                    continue
-                if not np.issubdtype(array.dtype, np.number):
+                if array.size == 0 or not np.issubdtype(array.dtype, np.number):
                     new_dict[key][subkey] = array
                     continue
                 new_dict[key][subkey] = resample_poly(
-                    array.astype(float), up, down
+                    array.astype(float), up, down, axis=axis
                 )
             else:
                 new_dict[key][subkey] = array
