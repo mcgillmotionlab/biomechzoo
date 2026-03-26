@@ -79,33 +79,6 @@ class BiomechZoo:
 
         batchdisp('all files saved to: {}'.format(self.in_folder ), level=1, verbose=self.verbose)
 
-    # def combine_files(self, merge_by, out_folder=None, inplace=False, ):
-    #     """
-    #     Merge all .zoo files within each subject folder into a single .zoo file.
-    #     Assumes each zoo file contains synchronized but different channel sets
-    #     (e.g., data from different devices).
-    #
-    #     Parameters
-    #     ----------
-    #     out_folder : str or None
-    #         Optional output location for merged zoo files.
-    #     inplace : bool
-    #         If True, overwrite inside the subject folder. If False, save to out_folder.
-    #     merge_by : str
-    #     """
-    #     raise NotImplementedError('BiomechZoo combine_files is not implemented.')
-    #     start_time = time.time()
-    #     verbose = self.verbose
-    #
-    #     in_folder = self.in_folder
-    #     if inplace is None:
-    #         inplace = self.inplace
-    #
-    #     for p in merge_by:
-    #         fl = engine(in_folder,  subfolders=p)
-    #         for f in fl:
-    #             data = zload(f)
-
 
     def mvnx2zoo(self, out_folder=None, inplace=False):
         """ Converts all .mvnx files in the folder to .zoo format """
@@ -342,6 +315,7 @@ class BiomechZoo:
             level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
+
     def phase_angle(self, ch, out_folder=None, inplace=None):
         """ computes phase angles"""
         start_time = time.time()

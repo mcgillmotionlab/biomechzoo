@@ -1,11 +1,6 @@
-import time
 import copy
 import numpy as np
-import inspect
-from biomechzoo.utils.engine import engine
-from biomechzoo.utils.zload import zload
-from biomechzoo.utils.zsave import zsave
-from biomechzoo.utils.batchdisp import batchdisp
+
 
 def _apply_lag(sig: np.ndarray, lag: int) -> np.ndarray:
     """Trim `lag` samples from the start (positive) or end (negative) of a signal."""
