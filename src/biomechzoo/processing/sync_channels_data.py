@@ -105,6 +105,9 @@ def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str]
 
     lag = supported_methods[method](sig1, sig2)
 
+    sync_meta = data_copy['zoosystem']['Other'].setdefault('Sync Channels', {})
+    sync_meta['detected_lag'] = int(lag)
+
     suffix_1 = '_' + ch_1[0].rsplit('_', maxsplit=1)[-1]
     suffix_2 = '_' + ch_2[0].rsplit('_', maxsplit=1)[-1]
 
