@@ -7,9 +7,6 @@ orientation kinematics, tilt estimation, and step detection.
 Kinematics
 ----------
 
-.. automodule:: biomechzoo.imu.kinematics
-   :members:
-
 .. automodule:: biomechzoo.imu.tilt_algorithm
    :members:
 

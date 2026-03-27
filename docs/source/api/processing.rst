@@ -42,3 +42,12 @@ Trials
 
 .. automodule:: biomechzoo.processing.rep_trial_data
    :members:
+
+File Combining
+--------------
+
+.. automodule:: biomechzoo.processing.combine_files_data
+   :members:
+
+.. automodule:: biomechzoo.processing.xsens_dot_csv_combine
+   :members:

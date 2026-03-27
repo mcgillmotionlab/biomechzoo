@@ -45,3 +45,9 @@ Movement Onset
 
 .. automodule:: biomechzoo.biomech_ops.movement_onset
    :members:
+
+Resampling
+----------
+
+.. automodule:: biomechzoo.biomech_ops.resample
+   :members:

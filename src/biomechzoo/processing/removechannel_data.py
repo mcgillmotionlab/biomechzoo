@@ -66,14 +66,13 @@ def removechannel_data(
     else:
         print('No channels to remove')
 
-    # Remove from main data dict ---
     for ch in remove_channels:
         data.pop(ch, None)
-        if ch in data['zoosystem']['Video']['Channels']:
+
+        if 'Video' in data['zoosystem'] and ch in data['zoosystem']['Video'].get('Channels', []):
             data = update_channel_list(data, section='Video', ch_remove=ch)
-        elif ch in data['zoosystem']['Analog']['Channels']:
+
+        if 'Analog' in data['zoosystem'] and ch in data['zoosystem']['Analog'].get('Channels', []):
             data = update_channel_list(data, section='Analog', ch_remove=ch)
-        else:
-            raise ValueError('Unknown section for channel: {}'.format(ch))
 
     return data
