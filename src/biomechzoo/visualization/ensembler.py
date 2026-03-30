@@ -22,12 +22,27 @@ from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.findfield import findfield
 
+
+from biomechzoo.visualization.src_ensembler.plots_framework import make_subplots, make_point_customdata, default_hovertemplate
+
 class Ensembler:
     def __init__(self, fld, ch, conditions,
                  match_all=True, subj_pattern=None, subj_list=None,
-
+                 nrow=None, ncols=None,
                  out_folder=None, name_contains=None, show_legend=True, ):
 
+        """
+        Initialize the Ensembler class.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Notes
+        -----
+        """
         if isinstance(subj_pattern,str):
             subj_pattern = [subj_pattern]
 
@@ -38,86 +53,86 @@ class Ensembler:
         self.show_legend = show_legend
         self.subj_pattern = subj_pattern
         self.zoo_files = engine(fld, extension=".zoo", subfolders=conditions, name_contains=name_contains, match_all=match_all)
-        self.fig = self._create_subplots()
-        self.subject_colors = self._assign_subject_colors()
+        # self.fig = self._create_subplots()
+        # self.subject_colors = self._assign_subject_colors()
 
-    def _assign_subject_colors(self):
-        """Creates subject specific colors"""
-        unique_subjects = self._get_unique_subjects()
-        subject_colors = {}
-        for idx, subj in enumerate(unique_subjects):
-            line_color, shade_color, marker_color = self._assign_colors(idx)
-            subject_colors[subj] = {
-                "line": line_color,
-                "shade": shade_color,
-                "event": marker_color
-            }
-        return subject_colors
+    # def _assign_subject_colors(self):
+    #     """Creates subject specific colors"""
+    #     unique_subjects = self._get_unique_subjects()
+    #     subject_colors = {}
+    #     for idx, subj in enumerate(unique_subjects):
+    #         line_color, shade_color, marker_color = self._assign_colors(idx)
+    #         subject_colors[subj] = {
+    #             "line": line_color,
+    #             "shade": shade_color,
+    #             "event": marker_color
+    #         }
+    #     return subject_colors
 
-    def _get_unique_subjects(self):
-        """Extract unique subject names from subject pattern initialized in __init__()"""
-        # TODO: get an option when subj_pattern is None.
-        #  Get from biomechzoo zoosystem?
+    # def _get_unique_subjects(self):
+    #     """Extract unique subject names from subject pattern initialized in __init__()"""
+    #     # TODO: get an option when subj_pattern is None.
+    #     #  Get from biomechzoo zoosystem?
+    #
+    #     subjects = set()
+    #     for fl in self.zoo_files:
+    #         match = re.search(self.subj_pattern[0], fl)
+    #         if match:
+    #             subjects.add(match.group(0))
+    #         elif match is None:
+    #             match = re.search(self.subj_pattern[1], fl)
+    #             if match:
+    #                 subjects.add(match.group(0))
+    #             else:
+    #                 subjects.add("unknown")
+    #     return sorted(subjects)
 
-        subjects = set()
-        for fl in self.zoo_files:
-            match = re.search(self.subj_pattern[0], fl)
-            if match:
-                subjects.add(match.group(0))
-            elif match is None:
-                match = re.search(self.subj_pattern[1], fl)
-                if match:
-                    subjects.add(match.group(0))
-                else:
-                    subjects.add("unknown")
-        return sorted(subjects)
-
-    @staticmethod
-    def  _assign_colors(i, color_library=None):
-        """
-        Assign colors to each subject automatically.
-
-        Parameters
-        ----------
-            i: integer
-                The index associated with the subject pattern
-
-        Returns
-        --------
-            hex_code: string
-                The ith hex-code from pc.qualitative.D3 library.
-            shade_color: string
-                The associated shade color
-
-            marker_color: string
-                The complementary marker color
-        """
-        if color_library is None:
-            color_library = pc.qualitative.D3
-
-        hex_code = color_library[i % len(color_library)]
-        h = hex_code.lstrip('#')
-        rgb =tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
-
-        #shade color with opacity
-        opacity = 0.3
-        shade_color = f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, {opacity})"
-
-        #Get complementary color for marker
-        comp = ['%02X' % (255 - a) for a in rgb]
-        marker_color =  '#' + ''.join(comp)
-
-        return hex_code, shade_color, marker_color
+    # @staticmethod
+    # def  _assign_colors(i, color_library=None):
+    #     """
+    #     Assign colors to each subject automatically.
+    #
+    #     Parameters
+    #     ----------
+    #         i: integer
+    #             The index associated with the subject pattern
+    #
+    #     Returns
+    #     --------
+    #         hex_code: string
+    #             The ith hex-code from pc.qualitative.D3 library.
+    #         shade_color: string
+    #             The associated shade color
+    #
+    #         marker_color: string
+    #             The complementary marker color
+    #     """
+    #     if color_library is None:
+    #         color_library = pc.qualitative.D3
+    #
+    #     hex_code = color_library[i % len(color_library)]
+    #     h = hex_code.lstrip('#')
+    #     rgb =tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+    #
+    #     #shade color with opacity
+    #     opacity = 0.3
+    #     shade_color = f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, {opacity})"
+    #
+    #     #Get complementary color for marker
+    #     comp = ['%02X' % (255 - a) for a in rgb]
+    #     marker_color =  '#' + ''.join(comp)
+    #
+    #     return hex_code, shade_color, marker_color
 
 
-    def _create_subplots(self):
-        """Create subplots for each channel and each condition"""
-        self.rows = len(self.channels)
-        self.cols = len(self.conditions)
-        titles = [f"{ch} - {cond}" for ch in self.channels for cond in self.conditions]
-        fig = make_subplots(rows=self.rows, cols=self.cols, shared_xaxes=True, shared_yaxes=False,
-                             subplot_titles=titles)
-        return fig
+    # def _create_subplots(self):
+    #     """Create subplots for each channel and each condition"""
+    #     self.rows = len(self.channels)
+    #     self.cols = len(self.conditions)
+    #     titles = [f"{ch} - {cond}" for ch in self.channels for cond in self.conditions]
+    #     fig = make_subplots(rows=self.rows, cols=self.cols, shared_xaxes=True, shared_yaxes=False,
+    #                          subplot_titles=titles)
+    #     return fig
 
     def _create_subplots_combine(self):
         """Create subplots for each channel"""
@@ -128,56 +143,56 @@ class Ensembler:
                             subplot_titles=titles)
         return fig
 
-    def _get_condition_from_path(self, path):
-        for cond in self.conditions:
-            if cond in path:
-                return cond
-        return "Unknown"
+    # def _get_condition_from_path(self, path):
+    #     for cond in self.conditions:
+    #         if cond in path:
+    #             return cond
+    #     return "Unknown"
 
-    def _make_point_customdata(self, subj, channel, condition, fname, row, col, x, y):
-        """Curate data for the hover functionality in plotly figure"""
-        # Ensure x is an array of indices when None
-        if x is None:
-            x = list(range(len(y)))
-
-        if isinstance(y, float):
-            return [
-                {
-                    "subject": subj,
-                    "channel": channel,
-                    "condition": condition,
-                    "source_file": fname,
-                    "row": row,
-                    "col": col,
-                    "index": int(x) if isinstance(x, (int, np.integer)) else x,
-                    "value": float(y) if isinstance(y, (float, np.floating)) else y
-                }
-            ]
-
-        return [
-            {
-                "subject": subj,
-                "channel": channel,
-                "condition": condition,
-                "source_file": fname,
-                "row": row,
-                "col": col,
-                "index": int(xi) if isinstance(xi, (int, np.integer)) else xi,
-                "value": float(yi) if isinstance(yi, (float, np.floating)) else yi
-            } for xi, yi in zip(x, y)
-        ]
-
-    def _default_hovertemplate(self):
-        """Curate default hover template"""
-        # Compact, informative hover
-        return (
-            "Subject: %{customdata.subject}<br>"
-            "Channel: %{customdata.channel}<br>"
-            "Condition: %{customdata.condition}<br>"
-            "File: %{customdata.source_file}<br>"
-            "x: %{x}<br>y: %{y}"
-            "<extra></extra>"
-        )
+    # def _make_point_customdata(self, subj, channel, condition, fname, row, col, x, y):
+    #     """Curate data for the hover functionality in plotly figure"""
+    #     # Ensure x is an array of indices when None
+    #     if x is None:
+    #         x = list(range(len(y)))
+    #
+    #     if isinstance(y, float):
+    #         return [
+    #             {
+    #                 "subject": subj,
+    #                 "channel": channel,
+    #                 "condition": condition,
+    #                 "source_file": fname,
+    #                 "row": row,
+    #                 "col": col,
+    #                 "index": int(x) if isinstance(x, (int, np.integer)) else x,
+    #                 "value": float(y) if isinstance(y, (float, np.floating)) else y
+    #             }
+    #         ]
+    #
+    #     return [
+    #         {
+    #             "subject": subj,
+    #             "channel": channel,
+    #             "condition": condition,
+    #             "source_file": fname,
+    #             "row": row,
+    #             "col": col,
+    #             "index": int(xi) if isinstance(xi, (int, np.integer)) else xi,
+    #             "value": float(yi) if isinstance(yi, (float, np.floating)) else yi
+    #         } for xi, yi in zip(x, y)
+    #     ]
+    #
+    # def _default_hovertemplate(self):
+    #     """Curate default hover template"""
+    #     # Compact, informative hover
+    #     return (
+    #         "Subject: %{customdata.subject}<br>"
+    #         "Channel: %{customdata.channel}<br>"
+    #         "Condition: %{customdata.condition}<br>"
+    #         "File: %{customdata.source_file}<br>"
+    #         "x: %{x}<br>y: %{y}"
+    #         "<extra></extra>"
+    #     )
 
     def cycles(self, event_name=None):
         """
@@ -387,36 +402,36 @@ class Ensembler:
 
         self.show()
 
-    def _calculate_average(self):
-        """Calculates the average timeseries for the channels"""
-        # Initialize dictionary to store data
-
-        data_new = {c: {ch: [] for ch in self.channels} for c in self.conditions}
-
-        for fl in self.zoo_files:
-            data = zload(fl)
-            condition = self._get_condition_from_path(fl)
-
-            # Create dataframe from the two conditions.
-            for channel in self.channels:
-                try:
-                    ch_data_line = data[channel]["line"]
-                    data_new[condition][channel].append(ch_data_line)
-                except KeyError:
-                    print(f"Channel {channel} not found in file {fl}")
-
-        # Average per condition per channel
-        average_dict = {c: {ch: {} for ch in self.channels} for c in self.conditions}
-        for c, condition in enumerate(data_new):
-            for i, channel in enumerate(data_new[condition]):
-                line_data = data_new[condition][channel]
-                array_data = np.array(line_data)
-                average = np.nanmean(array_data, axis=0)
-                standard_dev = np.nanstd(array_data, axis=0)
-
-                average_dict[condition][channel].update({"average": average, "standard_dev": standard_dev})
-
-        return average_dict
+    # def _calculate_average(self):
+    #     """Calculates the average timeseries for the channels"""
+    #     # Initialize dictionary to store data
+    #
+    #     data_new = {c: {ch: [] for ch in self.channels} for c in self.conditions}
+    #
+    #     for fl in self.zoo_files:
+    #         data = zload(fl)
+    #         condition = self._get_condition_from_path(fl)
+    #
+    #         # Create dataframe from the two conditions.
+    #         for channel in self.channels:
+    #             try:
+    #                 ch_data_line = data[channel]["line"]
+    #                 data_new[condition][channel].append(ch_data_line)
+    #             except KeyError:
+    #                 print(f"Channel {channel} not found in file {fl}")
+    #
+    #     # Average per condition per channel
+    #     average_dict = {c: {ch: {} for ch in self.channels} for c in self.conditions}
+    #     for c, condition in enumerate(data_new):
+    #         for i, channel in enumerate(data_new[condition]):
+    #             line_data = data_new[condition][channel]
+    #             array_data = np.array(line_data)
+    #             average = np.nanmean(array_data, axis=0)
+    #             standard_dev = np.nanstd(array_data, axis=0)
+    #
+    #             average_dict[condition][channel].update({"average": average, "standard_dev": standard_dev})
+    #
+    #     return average_dict
 
     def add_line(self, y, x=None, row=1, col=1, name=None, color=None, legendgroup=None, showlegend=True, customdata=None, hovertemplate=None):
         trace = go.Scatter(x=x, y=y, mode="lines", name=name,
