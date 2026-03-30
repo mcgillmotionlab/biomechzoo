@@ -23,7 +23,11 @@ from biomechzoo.utils.zload import zload
 from biomechzoo.utils.findfield import findfield
 
 class Ensembler:
-    def __init__(self, fld, ch, conditions, out_folder=None, name_contains=None, show_legend=True, match_all=True, subj_pattern=None):
+    def __init__(self, fld, ch, conditions,
+                 match_all=True, subj_pattern=None, subj_list=None,
+
+                 out_folder=None, name_contains=None, show_legend=True, ):
+
         if isinstance(subj_pattern,str):
             subj_pattern = [subj_pattern]
 
@@ -479,117 +483,3 @@ class Ensembler:
             self.fig.write_html(os.path.join(folder, f"{file_name}.{extension}"))
         else:
             self.fig.write_image(os.path.join(folder, f"{file_name}.{extension}"))
-
-
-
-class EnsemblerQualityChecker:
-    def __init__(self, figure, out_folder):
-        self.figure = figure
-        self.out_folder = out_folder
-        self.app = Dash(__name__)
-        self._built_layout()
-        self._register_callbacks()
-
-
-    def _built_layout(self):
-        self.app.layout = html.Div([
-            # The graph
-            html.Div([
-                dcc.Graph(id="ensemble-graph", figure=self.figure, clear_on_unhover=True),
-            ]),
-            html.Hr(),
-            # click output
-            html.Div([
-                html.H4("Last click"),
-                html.Pre(id="last-click", style={"whiteSpace": "pre-wrap"}),
-                html.H4("Clicks captured"),
-                html.Pre(id="click-count")
-            ]),
-            # Download button
-            html.Div([
-                html.Button("Download CSV", id="btn-download", n_clicks=0),
-                dcc.Download(id="download-csv"),
-                dcc.Store(id="click-store", data=[])
-            ]),
-        ])
-
-    def _register_callbacks(self):
-        app=self.app
-
-        @app.callback(
-            Output("last-click", "children"),
-            Output("click-count", "children"),
-            Output("click-store", "data"),
-            Output("ensemble-graph", "figure"),
-            Input("ensemble-graph", "clickData"),
-            State("click-store", "data"),
-            State("ensemble-graph", "figure"),
-            prevent_initial_call=True
-        )
-        def save_and_remove(clickData, clicks, fig):
-            if not clickData or fig is None:
-                return no_update, no_update, clicks, no_update
-
-            pt = clickData["points"][0]
-            # Ignore helper/legend traces that use y=[None]
-            if pt.get("y") is None or pt.get("curveNumber") is None:
-                return no_update, no_update, clicks, no_update
-
-            # Build record (flat customdata: [subject, channel, condition, file, row, col, index, value])
-            cd = pt.get("customdata") or []
-            record = {
-                "subject": cd.get("subject"),
-                "channel": cd.get("channel"),
-                "condition": cd.get("condition"),
-                "source_file": cd.get("source_file"),
-                "row": cd.get("row"),
-                "col": cd.get("col"),
-                "index": cd.get("index"),
-                "value": cd.get("value"),
-                # native plotly info as well
-                "curveNumber": pt.get("curveNumber"),
-                "pointNumber": pt.get("pointNumber"),
-                "x": pt.get("x"),
-                "y": pt.get("y"),
-            }
-
-            # Append & persist
-            clicks = (clicks or []) + [record]
-            try:
-                out_dir = os.path.join(self.out_folder, "click_exports")
-                os.makedirs(out_dir, exist_ok=True)
-                # pd.DataFrame(clicks).to_csv(os.path.join(out_dir, "clicks_latest.csv"), index=False)
-            except Exception:
-                pass  # keep UI responsive even if write fails
-
-            # Remove the clicked trace
-            data = list(fig.get("data", []))
-            idx = pt["curveNumber"]
-            if 0 <= idx < len(data):
-                t = data[idx]
-                if t.get("type") == "scatter" and t.get("mode") in ("lines", "lines+markers", "markers"):
-                    data.pop(idx)
-                    fig["data"] = data
-                    fig.setdefault("layout", {})["uirevision"] = "ensembler"  # preserve zoom/state
-
-            return json.dumps(record, indent=2), f"Total clicks: {len(clicks)}", clicks, fig
-
-        @app.callback(
-            Output("download-csv", "data"),
-            Input("btn-download", "n_clicks"),
-            State("click-store", "data"),
-            prevent_initial_call=True
-        )
-        def download_csv(n, clicks):
-            if not clicks:
-                return no_update
-            df = pd.DataFrame(clicks)
-            # For client-side download
-            return dcc.send_data_frame(df.to_csv, "ensembler_clicks.csv", index=False)
-
-    def run(self, **kwargs):
-        # Default values if not provided
-        kwargs.setdefault("host", "127.0.0.1")
-        kwargs.setdefault("port", 8050)
-        kwargs.setdefault("debug", True)
-        self.app.run(**kwargs)
