@@ -58,16 +58,16 @@ The Ensembler needs to know if the different conditions (e.g. pre vs post; imu v
 
 *Condition set on CHANNEL*
 
-Use case when the condition data is within the same .zoo file flagged by a suffix or prefix. 
+Use case when the condition data is within the same .zoo file flagged by a suffix or prefix.
 
 ```python
 spec = ConditionSpec(
-    source     = ConditionSource.CHANNEL,
-    conditions = ["vicon", "areve", 'pig'],
-    channel_map = {
+    source=ConditionSource.WITHIN,
+    conditions=["vicon", "areve", 'pig'],
+    channel_map={
         "vicon": "RS_abduction_vicon",
         "areve": "RS_abduction_areve",
-        "pig" : "RS_abduction_pig",
+        "pig": "RS_abduction_pig",
     }
 )
 ```
