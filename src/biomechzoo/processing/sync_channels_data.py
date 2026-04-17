@@ -39,6 +39,53 @@ def _cross_correlation(sig1: np.ndarray, sig2: np.ndarray) -> int:
 
 def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str], manual_lag: int = None) -> dict:
     """
+    Synchronize two groups of channels within a data dictionary by estimating
+    or applying a temporal lag.
+
+    The lag is estimated from a representative subset of channels (`ch_1`, `ch_2`)
+    and then applied to all channels sharing the same suffix. After alignment,
+    all affected channels are trimmed to a common length.
+
+    Parameters
+    ----------
+    data : dict
+        Dictionary of channel data.
+    method : str
+        Synchronization method. Supported options:
+
+        - ``'cross-correlation'`` : estimates lag automatically using
+          normalized cross-correlation across the provided channel pairs.
+        - ``'manual'`` : applies a user-specified lag via ``manual_lag``.
+    ch_1 : list of str
+        Channel names from the first signal group used to estimate the lag.
+        Must have the same length as `ch_2`. The suffix of ``ch_1[0]``
+        determines which channels in `data` are shifted.
+    ch_2 : list of str
+        Channel names from the second signal group used to estimate the lag.
+        Must have the same length as `ch_1`. The suffix of ``ch_2[0]``
+        determines which channels in `data` are shifted.
+    manual_lag : int, optional
+        Number of samples to shift when ``method='manual'``. Positive values
+        shift `ch_1` channels forward; negative values shift `ch_2` channels
+        forward. Required when ``method='manual'``, ignored otherwise.
+
+    Returns
+    -------
+    dict
+        A deep copy of `data` with the lagged channels shifted and all
+        affected channels trimmed to a common length.
+
+    Raises
+    ------
+    ValueError
+        If `method` is not one of the supported options.
+    ValueError
+        If `ch_1` and `ch_2` have different lengths.
+    ValueError
+        If ``method='manual'`` and `manual_lag` is not provided.
+    ValueError
+        If no channels are found in `data` matching the inferred suffixes
+        of `ch_1` or `ch_2`.
     """
     supported_methods = {"cross-correlation", "manual"}
 
