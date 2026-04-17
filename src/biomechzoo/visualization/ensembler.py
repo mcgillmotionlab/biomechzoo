@@ -22,8 +22,27 @@ from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.findfield import findfield
 
+
+from biomechzoo.visualization.src_ensembler.plots_framework import make_subplots, make_point_customdata, default_hovertemplate
+
 class Ensembler:
-    def __init__(self, fld, ch, conditions, out_folder=None, name_contains=None, show_legend=True, match_all=True, subj_pattern=None):
+    def __init__(self, fld, ch, conditions,
+                 match_all=True, subj_pattern=None, subj_list=None,
+                 nrow=None, ncols=None,
+                 out_folder=None, name_contains=None, show_legend=True, ):
+
+        """
+        Initialize the Ensembler class.
+
+        Parameters
+        ----------
+
+        Returns
+        -------
+
+        Notes
+        -----
+        """
         if isinstance(subj_pattern,str):
             subj_pattern = [subj_pattern]
 
@@ -34,86 +53,86 @@ class Ensembler:
         self.show_legend = show_legend
         self.subj_pattern = subj_pattern
         self.zoo_files = engine(fld, extension=".zoo", subfolders=conditions, name_contains=name_contains, match_all=match_all)
-        self.fig = self._create_subplots()
-        self.subject_colors = self._assign_subject_colors()
+        # self.fig = self._create_subplots()
+        # self.subject_colors = self._assign_subject_colors()
 
-    def _assign_subject_colors(self):
-        """Creates subject specific colors"""
-        unique_subjects = self._get_unique_subjects()
-        subject_colors = {}
-        for idx, subj in enumerate(unique_subjects):
-            line_color, shade_color, marker_color = self._assign_colors(idx)
-            subject_colors[subj] = {
-                "line": line_color,
-                "shade": shade_color,
-                "event": marker_color
-            }
-        return subject_colors
+    # def _assign_subject_colors(self):
+    #     """Creates subject specific colors"""
+    #     unique_subjects = self._get_unique_subjects()
+    #     subject_colors = {}
+    #     for idx, subj in enumerate(unique_subjects):
+    #         line_color, shade_color, marker_color = self._assign_colors(idx)
+    #         subject_colors[subj] = {
+    #             "line": line_color,
+    #             "shade": shade_color,
+    #             "event": marker_color
+    #         }
+    #     return subject_colors
 
-    def _get_unique_subjects(self):
-        """Extract unique subject names from subject pattern initialized in __init__()"""
-        # TODO: get an option when subj_pattern is None.
-        #  Get from biomechzoo zoosystem?
+    # def _get_unique_subjects(self):
+    #     """Extract unique subject names from subject pattern initialized in __init__()"""
+    #     # TODO: get an option when subj_pattern is None.
+    #     #  Get from biomechzoo zoosystem?
+    #
+    #     subjects = set()
+    #     for fl in self.zoo_files:
+    #         match = re.search(self.subj_pattern[0], fl)
+    #         if match:
+    #             subjects.add(match.group(0))
+    #         elif match is None:
+    #             match = re.search(self.subj_pattern[1], fl)
+    #             if match:
+    #                 subjects.add(match.group(0))
+    #             else:
+    #                 subjects.add("unknown")
+    #     return sorted(subjects)
 
-        subjects = set()
-        for fl in self.zoo_files:
-            match = re.search(self.subj_pattern[0], fl)
-            if match:
-                subjects.add(match.group(0))
-            elif match is None:
-                match = re.search(self.subj_pattern[1], fl)
-                if match:
-                    subjects.add(match.group(0))
-                else:
-                    subjects.add("unknown")
-        return sorted(subjects)
-
-    @staticmethod
-    def  _assign_colors(i, color_library=None):
-        """
-        Assign colors to each subject automatically.
-
-        Parameters
-        ----------
-            i: integer
-                The index associated with the subject pattern
-
-        Returns
-        --------
-            hex_code: string
-                The ith hex-code from pc.qualitative.D3 library.
-            shade_color: string
-                The associated shade color
-
-            marker_color: string
-                The complementary marker color
-        """
-        if color_library is None:
-            color_library = pc.qualitative.D3
-
-        hex_code = color_library[i % len(color_library)]
-        h = hex_code.lstrip('#')
-        rgb =tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
-
-        #shade color with opacity
-        opacity = 0.3
-        shade_color = f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, {opacity})"
-
-        #Get complementary color for marker
-        comp = ['%02X' % (255 - a) for a in rgb]
-        marker_color =  '#' + ''.join(comp)
-
-        return hex_code, shade_color, marker_color
+    # @staticmethod
+    # def  _assign_colors(i, color_library=None):
+    #     """
+    #     Assign colors to each subject automatically.
+    #
+    #     Parameters
+    #     ----------
+    #         i: integer
+    #             The index associated with the subject pattern
+    #
+    #     Returns
+    #     --------
+    #         hex_code: string
+    #             The ith hex-code from pc.qualitative.D3 library.
+    #         shade_color: string
+    #             The associated shade color
+    #
+    #         marker_color: string
+    #             The complementary marker color
+    #     """
+    #     if color_library is None:
+    #         color_library = pc.qualitative.D3
+    #
+    #     hex_code = color_library[i % len(color_library)]
+    #     h = hex_code.lstrip('#')
+    #     rgb =tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
+    #
+    #     #shade color with opacity
+    #     opacity = 0.3
+    #     shade_color = f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, {opacity})"
+    #
+    #     #Get complementary color for marker
+    #     comp = ['%02X' % (255 - a) for a in rgb]
+    #     marker_color =  '#' + ''.join(comp)
+    #
+    #     return hex_code, shade_color, marker_color
 
 
-    def _create_subplots(self):
-        """Create subplots for each channel and each condition"""
-        self.rows = len(self.channels)
-        self.cols = len(self.conditions)
-        titles = [f"{ch} - {cond}" for ch in self.channels for cond in self.conditions]
-        fig = make_subplots(rows=self.rows, cols=self.cols, shared_xaxes=True, shared_yaxes=False,
-                             subplot_titles=titles)
-        return fig
+    # def _create_subplots(self):
+    #     """Create subplots for each channel and each condition"""
+    #     self.rows = len(self.channels)
+    #     self.cols = len(self.conditions)
+    #     titles = [f"{ch} - {cond}" for ch in self.channels for cond in self.conditions]
+    #     fig = make_subplots(rows=self.rows, cols=self.cols, shared_xaxes=True, shared_yaxes=False,
+    #                          subplot_titles=titles)
+    #     return fig
 
     def _create_subplots_combine(self):
         """Create subplots for each channel"""
@@ -124,56 +143,56 @@ class Ensembler:
                             subplot_titles=titles)
         return fig
 
-    def _get_condition_from_path(self, path):
-        for cond in self.conditions:
-            if cond in path:
-                return cond
-        return "Unknown"
+    # def _get_condition_from_path(self, path):
+    #     for cond in self.conditions:
+    #         if cond in path:
+    #             return cond
+    #     return "Unknown"
 
-    def _make_point_customdata(self, subj, channel, condition, fname, row, col, x, y):
-        """Curate data for the hover functionality in plotly figure"""
-        # Ensure x is an array of indices when None
-        if x is None:
-            x = list(range(len(y)))
-
-        if isinstance(y, float):
-            return [
-                {
-                    "subject": subj,
-                    "channel": channel,
-                    "condition": condition,
-                    "source_file": fname,
-                    "row": row,
-                    "col": col,
-                    "index": int(x) if isinstance(x, (int, np.integer)) else x,
-                    "value": float(y) if isinstance(y, (float, np.floating)) else y
-                }
-            ]
-
-        return [
-            {
-                "subject": subj,
-                "channel": channel,
-                "condition": condition,
-                "source_file": fname,
-                "row": row,
-                "col": col,
-                "index": int(xi) if isinstance(xi, (int, np.integer)) else xi,
-                "value": float(yi) if isinstance(yi, (float, np.floating)) else yi
-            } for xi, yi in zip(x, y)
-        ]
-
-    def _default_hovertemplate(self):
-        """Curate default hover template"""
-        # Compact, informative hover
-        return (
-            "Subject: %{customdata.subject}<br>"
-            "Channel: %{customdata.channel}<br>"
-            "Condition: %{customdata.condition}<br>"
-            "File: %{customdata.source_file}<br>"
-            "x: %{x}<br>y: %{y}"
-            "<extra></extra>"
-        )
+    # def _make_point_customdata(self, subj, channel, condition, fname, row, col, x, y):
+    #     """Curate data for the hover functionality in plotly figure"""
+    #     # Ensure x is an array of indices when None
+    #     if x is None:
+    #         x = list(range(len(y)))
+    #
+    #     if isinstance(y, float):
+    #         return [
+    #             {
+    #                 "subject": subj,
+    #                 "channel": channel,
+    #                 "condition": condition,
+    #                 "source_file": fname,
+    #                 "row": row,
+    #                 "col": col,
+    #                 "index": int(x) if isinstance(x, (int, np.integer)) else x,
+    #                 "value": float(y) if isinstance(y, (float, np.floating)) else y
+    #             }
+    #         ]
+    #
+    #     return [
+    #         {
+    #             "subject": subj,
+    #             "channel": channel,
+    #             "condition": condition,
+    #             "source_file": fname,
+    #             "row": row,
+    #             "col": col,
+    #             "index": int(xi) if isinstance(xi, (int, np.integer)) else xi,
+    #             "value": float(yi) if isinstance(yi, (float, np.floating)) else yi
+    #         } for xi, yi in zip(x, y)
+    #     ]
+    #
+    # def _default_hovertemplate(self):
+    #     """Curate default hover template"""
+    #     # Compact, informative hover
+    #     return (
+    #         "Subject: %{customdata.subject}<br>"
+    #         "Channel: %{customdata.channel}<br>"
+    #         "Condition: %{customdata.condition}<br>"
+    #         "File: %{customdata.source_file}<br>"
+    #         "x: %{x}<br>y: %{y}"
+    #         "<extra></extra>"
+    #     )
 
     def cycles(self, event_name=None):
         """
@@ -383,36 +402,36 @@ class Ensembler:
 
         self.show()
 
-    def _calculate_average(self):
-        """Calculates the average timeseries for the channels"""
-        # Initialize dictionary to store data
-
-        data_new = {c: {ch: [] for ch in self.channels} for c in self.conditions}
-
-        for fl in self.zoo_files:
-            data = zload(fl)
-            condition = self._get_condition_from_path(fl)
-
-            # Create dataframe from the two conditions.
-            for channel in self.channels:
-                try:
-                    ch_data_line = data[channel]["line"]
-                    data_new[condition][channel].append(ch_data_line)
-                except KeyError:
-                    print(f"Channel {channel} not found in file {fl}")
-
-        # Average per condition per channel
-        average_dict = {c: {ch: {} for ch in self.channels} for c in self.conditions}
-        for c, condition in enumerate(data_new):
-            for i, channel in enumerate(data_new[condition]):
-                line_data = data_new[condition][channel]
-                array_data = np.array(line_data)
-                average = np.nanmean(array_data, axis=0)
-                standard_dev = np.nanstd(array_data, axis=0)
-
-                average_dict[condition][channel].update({"average": average, "standard_dev": standard_dev})
-
-        return average_dict
+    # def _calculate_average(self):
+    #     """Calculates the average timeseries for the channels"""
+    #     # Initialize dictionary to store data
+    #
+    #     data_new = {c: {ch: [] for ch in self.channels} for c in self.conditions}
+    #
+    #     for fl in self.zoo_files:
+    #         data = zload(fl)
+    #         condition = self._get_condition_from_path(fl)
+    #
+    #         # Create dataframe from the two conditions.
+    #         for channel in self.channels:
+    #             try:
+    #                 ch_data_line = data[channel]["line"]
+    #                 data_new[condition][channel].append(ch_data_line)
+    #             except KeyError:
+    #                 print(f"Channel {channel} not found in file {fl}")
+    #
+    #     # Average per condition per channel
+    #     average_dict = {c: {ch: {} for ch in self.channels} for c in self.conditions}
+    #     for c, condition in enumerate(data_new):
+    #         for i, channel in enumerate(data_new[condition]):
+    #             line_data = data_new[condition][channel]
+    #             array_data = np.array(line_data)
+    #             average = np.nanmean(array_data, axis=0)
+    #             standard_dev = np.nanstd(array_data, axis=0)
+    #
+    #             average_dict[condition][channel].update({"average": average, "standard_dev": standard_dev})
+    #
+    #     return average_dict
 
     def add_line(self, y, x=None, row=1, col=1, name=None, color=None, legendgroup=None, showlegend=True, customdata=None, hovertemplate=None):
         trace = go.Scatter(x=x, y=y, mode="lines", name=name,
@@ -479,117 +498,3 @@ class Ensembler:
             self.fig.write_html(os.path.join(folder, f"{file_name}.{extension}"))
         else:
             self.fig.write_image(os.path.join(folder, f"{file_name}.{extension}"))
-
-
-
-class EnsemblerQualityChecker:
-    def __init__(self, figure, out_folder):
-        self.figure = figure
-        self.out_folder = out_folder
-        self.app = Dash(__name__)
-        self._built_layout()
-        self._register_callbacks()
-
-
-    def _built_layout(self):
-        self.app.layout = html.Div([
-            # The graph
-            html.Div([
-                dcc.Graph(id="ensemble-graph", figure=self.figure, clear_on_unhover=True),
-            ]),
-            html.Hr(),
-            # click output
-            html.Div([
-                html.H4("Last click"),
-                html.Pre(id="last-click", style={"whiteSpace": "pre-wrap"}),
-                html.H4("Clicks captured"),
-                html.Pre(id="click-count")
-            ]),
-            # Download button
-            html.Div([
-                html.Button("Download CSV", id="btn-download", n_clicks=0),
-                dcc.Download(id="download-csv"),
-                dcc.Store(id="click-store", data=[])
-            ]),
-        ])
-
-    def _register_callbacks(self):
-        app=self.app
-
-        @app.callback(
-            Output("last-click", "children"),
-            Output("click-count", "children"),
-            Output("click-store", "data"),
-            Output("ensemble-graph", "figure"),
-            Input("ensemble-graph", "clickData"),
-            State("click-store", "data"),
-            State("ensemble-graph", "figure"),
-            prevent_initial_call=True
-        )
-        def save_and_remove(clickData, clicks, fig):
-            if not clickData or fig is None:
-                return no_update, no_update, clicks, no_update
-
-            pt = clickData["points"][0]
-            # Ignore helper/legend traces that use y=[None]
-            if pt.get("y") is None or pt.get("curveNumber") is None:
-                return no_update, no_update, clicks, no_update
-
-            # Build record (flat customdata: [subject, channel, condition, file, row, col, index, value])
-            cd = pt.get("customdata") or []
-            record = {
-                "subject": cd.get("subject"),
-                "channel": cd.get("channel"),
-                "condition": cd.get("condition"),
-                "source_file": cd.get("source_file"),
-                "row": cd.get("row"),
-                "col": cd.get("col"),
-                "index": cd.get("index"),
-                "value": cd.get("value"),
-                # native plotly info as well
-                "curveNumber": pt.get("curveNumber"),
-                "pointNumber": pt.get("pointNumber"),
-                "x": pt.get("x"),
-                "y": pt.get("y"),
-            }
-
-            # Append & persist
-            clicks = (clicks or []) + [record]
-            try:
-                out_dir = os.path.join(self.out_folder, "click_exports")
-                os.makedirs(out_dir, exist_ok=True)
-                # pd.DataFrame(clicks).to_csv(os.path.join(out_dir, "clicks_latest.csv"), index=False)
-            except Exception:
-                pass  # keep UI responsive even if write fails
-
-            # Remove the clicked trace
-            data = list(fig.get("data", []))
-            idx = pt["curveNumber"]
-            if 0 <= idx < len(data):
-                t = data[idx]
-                if t.get("type") == "scatter" and t.get("mode") in ("lines", "lines+markers", "markers"):
-                    data.pop(idx)
-                    fig["data"] = data
-                    fig.setdefault("layout", {})["uirevision"] = "ensembler"  # preserve zoom/state
-
-            return json.dumps(record, indent=2), f"Total clicks: {len(clicks)}", clicks, fig
-
-        @app.callback(
-            Output("download-csv", "data"),
-            Input("btn-download", "n_clicks"),
-            State("click-store", "data"),
-            prevent_initial_call=True
-        )
-        def download_csv(n, clicks):
-            if not clicks:
-                return no_update
-            df = pd.DataFrame(clicks)
-            # For client-side download
-            return dcc.send_data_frame(df.to_csv, "ensembler_clicks.csv", index=False)
-
-    def run(self, **kwargs):
-        # Default values if not provided
-        kwargs.setdefault("host", "127.0.0.1")
-        kwargs.setdefault("port", 8050)
-        kwargs.setdefault("debug", True)
-        self.app.run(**kwargs)
