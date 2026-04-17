@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from src.renderers import Renderer
+from renderers import Renderer
 
 
 @dataclass

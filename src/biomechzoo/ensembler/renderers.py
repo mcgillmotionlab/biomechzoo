@@ -1,14 +1,16 @@
 from abc import ABC, abstractmethod
-from src.data_store import DataStore
 import plotly.graph_objs as go
 import plotly.express as px
 import numpy as np
-
-from src.style_content import StyleContext
-from src.helpers import compute_ensemble, _compute_bandwidth, align_by_subject, resolve_shade
-
 # to test my bland-altman plot
 import pyCompare
+from data_store import DataStore
+
+
+from style_content import StyleContext
+from helpers import compute_ensemble, _compute_bandwidth, align_by_subject, resolve_shade
+
+
 
 
 #### Plot options to add

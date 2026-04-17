@@ -1,10 +1,10 @@
 from plotly.subplots import make_subplots
-
-from src.data_store import DataStore
-from src.helpers import ConditionSpec
-from src.plot_spec import PlotSpec
-from src.style_content import StyleContext
 import plotly.graph_objs as go
+
+from data_store import DataStore
+from helpers import ConditionSpec
+from plot_spec import PlotSpec
+from style_content import StyleContext
 
 
 

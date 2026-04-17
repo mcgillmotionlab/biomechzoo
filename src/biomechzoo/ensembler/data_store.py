@@ -4,7 +4,7 @@ import re
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
 
-from src.helpers import match_condition, extract_subject_id, extract_events, ZooEvent, ConditionSource, ConditionSpec
+from helpers import match_condition, extract_subject_id, extract_events, ZooEvent, ConditionSource, ConditionSpec
 
 
 class DataStore:
