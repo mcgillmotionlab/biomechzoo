@@ -1,8 +1,8 @@
 # import statements
-from ensembler.ensembler import Ensembler
-from ensembler.plot_spec import PlotSpec
-from ensembler.renderers import IndividualLinesRenderer, MeanSDRenderer
-from ensembler.helpers import ConditionSpec, ConditionSource
+from biomechzoo.ensembler.ensembler import Ensembler
+from biomechzoo.ensembler.ensembler import PlotSpec
+from biomechzoo.ensembler.ensembler import IndividualLinesRenderer, MeanSDRenderer
+from biomechzoo.ensembler.helpers import ConditionSpec, ConditionSource
 
 #%% Set paths:
 fld = "/Users/Werk/Documents/Postdoc-McGill/areve-mcgill/data/Phase2/17-Stats"
