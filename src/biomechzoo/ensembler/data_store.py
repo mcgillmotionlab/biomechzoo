@@ -146,9 +146,12 @@ class DataStore:
     def _resolve_subjects(self):
         seen, result = set(), []
         for f in self._fl:
-            matched = match_condition(f, self.conditions)
-            if matched is None:
-                continue
+
+            if self.condition_spec.source == ConditionSource.FOLDER:
+                matched = match_condition(f, self.conditions)
+                if matched != "__all__":
+                    if matched != self.conditions:
+                        continue
 
             subj =  extract_subject_id(f, subj_list=self.subj_list, str_pattern=self.str_match)
             if subj is None:
