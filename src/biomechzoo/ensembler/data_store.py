@@ -150,7 +150,7 @@ class DataStore:
             if self.condition_spec.source == ConditionSource.BETWEEN:
                 matched = match_condition(f, self.conditions)
                 if matched != "__all__":
-                    if matched != self.conditions:
+                    if matched not in self.conditions:
                         continue
 
             subj =  extract_subject_id(f, subj_list=self.subj_list, str_pattern=self.str_match)
