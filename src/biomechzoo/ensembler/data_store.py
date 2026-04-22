@@ -14,7 +14,7 @@ class DataStore:
     def __init__(self, fld, condition_spec: ConditionSpec | None=None, events=None, subj_list=None, str_match=None):
         self.fld = fld
         self.condition_spec = condition_spec or ConditionSpec(
-            source=ConditionSource.FOLDER, conditions=[]
+            source=ConditionSource.BETWEEN, conditions=[]
         )
         self.conditions = self.condition_spec.conditions
         self.subj_list = subj_list
@@ -67,7 +67,7 @@ class DataStore:
         for f in self._fl:
             data = zload(f)
 
-            if self.condition_spec.source == ConditionSource.FOLDER:
+            if self.condition_spec.source == ConditionSource.BETWEEN:
                 matched = match_condition(f, self.conditions)
                 # fall save: condition needs to be all or match the condition currently in favour
                 if matched != "__all__":
@@ -106,7 +106,7 @@ class DataStore:
             data = zload(f)
 
             # Condition matching - branch on source type
-            if self.condition_spec.source == ConditionSource.FOLDER:
+            if self.condition_spec.source == ConditionSource.BETWEEN:
                 matched = match_condition(f, self.conditions)
                 # fall save: condition needs to be all or match the condition currently in favour
                 if matched != "__all__":
@@ -147,7 +147,7 @@ class DataStore:
         seen, result = set(), []
         for f in self._fl:
 
-            if self.condition_spec.source == ConditionSource.FOLDER:
+            if self.condition_spec.source == ConditionSource.BETWEEN:
                 matched = match_condition(f, self.conditions)
                 if matched != "__all__":
                     if matched != self.conditions:

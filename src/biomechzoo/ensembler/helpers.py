@@ -88,8 +88,8 @@ def compute_ensemble(arrays):
 
 class ConditionSource(Enum):
     """Enum defining condition sources."""
-    FOLDER = "folder" # Condition encoded in folder/filepath
-    CHANNEL = "channel" # Conditions encoded in channel name suffix/prefix
+    BETWEEN = "folder" # Condition encoded in folder/filepath
+    WITHIN = "channel" # Conditions encoded in channel name suffix/prefix
 
 
 @dataclass
