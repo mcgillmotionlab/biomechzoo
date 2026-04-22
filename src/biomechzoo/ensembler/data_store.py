@@ -138,7 +138,7 @@ class DataStore:
         - FOLDER source  → channel name is used as-is
         - CHANNEL source → look up from channel_map
         """
-        if self.condition_spec.source == ConditionSource.CHANNEL:
+        if self.condition_spec.source == ConditionSource.WITHIN:
             return self.condition_spec.channel_map.get(condition, channel)
         return channel
 
