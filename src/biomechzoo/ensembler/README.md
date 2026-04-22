@@ -90,7 +90,7 @@ biomechzoo_ensembler/
 
 ```
 spec = ConditionSpec(
-    source = ConditionSource.FOLDER,
+    source = ConditionSource.BETWEEN,
     conditions = ["Pre-surgery", "Post-surgery"]
 )
 ```
