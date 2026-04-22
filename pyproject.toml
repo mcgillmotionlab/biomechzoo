@@ -16,6 +16,7 @@ dependencies = [
     "plotly>=6.4.0",        # for ensembler
     "kaleido>=1.2.0",       # for ensembler (saving images)
     "dash>=3.3.0",          # for ensembler (quality check)
+    "pycompare>=1.5.4",     # for ensembler (Bland-Altman plots)
 ]
 
 [project.urls]
