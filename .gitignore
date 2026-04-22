@@ -5,13 +5,16 @@ biomechzoo.egg-info/PKG-INFO
 biomechzoo.egg-info/requires.txt
 /biomechzoo.egg-info
 
-# Ignore everything in sample_study but keep raw_c3d_files and its contents
-data/sample_study/*
-!sample_study/raw_c3d_files/
-!sample_study/raw_c3d_files/**
-
 # ignore all created zoo files
 *.zoo
+
+# Ignore everything in sample_study but keep raw_c3d_files and its contents
+data/sample_study/*
+!data/sample_study/raw_c3d_files/
+!data/sample_study/raw_c3d_files/**
+!data/sample_study/normalized/
+!data/sample_study/normalized/**
+
 
 .idea/*
 
