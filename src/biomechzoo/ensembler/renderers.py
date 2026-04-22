@@ -192,11 +192,11 @@ class BlandAltmanRenderer(Renderer):
     - event data (Uses event scaler directly, e.g. "max")
     """
 
-    def __init__(self, use_events: bool = False, show_subjects: bool = False, loa_multiplier: float = 1.96, line_scaler : str = "mean"):
+    def __init__(self, use_lines: bool = False, show_subjects: bool = False, loa_multiplier: float = 1.96, line_scaler : str = "mean"):
 
         if line_scaler not in ("mean", "max", "min", "median"):
             raise ValueError("line_scaler must be one of 'mean', 'max', 'min', or 'median'")
-        self.use_events = use_events
+        self.use_lines = use_lines
         self.show_subjects = show_subjects
         self.loa_multiplier = loa_multiplier
         self.line_scaler = line_scaler
@@ -209,7 +209,7 @@ class BlandAltmanRenderer(Renderer):
 
         cond_a, cond_b = spec.all_conditions
 
-        if self.use_events:
+        if not self.use_lines:
             if not spec.events:
                 raise ValueError(f"BlandAltmanRenderer with use_events=True requires events to be specified ")
             event_name = spec.events[0]
