@@ -95,17 +95,29 @@ class ConditionSource(Enum):
 @dataclass
 class ConditionSpec:
     """Describes how the conditions are encoded in the data"""
-
     source: ConditionSource
-    conditions: list[str]
+    conditions: list[str]       = field(default_factory=list)
     channel_map: dict[str, dict[str, str]] | None = None
+    base_channels : list[str]    = field(default_factory=list)
+    suffix_map : dict[str, str] | None = None
 
     def __post_init__(self):
         if self.source == ConditionSource.WITHIN:
-            if self.chanel_map is None:
-                raise ValueError("ConditionSpec with WITHNIN source requires a channel_map.")
+
+            #auto built channel_map from suffix pattern if not provided
+            if self.channel_map is None:
+                if not self.suffix_map or not self.base_channels:
+                    raise ValueError("ConditionSpec with WITHIN source require either a channel_map or both suffix_map and base_channels.")
+                self.channel_map = {
+                    cond: {
+                        base : f"{base}{suffix}"
+                        for base in self.base_channels
+                    }
+                    for cond, suffix in self.suffix_map.items()
+                }
             if not self.conditions:
-                self.condition = list(self.channel_map.keys())
+                self.conditions = list(self.channe_map.keys())
+
 
 def _compute_bandwidth(values: list[float]) -> float:
     """Silverman's rule of thumb — bandwidth scaled to data spread.
