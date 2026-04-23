@@ -2,7 +2,7 @@ import re
 import numpy as np
 from typing import NamedTuple
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from scipy.stats import iqr
 from collections import defaultdict
 import warnings
@@ -116,7 +116,7 @@ class ConditionSpec:
                     for cond, suffix in self.suffix_map.items()
                 }
             if not self.conditions:
-                self.conditions = list(self.channe_map.keys())
+                self.conditions = list(self.channel_map.keys())
 
 
 def _compute_bandwidth(values: list[float]) -> float:
