@@ -98,7 +98,14 @@ class ConditionSpec:
 
     source: ConditionSource
     conditions: list[str]
-    channel_map: dict[str, str] | None = None
+    channel_map: dict[str, dict[str, str]] | None = None
+
+    def __post_init__(self):
+        if self.source == ConditionSource.WITHIN:
+            if self.chanel_map is None:
+                raise ValueError("ConditionSpec with WITHNIN source requires a channel_map.")
+            if not self.conditions:
+                self.condition = list(self.channel_map.keys())
 
 def _compute_bandwidth(values: list[float]) -> float:
     """Silverman's rule of thumb — bandwidth scaled to data spread.
