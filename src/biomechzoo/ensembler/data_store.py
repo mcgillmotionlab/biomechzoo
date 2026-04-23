@@ -135,11 +135,17 @@ class DataStore:
     def _resolve_zoo_channel(self, channel, condition):
         """
         Returns the actual key to look up in the zoo dict.
-        - FOLDER source  → channel name is used as-is
-        - CHANNEL source → look up from channel_map
+        - BETWEEN source  → channel name is used as-is
+        - WITHIN source → look up from channel_map
         """
         if self.condition_spec.source == ConditionSource.WITHIN:
-            return self.condition_spec.channel_map.get(condition, channel)
+            cond_map = self.condition_spec.channel_map.get(condition, {})
+            resolved = cond_map.get(channel)
+            if resolved is None:
+                raise KeyError(f"No channel_map entry for base channel {channel!r} "
+                               f"under condition {condition!r}. "
+                               f"Available: {list(cond_map.keys())}")
+            return resolved
         return channel
 
 
