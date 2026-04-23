@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import re
 
 from biomechzoo.utils.engine import engine
@@ -168,3 +169,50 @@ class DataStore:
                 result.append(subj)
 
         return result
+
+
+    def to_events_dataframe(self, channels : list[str], event_names : list[str]):
+        """
+        Returns a long-formant DataFrame of all scalar events specified
+        """
+
+        row = []
+        for channel in channels:
+            for condition in self.conditions:
+                for event_name in event_names:
+                    values = self.get_event_values(channel, condition, event_name)
+                    subjects = self.get_event_subject_ids(channel, condition, event_name)
+                    for subj, val in zip(subjects, values):
+                        row.append({"subject": subj,
+                                    "condition": condition,
+                                    "channel": channel,
+                                    "event": event_name,
+                                    "value" : val,})
+
+        return pd.DataFrame(row)
+
+
+    def to_lines_dataframe(self, channels : list[str]):
+        """
+        Returns a long-format DataFrame of all line data.
+        All lines need to be time-normalized
+        """
+
+        rows = []
+        n_frames = 100
+        for channel in channels:
+            for condition in self.conditions:
+                arrays = self.get_lines(channel, condition)
+                subjects = self.get_subject_ids(channel, condition)
+
+                for arr, subj in zip(arrays, subjects):
+                    x_new = np.linspace(0, 100, n_frames)
+
+                    for frame, val in zip(x_new, arr):
+                        rows.append({"subject": subj,
+                                     "condition": condition,
+                                     "channel": channel,
+                                     "frame": frame,
+                                     "value": val})
+
+        return pd.DataFrame(rows)
