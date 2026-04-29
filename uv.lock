@@ -60,7 +60,7 @@ wheels = [
 
 [[package]]
 name = "biomechzoo"
-version = "0.7.15"
+version = "0.7.16"
 source = { editable = "." }
 dependencies = [
     { name = "dash" },
@@ -71,6 +71,7 @@ dependencies = [
     { name = "pandas" },
     { name = "plotly" },
     { name = "pyarrow" },
+    { name = "pycompare" },
     { name = "scipy" },
 ]
 
@@ -92,6 +93,7 @@ requires-dist = [
     { name = "pandas", specifier = ">=2.3.2" },
     { name = "plotly", specifier = ">=6.4.0" },
     { name = "pyarrow", specifier = ">=19.0.0" },
+    { name = "pycompare", specifier = ">=1.5.4" },
     { name = "scipy", specifier = ">=1.16.2" },
 ]
 
@@ -632,6 +634,20 @@ wheels = [
     { url = "https://files.pythonhosted.org/packages/2e/3b/89fced102448a9e3e0d4dded1f37fa3ce4700f02cdb8665457fcc8015f5b/pyarrow-21.0.0-cp311-cp311-musllinux_1_2_aarch64.whl", hash = "sha256:8d58d8497814274d3d20214fbb24abcad2f7e351474357d552a8d53bce70c70e", size = 43391538, upload-time = "2025-07-18T00:55:23.82Z" },
     { url = "https://files.pythonhosted.org/packages/fb/bb/ea7f1bd08978d39debd3b23611c293f64a642557e8141c80635d501e6d53/pyarrow-21.0.0-cp311-cp311-musllinux_1_2_x86_64.whl", hash = "sha256:585e7224f21124dd57836b1530ac8f2df2afc43c861d7bf3d58a4870c42ae36c", size = 45120056, upload-time = "2025-07-18T00:55:28.231Z" },
     { url = "https://files.pythonhosted.org/packages/6e/0b/77ea0600009842b30ceebc3337639a7380cd946061b620ac1a2f3cb541e2/pyarrow-21.0.0-cp311-cp311-win_amd64.whl", hash = "sha256:555ca6935b2cbca2c0e932bedd853e9bc523098c39636de9ad4693b5b1df86d6", size = 26220568, upload-time = "2025-07-18T00:55:32.122Z" },
+]
+
+[[package]]
+name = "pycompare"
+version = "1.5.4"
+source = { registry = "https://pypi.org/simple" }
+dependencies = [
+    { name = "matplotlib" },
+    { name = "numpy" },
+    { name = "scipy" },
+]
+sdist = { url = "https://files.pythonhosted.org/packages/71/0e/5ec69fe81ac40061f1a517409182309024cd968517297504167803770943/pyCompare-1.5.4.tar.gz", hash = "sha256:a848ceb39ba4c0a3958a080705e1630b5624ba84275b598a240bafd6ef2313c6", size = 11403, upload-time = "2022-05-23T14:41:21.217Z" }
+wheels = [
+    { url = "https://files.pythonhosted.org/packages/07/e3/eea3d35e55aa84c06064f3676bfa4b32038de9aceb7b7da14208033fd72e/pyCompare-1.5.4-py3-none-any.whl", hash = "sha256:36e40c76d03d478d32d6f8634b0363c0acc06fe4e4f633ff964603cc8f7aff4c", size = 12046, upload-time = "2022-05-23T14:41:19.811Z" },
 ]
 
 [[package]]
