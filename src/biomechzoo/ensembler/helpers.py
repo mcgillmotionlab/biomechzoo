@@ -26,15 +26,15 @@ def extract_subject_id(f, subj_list, str_pattern):
     ----------
     f : str
         File path to the zoo file.
-    subj_list : list[str]
+    subj_list : list of str
         List of subject IDs.
-    str_pattern : list[reg]
+    str_pattern : list of str
         String pattern to match the subject IDs.
 
     Returns
     -------
-    s : str
-        Subject ID.
+    s : str or None
+        Subject ID if found, otherwise None.
     """
     if str_pattern:
         for pattern in str_pattern:
