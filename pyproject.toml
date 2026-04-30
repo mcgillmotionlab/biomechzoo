@@ -29,7 +29,7 @@ biomechzoo = "main:main"
 requires = ["setuptools>=78.1.0", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
 
-[dependency-groups]
+[project.optional-dependencies]
 docs = [
     "sphinx>=7.0",
     "furo>=2024.1.29",
