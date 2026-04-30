@@ -22,10 +22,10 @@ BiomechZoo is a biomechanics processing toolbox for human movement analysis.
 - clone the repository here: http://www.github.com/mcgillmotionlab/biomechzoo 
 
 ### Installing a dev environment
-conda create -n biomechzoo-dev python=3.11
-conda activate biomechzoo-dev
-cd biomechzoo root folder
-pip install -e ".[dev]"
+- conda create -n biomechzoo-dev python=3.11
+- conda activate biomechzoo-dev
+- cd biomechzoo root folder
+- pip install -e ".[dev]"
 
 ### IDE setup (PyCharm)
-If imports are not resolving, mark the `src/` directory as a source root.
+- If imports are not resolving, mark the `src/` directory as a source root.
