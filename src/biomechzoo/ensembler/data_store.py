@@ -1,10 +1,8 @@
 import numpy as np
-import re
 
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
-
-from helpers import match_condition, extract_subject_id, extract_events, ZooEvent, ConditionSource, ConditionSpec
+from biomechzoo.ensembler.helpers import match_condition, extract_subject_id, extract_events, ZooEvent, ConditionSource, ConditionSpec
 
 
 class DataStore:
