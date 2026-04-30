@@ -13,6 +13,8 @@ BiomechZoo is a biomechanics processing toolbox for human movement analysis.
 - Python 3.11 is the supported version
 - Core dependencies are optimized for modern scientific Python stacks
 
+## Readthedocs
+- See documentation https://biomechzoo.readthedocs.io/en/latest/
 
 ## Developer notes
 
