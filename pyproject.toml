@@ -9,7 +9,7 @@ license-files = ["LICEN[CS]E*"]
 dependencies = [
     "ezc3d>=1.5.19",        # for reading c3d files
     "matplotlib>=3.10.6",
-    "numpy==2.2.6",         # max version for opencap-process tools
+    "numpy>=1.26,<=2.2.6",         # max version for opencap-process tools
     "pandas>=2.3.2",
     "scipy>=1.16.2",
     "pyarrow>=19.0.0",      # for parquet support
