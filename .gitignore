@@ -45,3 +45,6 @@ data/imu_xsens_dot/
 # Docs
 # =========================
 docs/build/
+.DS_Store
+.DS_Store
+.DS_Store

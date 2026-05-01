@@ -4,11 +4,11 @@ import plotly.express as px
 import numpy as np
 # to test my bland-altman plot
 import pyCompare
-from data_store import DataStore
+from biomechzoo.ensembler.data_store import DataStore
 
 
-from style_content import StyleContext
-from helpers import compute_ensemble, _compute_bandwidth, align_by_subject, resolve_shade
+from biomechzoo.ensembler.style_content import StyleContext
+from biomechzoo.ensembler.helpers import compute_ensemble, _compute_bandwidth, align_by_subject, resolve_shade
 
 
 

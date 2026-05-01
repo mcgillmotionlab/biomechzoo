@@ -7,6 +7,7 @@ API Reference
    biomech_ops
    processing
    conversion
+   ensembler
    imu
    linear_algebra_ops
    statistics

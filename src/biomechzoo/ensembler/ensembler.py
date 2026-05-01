@@ -1,10 +1,10 @@
 from plotly.subplots import make_subplots
 import plotly.graph_objs as go
 
-from data_store import DataStore
-from helpers import ConditionSpec
-from plot_spec import PlotSpec
-from style_content import StyleContext
+from biomechzoo.ensembler.data_store import DataStore
+from biomechzoo.ensembler.helpers import ConditionSpec
+from biomechzoo.ensembler.plot_spec import PlotSpec
+from biomechzoo.ensembler.style_content import StyleContext
 
 
 

@@ -1,6 +1,6 @@
 from dataclasses import dataclass, field
 
-from renderers import Renderer
+from biomechzoo.ensembler.renderers import Renderer
 
 
 @dataclass

@@ -79,6 +79,38 @@ class BiomechZoo:
 
         batchdisp('all files saved to: {}'.format(self.in_folder ), level=1, verbose=self.verbose)
 
+    def remove_files(self, fl_remove: list[str], out_folder: str | None = None, inplace: bool | None = None) -> None:
+        """
+        Remove files listed in fl_remove from self.in_folder.
+        Files not in fl_remove are saved using zsave.
+        """
+
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+
+        inplace = self.inplace if inplace is None else inplace
+
+        # Get all files using engine (BiomechZoo pattern)
+        fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
+        removed = 0
+        for f in fl:
+            if any(rem in f for rem in fl_remove):
+                removed += 1
+                batchdisp('not copying {} to new folder {}'.format(f, out_folder), level=2, verbose=verbose)
+                continue
+
+            # Save only good files
+            data = zload(f)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+
+        method_name = inspect.currentframe().f_code.co_name
+        t = time.time() - start_time
+        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, removed, t), level=1,
+                  verbose=verbose)
+        self._update_folder(out_folder, inplace, in_folder)
+
 
     def mvnx2zoo(self, out_folder=None, inplace=False):
         """ Converts all .mvnx files in the folder to .zoo format """

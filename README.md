@@ -1,29 +1,31 @@
-# BiomechZoo for Python
-This is a development version of the biomechzoo toolbox for python. 
+[![Docs](https://readthedocs.org/projects/biomechzoo/badge/?version=latest)](https://biomechzoo.readthedocs.io/)
+[![PyPI version](https://img.shields.io/pypi/v/biomechzoo)](https://pypi.org/project/biomechzoo/)
 
-## How to install 
-- biomechZoo for python is now an official package, you can simply add biomechZoo to your environment using
-``pip install biomechzoo``
+# BiomechZoo
+BiomechZoo is a biomechanics processing toolbox for human movement analysis.
 
-## Usage notes
-- If you need to install a specific version, run ``pip install biomechzoo==x.x.x`` where x.x.x is the version number. 
-- If you need to update biomechzoo to the latest version in your env, run ``pip install biomechzoo --upgrade``
+## Installation
+- Install the latest stable version: ``pip install biomechzoo``
+- Install a specific version ``pip install biomechzoo==0.7.18``
+- Upgrade your installation to the latest version ``pip install --upgrade biomechzoo``
 
-## Dependencies notes
-- We use Python 3.11 for compatibility with https://github.com/stanfordnmbl/opencap-processing
-- We use Numpy 2.2.6 for compatibility with https://pypi.org/project/numba/
+## Compatibility
+- Python 3.11 is the supported version
+- Core dependencies are optimized for modern scientific Python stacks
 
-See also http://www.github.com/mcgillmotionlab/biomechzoo or http://www.biomechzoo.com for more information
+## Readthedocs
+- See documentation https://biomechzoo.readthedocs.io/en/latest/
 
 ## Developer notes
 
-### Installing a dev environment
-conda create -n biomechzoo-dev python=3.11
-conda activate biomechzoo-dev
-cd biomechzoo root folder
-pip install -e ".[dev]"
+### Github version
+- clone the repository here: http://www.github.com/mcgillmotionlab/biomechzoo 
 
-### import issues
-if using PyCharm: 
-- Right-click on src/.
-- Select Mark Directory as → Sources Root.
+### Installing a dev environment
+- conda create -n biomechzoo-dev python=3.11
+- conda activate biomechzoo-dev
+- cd biomechzoo root folder
+- pip install -e ".[dev]"
+
+### IDE setup (PyCharm)
+- If imports are not resolving, mark the `src/` directory as a source root.

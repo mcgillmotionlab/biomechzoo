@@ -9,7 +9,7 @@
 # section in pyproject.toml. No need to run `pip install -r requirements.txt` manually.
 
 SPHINXOPTS    ?=
-SPHINXBUILD   ?= uv run --group docs sphinx-build
+SPHINXBUILD   ?= uv run --extra docs sphinx-build
 SOURCEDIR     = source
 BUILDDIR      = build
 

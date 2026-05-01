@@ -1,6 +1,6 @@
 [project]
 name = "biomechzoo"
-version = "0.7.15"
+version = "0.8.2"
 description = "Python implementation of the biomechZoo toolbox"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"   # max version for opencap-process tools is 3.11
@@ -9,7 +9,7 @@ license-files = ["LICEN[CS]E*"]
 dependencies = [
     "ezc3d>=1.5.19",        # for reading c3d files
     "matplotlib>=3.10.6",
-    "numpy==2.2.6",         # max version for opencap-process tools
+    "numpy>=1.26,<=2.2.6",         # max version for opencap-process tools
     "pandas>=2.3.2",
     "scipy>=1.16.2",
     "pyarrow>=19.0.0",      # for parquet support
@@ -29,7 +29,7 @@ biomechzoo = "main:main"
 requires = ["setuptools>=78.1.0", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
 
-[dependency-groups]
+[project.optional-dependencies]
 docs = [
     "sphinx>=7.0",
     "furo>=2024.1.29",
