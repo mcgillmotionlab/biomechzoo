@@ -39,8 +39,8 @@ class Ensembler:
         fig = make_subplots(
             rows=self.n_rows, cols=self.n_cols,
             subplot_titles=subplot_titles,
-            vertical_spacing=0.12,
-            horizontal_spacing=0.08,
+            vertical_spacing=0.20,
+            horizontal_spacing=0.10,
             shared_xaxes=False,
             shared_yaxes=False,
         )
