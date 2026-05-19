@@ -12,6 +12,7 @@ class PlotSpec:
     renderer: Renderer = None
     events:    list[str] = field(default_factory=list)  # ← e.g. ["max", "min"]
     companions: list[str] = field(default_factory=list) # ← other condition
+    companion_channel: str | None = None                # ← second-channel for intra-file comparison
     group_by: str | None = None                         # ← e.g. "sex", "age_group"
     group_map: dict[str, str] | None = None             # ← {"P01": "male", "P02": "female"}
     title: str = ""
