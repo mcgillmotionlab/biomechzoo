@@ -163,9 +163,15 @@ def _explodedcm(data:dict, dcm:np.ndarray, seg:str)-> dict:
          first, second, and third column vectors of the DCM respectively.
      """
 
-    i = dcm[:, :, 0]
-    j = dcm[:, :, 1]
-    k = dcm[:, :, 2]
+    if dcm.ndim == 2:
+        i = dcm[:, 0]
+        j = dcm[:, 1]
+        k = dcm[:, 2]
+
+    else:
+        i = dcm[:, :, 0]
+        j = dcm[:, :, 1]
+        k = dcm[:, :, 2]
 
     data = addchannel_data(data=data, ch_new_name=f'i_{seg}', ch_new_data=i)
     data = addchannel_data(data=data, ch_new_name=f'j_{seg}', ch_new_data=j)

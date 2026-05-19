@@ -1,8 +1,7 @@
 import os
-from pathlib import Path
-import glob
 import re
 import copy
+import warnings
 
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
@@ -99,7 +98,7 @@ def combine_files_between(in_folder:str, fld1:str, fld2:str, suffix:str,  name_c
     Combines 2 zoo-files in different subfolders into a single file.
 
     This function operates on 2 folders that have the same root and automatically finds all the subdirectories.
-    The function find the files to combine by matching the filename. Posible use case is combing data collected with
+    The function find the files to combine by matching the filename. Possible use case is combining data collected with
     different motion capture devices, e.g. IMUs and Vicon, Vicon and Force plates.
 
     Parameters
@@ -137,13 +136,13 @@ def combine_files_between(in_folder:str, fld1:str, fld2:str, suffix:str,  name_c
     Automatically saves the combined file to the out-folder using the subdirectories of the first folder path.
     Filenames MUST have the exact same name.
 
+    Currently files need to have the same file name in order to combine successfully e.g.
+
+    #TODO: Allow to work without strmatch
     #TODO: find the files to exclude for fl1 and fl2
-
     #TODO: Find the files that are shared between the two folders.
-
     #TODO: REWORK COMBINE TO INCLUDE RESAMPLING METHODS AND TO USE THE SELF INPUT
     """
-
 
 
     fl1 = engine(fld1, extension="zoo", name_contains=name_contains, subfolders=subfolders)
@@ -202,7 +201,7 @@ def combine_files_between(in_folder:str, fld1:str, fld2:str, suffix:str,  name_c
                 freq2 = data2["zoosystem"][section]["Freq"]
 
                 if freq1 != freq2:
-                    print("Frequencies do not match")
+                    warnings.warn("Frequencies do not match")
                     # TODO: implement resample
 
                 if ch2:
@@ -215,3 +214,23 @@ def combine_files_between(in_folder:str, fld1:str, fld2:str, suffix:str,  name_c
 
             zsave(f1, data_new, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
 
+
+if __name__ == '__main__':
+    from biomechzoo.biomechzoo import BiomechZoo
+    current_dir = os.path.dirname(os.path.abspath(__file__))
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
+    data_dir = os.path.join(project_root, 'data', 'sample_study')
+
+    # test combine_files_between
+    # create copy of normalized where channel names are changed
+    bmech = BiomechZoo(os.path.join(data_dir, 'normalized'))
+    ch_old = ['LeftAnklePower', 'LeftKneePower', 'LeftHipPower']
+    ch_new = ['LAnklePower', 'LKPower', 'LHipPower']
+    bmech.renamechannnel(ch=ch_old, ch_new=ch_new, out_folder='normalized_rename')
+    bmech.removechannel(ch=ch_new, mode='keep', out_folder='normalized_rename_remove')
+
+    bmech.combine_files(within=False,
+                        fld1=os.path.join(data_dir, 'normalized_rename_remove'),
+                        fld2=os.path.join(data_dir, 'normalized'),
+                        strmatch=r"HC\w+",
+                        )

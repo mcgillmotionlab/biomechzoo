@@ -37,55 +37,60 @@ def _cross_correlation(sig1: np.ndarray, sig2: np.ndarray) -> int:
 
     return lag
 
-def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str]) -> dict:
+def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str], manual_lag: int = None) -> dict:
     """
-    Estimate the lag between two groups of channels and apply it to all
-    channels in the zoo data dictionary.
+    Synchronize two groups of channels within a data dictionary by estimating
+    or applying a temporal lag.
 
-    The lag is estimated using only ``ch_1`` and ``ch_2``, but the resulting
-    shift is applied to every channel sharing the same system suffix as
-    ``ch_1`` and ``ch_2`` respectively.
-
-    .. note::
-        Suffix-based channel grouping assumes that ``bmech.combine_files``
-        was used to combine data sources. This function appends a suffix to
-        all channel names (e.g. ``'LSh_LH_alpha_imu'``, ``'LSh_LH_alpha_plate'``),
-        which is what this function uses to identify which channels belong to
-        which system.
+    The lag is estimated from a representative subset of channels (`ch_1`, `ch_2`)
+    and then applied to all channels sharing the same suffix. After alignment,
+    all affected channels are trimmed to a common length.
 
     Parameters
     ----------
     data : dict
-        Zoo data dictionary containing the channels to synchronise.
+        Dictionary of channel data.
     method : str
-        Synchronisation method. Currently supported: ``'cross-correlation'``.
-        The cross-correlation method computes the L2 norm across all channels
-        in each group per frame, then finds the lag that maximises the
-        cross-correlation of those magnitude signals.
-    ch_1 : list[str]
-        Channel names used to estimate the lag for the first system
-        (e.g. ``['LSh_LH_alpha_imu', 'LH_LF_alpha_imu']``).
-    ch_2 : list[str]
-        Channel names used to estimate the lag for the second system
-        (e.g. ``['LSh_LH_alpha_plate', 'LH_LF_alpha_plate']``).
+        Synchronization method. Supported options:
+
+        - ``'cross-correlation'`` : estimates lag automatically using
+          normalized cross-correlation across the provided channel pairs.
+        - ``'manual'`` : applies a user-specified lag via ``manual_lag``.
+    ch_1 : list of str
+        Channel names from the first signal group used to estimate the lag.
+        Must have the same length as `ch_2`. The suffix of ``ch_1[0]``
+        determines which channels in `data` are shifted.
+    ch_2 : list of str
+        Channel names from the second signal group used to estimate the lag.
+        Must have the same length as `ch_1`. The suffix of ``ch_2[0]``
+        determines which channels in `data` are shifted.
+    manual_lag : int, optional
+        Number of samples to shift when ``method='manual'``. Positive values
+        shift `ch_1` channels forward; negative values shift `ch_2` channels
+        forward. Required when ``method='manual'``, ignored otherwise.
 
     Returns
     -------
     dict
-        A deep copy of ``data`` with all channels in each system shifted
-        and truncated to equal length.
+        A deep copy of `data` with the lagged channels shifted and all
+        affected channels trimmed to a common length.
 
     Raises
     ------
     ValueError
-        If ``ch_1`` and ``ch_2`` differ in length, or if ``method`` is not supported.
+        If `method` is not one of the supported options.
+    ValueError
+        If `ch_1` and `ch_2` have different lengths.
+    ValueError
+        If ``method='manual'`` and `manual_lag` is not provided.
+    ValueError
+        If no channels are found in `data` matching the inferred suffixes
+        of `ch_1` or `ch_2`.
     """
-
-    supported_methods = {"cross-correlation": _cross_correlation}
+    supported_methods = {"cross-correlation", "manual"}
 
     if method not in supported_methods:
-        raise ValueError(f"Unknown method '{method}'. Supported: {set(supported_methods)}")
-
+        raise ValueError(f"Unknown method '{method}'. Supported: {supported_methods}")
     if len(ch_1) != len(ch_2):
         raise ValueError("ch_1 and ch_2 must have the same number of channels.")
 
@@ -94,20 +99,25 @@ def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str]
     sig1_stack = [np.array(data_copy[ch]['line']) for ch in ch_1]
     sig2_stack = [np.array(data_copy[ch]['line']) for ch in ch_2]
 
-    min_len = min(len(s) for s in sig1_stack + sig2_stack)
-    sig1 = np.stack([s[:min_len] for s in sig1_stack], axis=0)
-    sig2 = np.stack([s[:min_len] for s in sig2_stack], axis=0)
+    if method == "cross-correlation":
+        max_len = max(len(s) for s in sig1_stack + sig2_stack)
+        sig1 = np.stack([np.pad(s, (0, max_len - len(s))) for s in sig1_stack], axis=0)
+        sig2 = np.stack([np.pad(s, (0, max_len - len(s))) for s in sig2_stack], axis=0)
+        lag = _cross_correlation(sig1, sig2)
 
-    lag = supported_methods[method](sig1, sig2)
+    elif method == "manual":
+        if manual_lag is None:
+            raise ValueError("manual_lag must be provided when method='manual'.")
+        lag = manual_lag
 
-    sync_meta = data_copy['zoosystem']['Other'].setdefault('Sync Channels', {})
-    sync_meta['detected_lag'] = int(lag)
-
-    suffix_1 = '_' + ch_1[0].rsplit('_', maxsplit=1)[-1]
-    suffix_2 = '_' + ch_2[0].rsplit('_', maxsplit=1)[-1]
+    suffix_1 = '_' + ch_1[0].rsplit('_', 1)[-1]
+    suffix_2 = '_' + ch_2[0].rsplit('_', 1)[-1]
 
     all_ch_1 = [k for k in data_copy if k.endswith(suffix_1)]
     all_ch_2 = [k for k in data_copy if k.endswith(suffix_2)]
+
+    if not all_ch_1 or not all_ch_2:
+        raise ValueError(f"No channels found for suffix '{suffix_1}' or '{suffix_2}'.")
 
     if lag > 0:
         for ch in all_ch_1:
