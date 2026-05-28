@@ -1,10 +1,10 @@
 from plotly.subplots import make_subplots
 import plotly.graph_objs as go
 
-from data_store import DataStore
-from helpers import ConditionSpec
-from plot_spec import PlotSpec
-from style_content import StyleContext
+from biomechzoo.ensembler.data_store import DataStore
+from biomechzoo.ensembler.helpers import ConditionSpec
+from biomechzoo.ensembler.plot_spec import PlotSpec
+from biomechzoo.ensembler.style_content import StyleContext
 
 
 
@@ -39,8 +39,8 @@ class Ensembler:
         fig = make_subplots(
             rows=self.n_rows, cols=self.n_cols,
             subplot_titles=subplot_titles,
-            vertical_spacing=0.12,
-            horizontal_spacing=0.08,
+            vertical_spacing=0.20,
+            horizontal_spacing=0.10,
             shared_xaxes=False,
             shared_yaxes=False,
         )

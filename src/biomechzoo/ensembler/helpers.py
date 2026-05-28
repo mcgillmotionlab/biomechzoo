@@ -2,7 +2,7 @@ import re
 import numpy as np
 from typing import NamedTuple
 from enum import Enum
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from scipy.stats import iqr
 from collections import defaultdict
 import warnings
@@ -26,15 +26,15 @@ def extract_subject_id(f, subj_list, str_pattern):
     ----------
     f : str
         File path to the zoo file.
-    subj_list : list[str]
+    subj_list : list of str
         List of subject IDs.
-    str_pattern : list[reg]
+    str_pattern : list of str
         String pattern to match the subject IDs.
 
     Returns
     -------
-    s : str
-        Subject ID.
+    s : str or None
+        Subject ID if found, otherwise None.
     """
     if str_pattern:
         for pattern in str_pattern:
@@ -95,10 +95,29 @@ class ConditionSource(Enum):
 @dataclass
 class ConditionSpec:
     """Describes how the conditions are encoded in the data"""
-
     source: ConditionSource
-    conditions: list[str]
-    channel_map: dict[str, str] | None = None
+    conditions: list[str]       = field(default_factory=list)
+    channel_map: dict[str, dict[str, str]] | None = None
+    base_channels : list[str]    = field(default_factory=list)
+    suffix_map : dict[str, str] | None = None
+
+    def __post_init__(self):
+        if self.source == ConditionSource.WITHIN:
+
+            #auto built channel_map from suffix pattern if not provided
+            if self.channel_map is None:
+                if not self.suffix_map or not self.base_channels:
+                    raise ValueError("ConditionSpec with WITHIN source require either a channel_map or both suffix_map and base_channels.")
+                self.channel_map = {
+                    cond: {
+                        base : f"{base}{suffix}"
+                        for base in self.base_channels
+                    }
+                    for cond, suffix in self.suffix_map.items()
+                }
+            if not self.conditions:
+                self.conditions = list(self.channel_map.keys())
+
 
 def _compute_bandwidth(values: list[float]) -> float:
     """Silverman's rule of thumb — bandwidth scaled to data spread.
