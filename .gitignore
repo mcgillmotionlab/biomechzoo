@@ -1,25 +1,47 @@
-src/biomechzoo.egg-info/*
-__pycache__
-biomechzoo.egg-info/dependency_links.txt
-biomechzoo.egg-info/PKG-INFO
-biomechzoo.egg-info/requires.txt
-/biomechzoo.egg-info
+# =========================
+# Python
+# =========================
+__pycache__/
+*.py[cod]
+*.log
 
-# Ignore everything in sample_study but keep raw_c3d_files and its contents
-data/sample_study/*
-!sample_study/raw_c3d_files/
-!sample_study/raw_c3d_files/**
+# Virtual environments
+.env
+.venv/
+env/
+venv/
 
-# ignore all created zoo files
+# Packaging
+*.egg-info/
+dist/
+build/
+
+# =========================
+# IDE
+# =========================
+.idea/
+.DS_Store
+
+# =========================
+# Data rules
+# =========================
+
+# Ignore all .zoo files
 *.zoo
 
-.idea/*
+# Ignore everything in sample_study
+data/sample_study/*
+!data/sample_study/
+!data/sample_study/raw_c3d_files/
+!data/sample_study/raw_c3d_files/**
+!data/sample_study/normalized/
+!data/sample_study/normalized/**
+!data/sample_study/normalized/**/*.zoo
 
-.DS_Store
-.idea/biomechZoo.iml
-.idea/biomechZoo.iml
-data/imu_xsens_dot/0-create_combined_data/123AB_combined.csv
-data/imu_xsens_dot/6 - Figures/Mean(SD) Waveforms.jpeg
-data/imu_xsens_dot/6 - Figures/Combined Waveforms.jpeg
-data/imu_xsens_dot/0-create_combined_data/123AA_combined.csv
+# Other data (optional cleanup)
+data/imu_xsens_dot/
+
+# =========================
+# Docs
+# =========================
 docs/build/

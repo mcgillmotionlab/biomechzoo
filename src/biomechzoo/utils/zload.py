@@ -44,11 +44,10 @@ def zload(filepath):
 
 
 if __name__ == '__main__':
-    """ testing: load a single zoo file from the other subfolder in data"""
+    """ testing: load a single zoo file from the sample_study/normalized folder"""
     # -------TESTING--------
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(current_dir)
-    fl = os.path.join(project_root, 'data', 'other', 'HC030A05.zoo')
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    fl = os.path.join(project_root, 'data', 'sample_study', 'normalized', 'HC030A', 'Straight', 'HC030A05.zoo')
     data = zload(fl)
 
     channels = [k for k in data.keys()]

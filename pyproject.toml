@@ -1,6 +1,6 @@
 [project]
 name = "biomechzoo"
-version = "0.7.14"
+version = "0.7.15"
 description = "Python implementation of the biomechZoo toolbox"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"   # max version for opencap-process tools is 3.11
@@ -16,6 +16,7 @@ dependencies = [
     "plotly>=6.4.0",        # for ensembler
     "kaleido>=1.2.0",       # for ensembler (saving images)
     "dash>=3.3.0",          # for ensembler (quality check)
+    "pycompare>=1.5.4",     # for ensembler (Bland-Altman plots)
 ]
 
 [project.urls]
