@@ -3,7 +3,7 @@ import numpy as np
 
 from biomechzoo.processing.explodechannel_data import explodechannel_data
 from biomechzoo.biomech_ops.normalize_line import normalize_line
-from biomechzoo.statistics.rmse import rmse
+from biomechzoo.statistics.rmse import compute_rmse as rmse
 from biomechzoo.processing.removechannel_data import removechannel_data
 
 def reptrial_data(gdata: Dict, channels: Union[List[str], str], method: str = 'mean') -> Tuple[Dict, Union[int, str]]:
