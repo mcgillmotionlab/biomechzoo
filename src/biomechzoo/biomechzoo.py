@@ -9,6 +9,7 @@ from biomechzoo.biomech_ops.resample import resample_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
+from biomechzoo.statistics.rmse import rmse_data, _export_rmse_csv
 from biomechzoo.utils.batchdisp import batchdisp
 from biomechzoo.utils.get_split_events import get_split_events
 from biomechzoo.processing.split_trial_data import split_trial_data
@@ -730,6 +731,34 @@ class BiomechZoo:
             data = zload(f)
             data = rotate_dcm_data(data, ch=ch, axis=axis, degrees=degrees)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl),
+                                                                       time.time() - start_time),
+            level=1, verbose=self.verbose)
+        batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def rmse(self, suff1:str, suff2:str, export:bool, out_folder=None, inplace=False):
+        """
+        Biomechzoo style implementation of rmse_data
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        all_rmse = {}
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('Calculating RMSE between {} and {} in file {}'.format(suff1, suff2, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = rmse_data(data, suff1=suff1, suff2=suff2)
+            if export:
+                all_rmse[f] = data['zoosystem']["RMSE"].copy()
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        if export:
+            _export_rmse_csv(all_rmse, out_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp(
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl),
