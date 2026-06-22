@@ -15,8 +15,7 @@ def c3d2zoo_data(c3d_obj):
         Zoo dictionary with 'line' and 'event' fields per channel, plus
         a 'zoosystem' metadata entry.
     """
-    data = {}
-    data['zoosystem'] = set_zoosystem()
+    data = {'zoosystem': set_zoosystem()}
     video_freq = None
     analog_freq = None
     # extract "video" data

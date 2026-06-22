@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 import numpy as np
@@ -33,31 +34,39 @@ def compute_magnitude_data(data:dict, ch_x:None | str, ch_y:None | str, ch_z:Non
         Updated data dictionary with added magnitude channel.
     """
 
-    components = []
-    if ch_x is not None:
+    if ch_x is None:
+        x = None
+    else:
         x = data[ch_x]['line']
-        components.append(x)
 
-    if ch_y is not None:
+    if ch_y is None:
+        y = None
+    else:
         y = data[ch_y]['line']
-        components.append(y)
 
-    if ch_z is not None:
+    if ch_z is None:
+        z = None
+    else:
         z = data[ch_z]['line']
-        components.append(z)
 
     # sanity check
-    if len(components) == 0:
+    n_channels = sum(c is not None for c in [x, y, z])
+
+    if n_channels == 0:
         raise ValueError("No valid channels provided for magnitude computation.")
-    elif len(components) <2:
-        raise ValueError("At least 2 channels are required for magnitude computation.")
+
+    if n_channels < 2:
+        raise ValueError(
+            "At least 2 channels are required for magnitude computation."
+        )
 
     #calculate the magnitude of the data
-    magnitude_data = compute_magnitude_line(*components)
+    magnitude_data = compute_magnitude_line(x, y, z)
 
-    # get name of new channel:
+    # get name of the new channel:
     if ch_new_name is None:
-        ch_new_name = common_substring_join([ch_x, ch_y, ch_z])
+        valid_names = [ch for ch in [ch_x, ch_y, ch_z] if ch is not None]
+        ch_new_name = common_substring_join(valid_names)
 
         if ch_new_name.startswith("_"):
             ch_new_name = ch_new_name[1:]
@@ -111,11 +120,19 @@ def _prep(a, ref):
 #-------TESTING-----
 if __name__ == "__main__":
     import numpy as np
+    from biomechzoo.utils.get_sample_zoo_file import load_sample_zoo_file
+    from biomechzoo.processing.explodechannel_data import explodechannel_data
+    data = load_sample_zoo_file()
+    data = explodechannel_data(data)
 
-    # simple test signals
+    # test compute_magnitude_data
+    data = compute_magnitude_data(data, ch_x='SACR_x', ch_y='SACR_y', ch_z='SACR_z')
+    data = compute_magnitude_data(data, ch_x='SACR_x', ch_y='SACR_y', ch_z=None)
+
+    # test compute_magnitude_line
     x = np.array([3, 0, 0])
     y = np.array([4, 0, 0])
-    z = np.array([5, 0, 0])  # test 2D case
+    z = np.array([5, 0, 0])
 
     mag = compute_magnitude_line(x, y, z)
     print("3D Magnitude output:")
