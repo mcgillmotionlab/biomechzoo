@@ -37,7 +37,8 @@ def _cross_correlation(sig1: np.ndarray, sig2: np.ndarray) -> int:
 
     return lag
 
-def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str], manual_lag: int = None) -> dict:
+def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str], manual_lag: int = None,
+                       corr_ch_1: list[str] = None, corr_ch_2: list[str] = None) -> dict:
     """
     Synchronize two groups of channels within a data dictionary by estimating
     or applying a temporal lag.
@@ -100,6 +101,12 @@ def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str]
     sig2_stack = [np.array(data_copy[ch]['line']) for ch in ch_2]
 
     if method == "cross-correlation":
+        _corr_ch_1 = corr_ch_1 if corr_ch_1 is not None else ch_1
+        _corr_ch_2 = corr_ch_2 if corr_ch_2 is not None else ch_2
+
+        sig1_stack = [np.array(data_copy[ch]['line']) for ch in _corr_ch_1]
+        sig2_stack = [np.array(data_copy[ch]['line']) for ch in _corr_ch_2]
+
         max_len = max(len(s) for s in sig1_stack + sig2_stack)
         sig1 = np.stack([np.pad(s, (0, max_len - len(s))) for s in sig1_stack], axis=0)
         sig2 = np.stack([np.pad(s, (0, max_len - len(s))) for s in sig2_stack], axis=0)

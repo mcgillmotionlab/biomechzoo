@@ -576,7 +576,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def sync_channels(self, method, ch_1, ch_2, manual_lag = None, out_folder=None, inplace=None):
+    def sync_channels(self, method, ch_1, ch_2, manual_lag = None, corr_ch_1: list[str] = None, corr_ch_2: list[str] = None, out_folder=None, inplace=None):
         """
         Biomechzoo style implementation of 'sync_channels_data' function
         """
@@ -591,7 +591,7 @@ class BiomechZoo:
             if verbose:
                 batchdisp('sync_channels for file {} using method: {}'.format(f, method), level=2, verbose=verbose)
             data = zload(f)
-            data = sync_channels_data(data, method, ch_1, ch_2, manual_lag)
+            data = sync_channels_data(data, method, ch_1, ch_2, manual_lag, corr_ch_1, corr_ch_2)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp(
