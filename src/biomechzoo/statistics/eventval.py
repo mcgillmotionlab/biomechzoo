@@ -1,10 +1,20 @@
 import os
+from typing import List, Optional
+
 import pandas as pd
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.findfield import findfield  # assuming this exists
 
-def eventval(fld, dim1=None, dim2=None, ch=None, localevts=None, globalevts=None, anthroevts=None):
+def eventval(
+    fld: str,
+    dim1: Optional[List[str]] = None,
+    dim2: Optional[List[str]] = None,
+    ch: Optional[List[str]] = None,
+    localevts: Optional[List[str]] = None,
+    globalevts: Optional[List[str]] = None,
+    anthroevts: Optional[List[str]] = None,
+) -> pd.DataFrame:
     """
     Extract event values from .zoo files and compile into a pandas DataFrame.
 

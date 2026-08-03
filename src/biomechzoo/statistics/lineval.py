@@ -18,29 +18,38 @@ def lineval(root_folder: str, channel_name: str, output_format: Literal['array',
     Data must already be time-normalized. The function will raise
     an error if inconsistent signal lengths are detected.
 
-    :param root_folder: Root directory containing data.
-    :type root_folder: str
-    :param channel_name: Name of the channel to extract.
-    :type channel_name: str
-    :param output_format: Output format.
-                   - ``'array'``: one column containing the full array (default)
-                   - ``'wide'``: one column per timepoint (p0, p1, ...)
-    :type output_format: Literal['array', 'wide']
-    :param subject_level: Folder index used to define subject label
-                          (0 = first folder below root).
-    :type subject_level: int
-    :param condition_level: Folder index used to define condition label
-                            (0 = first folder below root).
-    :type condition_level: int
+    Parameters
+    ----------
+    root_folder : str
+        Root directory containing data.
+    channel_name : str
+        Name of the channel to extract.
+    output_format : {'array', 'wide'}, optional
+        Output format. ``'array'`` returns one column containing the full
+        array (default). ``'wide'`` returns one column per timepoint
+        (p0, p1, ...).
+    subject_level : int, optional
+        Folder index used to define subject label (0 = first folder below
+        root). Default is 0.
+    condition_level : int, optional
+        Folder index used to define condition label (0 = first folder
+        below root). Default is 1.
 
-    :raises KeyError: If the specified channel or ``line`` field is missing.
-    :raises ValueError: If signals are not equal length (not normalized).
-    :raises ValueError: If invalid format is provided.
-    :raises IndexError: If folder depth is insufficient for specified levels.
+    Returns
+    -------
+    pandas.DataFrame
+        DataFrame containing extracted line data with subject, condition,
+        and trial references.
 
-    :return: DataFrame containing extracted line data with subject,
-             condition, and trial references.
-    :rtype: pandas.DataFrame
+    Raises
+    ------
+    KeyError
+        If the specified channel or ``line`` field is missing.
+    ValueError
+        If signals are not equal length (not normalized), or if an
+        invalid ``output_format`` is provided.
+    IndexError
+        If folder depth is insufficient for the specified levels.
     """
 
     if output_format not in ['array', 'wide']:
