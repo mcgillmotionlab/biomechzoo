@@ -1,8 +1,11 @@
 import numpy as np
+import pandas as pd
 
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
-from biomechzoo.ensembler.helpers import match_condition, extract_subject_id, extract_events, ZooEvent, ConditionSource, ConditionSpec
+from biomechzoo.ensembler.helpers import (match_condition, extract_subject_id, extract_events, ZooEvent,
+                                          ConditionSource, ConditionSpec, align_by_subject)
+
 
 
 class DataStore:
@@ -51,8 +54,6 @@ class DataStore:
     def get_subject_ids(self, channel, condition):
         self._ensure_extracted(channel, condition)
         return self._subj_index.get((channel, condition), [])
-
-
 
     def _extract(self, channel, condition):
         """Parse all zoo files for on (channel, condition) pair."""
@@ -167,6 +168,49 @@ class DataStore:
 
         return result
 
+
+    def get_paired(self, channel: str, cond_a: str, cond_b: str,
+                   event_name: str | None = None, line_scalar: str | None = "mean") -> tuple[list[float], list[float], list[str]]:
+        """
+        Returns aligned (vals_a, vals_b, subjects) for inter condition comparisons. Used by BlandAltmanRenderer and ScatterRenderer.
+        """
+
+        if event_name is not None:
+            vals_a = self.get_event_values(channel, cond_a, event_name)
+            vals_b = self.get_event_values(channel, cond_b, event_name)
+            subjs_a = self.get_event_subject_ids(channel, cond_a, event_name)
+            subjs_b = self.get_event_subject_ids(channel, cond_b, event_name)
+        else:
+            vals_a, subjs_a = self._scalars_from_lines(channel, cond_a, line_scalar)
+            vals_b, subjs_b = self._scalars_from_lines(channel, cond_b, line_scalar)
+
+        return align_by_subject(vals_a, subjs_a, vals_b, subjs_b)
+
+    def get_intra_channel(self, channel_a: str, channel_b: str, condition: str,
+                          event_name: str | None = None, line_scalar: str | None="mean")-> tuple[list[float], list[float], list[str]]:
+        """Returns aligned (vals_a,  vals_b, subjects) for intra-file channel comparison.
+        Used by BlandAltmanRenderer and ScatterRenderer."""
+
+        if event_name is not None:
+            vals_a = self.get_event_values(channel_a, condition, event_name)
+            vals_b = self.get_event_values(channel_b, condition, event_name)
+            subjs_a = self.get_event_subject_ids(channel_a, condition, event_name)
+            subjs_b = self.get_event_subject_ids(channel_b, condition, event_name)
+        else:
+            vals_a, subjs_a = self._scalars_from_lines(channel_a, condition, line_scalar)
+            vals_b, subjs_b = self._scalars_from_lines(channel_b, condition, line_scalar)
+
+        return align_by_subject(vals_a, subjs_a, vals_b, subjs_b)
+
+
+    def _scalars_from_lines(self, channel: str, condition: str, line_scaler: str ="mean") -> tuple[list[float], list[str]]:
+        arrays = self.get_lines(channel, condition)
+        subjects = self.get_subject_ids(channel, condition)
+        scalars = []
+        for arr in arrays:
+            a = np.asarray(arr, dtype=float)
+            scalars.append({"mean": float(np.mean(a)), "max": float(np.max(a)), "min": float(np.min(a))}[line_scaler])
+        return scalars, subjects
 
     def to_events_dataframe(self, channels : list[str], event_names : list[str]):
         """

@@ -140,7 +140,6 @@ def align_by_subject(vals_a:list[float], subjects_a:list[str], vals_b:list[float
     for i, s in enumerate(subjects_b):
         idx_b[s].append(i)
 
-
     # map_b = dict(zip(subjects_b, vals_b))
     aligned_a, aligned_b, aligned_s = [], [], []
     common_subject = [s for s in idx_a if s in idx_b]
