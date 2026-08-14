@@ -14,9 +14,11 @@ def rmse(a: np.ndarray, b: np.ndarray) -> float:
 
     Returns
     -------
-    float
+    r : float
         Root-mean-square error between ``a`` and ``b``.
     """
     a = np.asarray(a)
     b = np.asarray(b)
-    return np.sqrt(np.mean((a - b) ** 2))
+    r = np.sqrt(np.mean((a - b) ** 2))
+
+    return r

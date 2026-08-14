@@ -6,8 +6,11 @@ from typing import Any, Dict, Literal
 from biomechzoo.utils.zload import zload
 
 
-def lineval(root_folder: str, channel_name: str, output_format: Literal['array', 'wide'] = 'array',
-            subject_level: int = 0, condition_level: int = 1) -> pd.DataFrame:
+def lineval(
+        root_folder: str, channel_name: str, output_format: Literal['array', 'wide'] = 'array', subject_level: int = 0,
+        condition_level: int = 1,
+) -> pd.DataFrame:
+
     """
     Extract time-normalized ``line`` arrays from Zoo files.
 
@@ -37,9 +40,9 @@ def lineval(root_folder: str, channel_name: str, output_format: Literal['array',
 
     Returns
     -------
-    pandas.DataFrame
-        DataFrame containing extracted line data with subject, condition,
-        and trial references.
+    df : pandas.DataFrame
+         DataFrame containing extracted line data with subject, condition,
+         and trial references.
 
     Raises
     ------

@@ -7,13 +7,9 @@ from biomechzoo.utils.zload import zload
 from biomechzoo.utils.findfield import findfield  # assuming this exists
 
 def eventval(
-    fld: str,
-    dim1: Optional[List[str]] = None,
-    dim2: Optional[List[str]] = None,
-    ch: Optional[List[str]] = None,
-    localevts: Optional[List[str]] = None,
-    globalevts: Optional[List[str]] = None,
-    anthroevts: Optional[List[str]] = None,
+        fld: str, dim1: Optional[List[str]] = None, dim2: Optional[List[str]] = None, ch: Optional[List[str]] = None,
+        localevts: Optional[List[str]] = None, globalevts: Optional[List[str]] = None,
+        anthroevts: Optional[List[str]] = None,
 ) -> pd.DataFrame:
     """
     Extract event values from .zoo files and compile into a pandas DataFrame.
@@ -37,8 +33,8 @@ def eventval(
 
     Returns
     -------
-    pd.DataFrame
-        Columns: ['condition', 'subject', 'file', 'event_name', 'event_value']
+    df : pd.DataFrame
+         Columns: ['condition', 'subject', 'file', 'event_name', 'event_value']
     """
 
     zoo_files = engine(fld, extension='.zoo')
@@ -125,4 +121,6 @@ def eventval(
                         'event_value': evt_val[1]
                     })
 
-    return pd.DataFrame(results)
+    df = pd.DataFrame(results)
+
+    return df
