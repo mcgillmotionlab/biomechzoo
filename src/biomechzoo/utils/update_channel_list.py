@@ -1,4 +1,11 @@
-def update_channel_list(data, section='Video', ch_add=None, ch_remove=None):
+from typing import Dict, List, Optional, Union
+
+
+def update_channel_list(
+        data: Dict, section: str = 'Video',
+        ch_add: Optional[Union[str, List[str]]] = None,
+        ch_remove: Optional[Union[str, List[str]]] = None,
+) -> Dict:
     """
     Update the channel list of a zoosystem section by adding or removing channels.
 
@@ -15,7 +22,7 @@ def update_channel_list(data, section='Video', ch_add=None, ch_remove=None):
 
     Returns
     -------
-    dict
+    data : dict
         The updated zoo dictionary (modified in place).
     """
     ch_list = data['zoosystem'][section]['Channels']

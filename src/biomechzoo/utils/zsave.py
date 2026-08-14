@@ -1,11 +1,17 @@
-from scipy.io import savemat
 import inspect
 import os
+from typing import Dict, Optional
+
+from scipy.io import savemat
 
 from biomechzoo.utils.batchdisp import batchdisp
 
 
-def zsave(fl, data, inplace=True, out_folder=None, root_folder=None, verbose=False):
+def zsave(
+        fl: str, data: Dict, inplace: bool = True,
+        out_folder: Optional[str] = None, root_folder: Optional[str] = None,
+        verbose: bool = False,
+) -> None:
     """
     Save zoo data to a .zoo file (MATLAB MAT format).
 

@@ -1,7 +1,12 @@
+from typing import Dict
+
 import matplotlib.pyplot as plt
 
 
-def zplot(data, ch, xlabel='frames', ylabel='angles (deg)'):
+def zplot(
+        data: Dict, ch: str, xlabel: str = 'frames',
+        ylabel: str = 'angles (deg)',
+) -> None:
     """
     Plot a single channel of a zoo file, along with any existing events.
 

@@ -1,12 +1,15 @@
-import numpy as np
 import os
+from typing import Dict
+
+import numpy as np
 from ezc3d import c3d
 
 from biomechzoo.utils.find_repo_root import find_repo_root
 from biomechzoo.utils.zload import zload
 from biomechzoo.conversion.c3d2zoo_data import c3d2zoo_data
 
-def load_sample_zoo_file():
+
+def load_sample_zoo_file() -> Dict:
     """
     Load and return a sample zoo data structure from the repository.
 
@@ -15,7 +18,7 @@ def load_sample_zoo_file():
 
     Returns
     -------
-    dict
+    data : dict
         Zoo-format data structure generated from the sample C3D file.
 
     Raises
