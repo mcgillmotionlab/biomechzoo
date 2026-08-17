@@ -523,7 +523,7 @@ class BiomechZoo:
                     subfolders=self.subfolders)
         for f in fl:
             if verbose:
-                batchdisp('removing channels for {}'.format(f), level=2, verbose=verbose)
+                batchdisp('exploding channels for {}'.format(f), level=2, verbose=verbose)
             data = zload(f)
             data = explodechannel_data(data)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)

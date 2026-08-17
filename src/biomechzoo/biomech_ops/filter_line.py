@@ -69,7 +69,9 @@ def filter_line(signal_raw, filt=None, fs=None):
 
     # prepare normalized cutoff(s)
     nyq = 0.5 * fs
-    norm_cutoff = np.atleast_1d(np.array(cutoff) / nyq)
+    norm_cutoff = np.asarray(cutoff) / nyq
+    if np.size(norm_cutoff) == 1:
+        norm_cutoff = float(norm_cutoff)
 
     if ftype is 'butter':
         [b, a] = sgl.butter(N=order, Wn=norm_cutoff, btype=btype, )
