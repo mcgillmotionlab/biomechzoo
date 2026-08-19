@@ -1,7 +1,13 @@
+from typing import List, Optional, Tuple
+
 import numpy as np
 import scipy.signal as signal
+from numpy.typing import ArrayLike
 
-def movement_onset(yd, fsamp, constants):
+
+def movement_onset(
+        yd: np.ndarray, fsamp: float, constants: List[float],
+) -> Optional[int]:
     """
     Detect the time of movement onset from an acceleration magnitude signal.
 
@@ -54,7 +60,9 @@ def movement_onset(yd, fsamp, constants):
     return onset_time
 
 
-def movement_offset(yd, fsamp, constants):
+def movement_offset(
+        yd: np.ndarray, fsamp: float, constants: List[float],
+) -> Optional[int]:
     """
     Detect the time of movement offset from an acceleration magnitude signal.
 
@@ -108,7 +116,28 @@ def movement_offset(yd, fsamp, constants):
     return onset_time
 
 
-def sliding_window_features(ch_data, fsamp):
+def sliding_window_features(
+        ch_data: np.ndarray, fsamp: float,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Compute mean/std features over a 2-second sliding window.
+
+    Parameters
+    ----------
+    ch_data : ndarray
+        1-D input signal.
+    fsamp : float
+        Sampling frequency in Hz. Must be an integer value in
+        practice, since it is used directly as a window/step size in
+        ``range()``, which requires integer arguments.
+
+    Returns
+    -------
+    features : ndarray of shape (n_windows, 2)
+        Per-window ``(mean, std)`` feature pairs.
+    timestamps : ndarray of shape (n_windows,)
+        Start sample index of each window.
+    """
     # ----sliding window features----
     features = []
     timestamps = []
@@ -126,13 +155,65 @@ def sliding_window_features(ch_data, fsamp):
     return np.array(features), np.array(timestamps)
 
 
-def check_already_moving(features, mean_thresh=1.2, std_thresh=0.2):
+def check_already_moving(
+        features: np.ndarray, mean_thresh: float = 1.2,
+        std_thresh: float = 0.2,
+) -> bool:
+    """
+    Check whether the signal is already moving at the start of the window.
+
+    Parameters
+    ----------
+    features : ndarray of shape (n_windows, 2)
+        Per-window ``(mean, std)`` features, as returned by
+        :func:`sliding_window_features`.
+    mean_thresh : float, optional
+        Mean threshold for the movement to be considered active.
+        Default is 1.2.
+    std_thresh : float, optional
+        Std threshold for the movement to be considered active.
+        Default is 0.2.
+
+    Returns
+    -------
+    already_moving : bool
+        True if the first 5 windows all exceed both thresholds.
+    """
     initial_window = features[:5]  # First few seconds
     if np.all(initial_window[:, 0] > mean_thresh) and np.all(initial_window[:, 1] > std_thresh):
         return True
     return False
 
-def detect_movement_onset(features, fs, mean_thresh=1.2, std_thresh=0.2, min_duration=3):
+def detect_movement_onset(
+        features: np.ndarray, fs: float, mean_thresh: float = 1.2,
+        std_thresh: float = 0.2, min_duration: float = 3,
+) -> Optional[int]:
+    """
+    Detect the first window index where sustained movement begins.
+
+    Parameters
+    ----------
+    features : ndarray of shape (n_windows, 2)
+        Per-window ``(mean, std)`` features, as returned by
+        :func:`sliding_window_features`.
+    fs : float
+        Sampling frequency in Hz.
+    mean_thresh : float, optional
+        Mean threshold for a window to count as movement. Default
+        is 1.2.
+    std_thresh : float, optional
+        Std threshold for a window to count as movement. Default
+        is 0.2.
+    min_duration : float, optional
+        Minimum number of consecutive movement windows (scaled by
+        ``fs / 50``) required to confirm onset. Default is 3.
+
+    Returns
+    -------
+    onset_index : int or None
+        Index into ``features`` of the first confirmed movement
+        window, or None if not detected.
+    """
     movement_flags = (features[:, 0] > mean_thresh) & (features[:, 1] > std_thresh)
     onset_index = None
     for i in range(len(movement_flags) - int(min_duration * fs / 50)):
@@ -141,7 +222,10 @@ def detect_movement_onset(features, fs, mean_thresh=1.2, std_thresh=0.2, min_dur
             break
     return onset_index if onset_index is not None else None
 
-def bw_filter(data, fsamp, N, fc, btype, output="ba"):
+def bw_filter(
+        data: ArrayLike, fsamp: float, N: int, fc: float, btype: str,
+        output: str = "ba",
+) -> np.ndarray:
     """
     Apply a zero-phase Butterworth filter to a 1-D signal.
 

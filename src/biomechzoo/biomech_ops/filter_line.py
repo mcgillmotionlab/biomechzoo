@@ -1,8 +1,14 @@
+from typing import Dict, Optional, Tuple, Union
+
 import numpy as np
 import scipy.signal as sgl
+from numpy.typing import ArrayLike
 
 
-def filter_line(signal_raw, filt=None, fs=None):
+def filter_line(
+        signal_raw: ArrayLike, filt: Optional[Dict] = None,
+        fs: Optional[float] = None,
+) -> np.ndarray:
     """
     Filter a 1-D signal array using a Butterworth filter.
 
@@ -82,7 +88,10 @@ def filter_line(signal_raw, filt=None, fs=None):
     return signal_filtered
 
 
-def kt_butter(ts, fc, fs, order=2, btype='lowpass', filtfilt=True):
+def kt_butter(
+        ts: ArrayLike, fc: Union[float, Tuple[float, float]], fs: float,
+        order: int = 2, btype: str = 'lowpass', filtfilt: bool = True,
+) -> np.ndarray:
     """
     Apply a Butterworth filter to a time series.
 

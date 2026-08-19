@@ -1,9 +1,11 @@
-import warnings
 import copy
+import warnings
+from typing import Dict
+
 from biomechzoo.biomech_ops.normalize_line import normalize_line
 
 
-def normalize_data(data, nlength=101):
+def normalize_data(data: Dict, nlength: int = 101) -> Dict:
     """
     Normalize all channels in a zoo data dictionary to a target length.
 
@@ -17,7 +19,7 @@ def normalize_data(data, nlength=101):
 
     Returns
     -------
-    dict
+    data_new : dict
         Deep copy of the input data with all channel 'line' arrays
         resampled to ``nlength`` samples.
 

@@ -1,7 +1,11 @@
+from typing import Dict, List, Optional, Union
+
 from biomechzoo.biomech_ops.filter_line import filter_line
 
 
-def filter_data(data, ch, filt=None):
+def filter_data(
+        data: Dict, ch: Union[str, List[str]], filt: Optional[Dict] = None,
+) -> Dict:
     """
     Filter one or more channels from a zoo data dictionary using specified filter parameters.
 
@@ -20,7 +24,7 @@ def filter_data(data, ch, filt=None):
 
     Returns
     -------
-    dict
+    data : dict
         The updated data dictionary with filtered channels.
     """
 
