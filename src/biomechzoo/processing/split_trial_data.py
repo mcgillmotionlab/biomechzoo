@@ -4,9 +4,7 @@ from biomechzoo.utils.findfield import findfield
 
 
 def split_trial_data(
-    data: Dict[str, Any],
-    start_event: str,
-    end_event: str
+        data: Dict[str, Any], start_event: str, end_event: str,
 ) -> Optional[Dict[str, Any]]:
     """
     Split trial data between two specified events, extracting a sub-trial.
@@ -27,7 +25,7 @@ def split_trial_data(
 
     Returns
     -------
-    dict of str to Any or None
+    data_new : dict of str to Any or None
         Deep copy of input data containing only the data between the two events,
         or None if the end event is outside the data range.
 

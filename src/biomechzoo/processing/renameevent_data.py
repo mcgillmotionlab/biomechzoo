@@ -2,9 +2,8 @@ from typing import Dict, List, Union, Any
 
 
 def renameevent_data(
-    data: Dict[str, Any],
-    evt: Union[str, List[str]],
-    nevt: Union[str, List[str]]
+        data: Dict[str, Any], evt: Union[str, List[str]],
+        nevt: Union[str, List[str]],
 ) -> Dict[str, Any]:
     """
     Rename events in all channels of a biomechanical data structure.
@@ -24,7 +23,7 @@ def renameevent_data(
 
     Returns
     -------
-    dict of str to Any
+    data : dict of str to Any
         Modified data dictionary with renamed events.
 
     Raises

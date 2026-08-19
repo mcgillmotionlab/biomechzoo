@@ -4,10 +4,8 @@ from biomechzoo.utils.update_channel_list import update_channel_list
 
 
 def renamechannel_data(
-    data: Dict[str, Any],
-    ch_old_names: Union[str, List[str]],
-    ch_new_names: Union[str, List[str]],
-    section: str = 'Video'
+        data: Dict[str, Any], ch_old_names: Union[str, List[str]],
+        ch_new_names: Union[str, List[str]], section: str = 'Video',
 ) -> Dict[str, Any]:
     """
     Rename channels in a biomechanical data structure.
@@ -30,7 +28,7 @@ def renamechannel_data(
 
     Returns
     -------
-    dict of str to Any
+    data : dict of str to Any
         Modified data dictionary with renamed channels.
 
     Notes

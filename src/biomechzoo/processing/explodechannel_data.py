@@ -4,8 +4,7 @@ from typing import Dict, List, Optional, Any
 from biomechzoo.utils.update_channel_list import update_channel_list
 
 def explodechannel_data(
-    data: Dict[str, Any],
-    channels: Optional[List[str]] = None
+        data: Dict[str, Any], channels: Optional[List[str]] = None,
 ) -> Dict[str, Any]:
     """
     Explode 3D channels (n x 3 arrays) into separate X, Y, Z component channels.
@@ -24,7 +23,7 @@ def explodechannel_data(
 
     Returns
     -------
-    dict of str to Any
+    data_new : dict of str to Any
         Deep copy of input data with specified channels exploded into X, Y, Z components.
 
     Raises
