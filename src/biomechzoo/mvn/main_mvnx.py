@@ -1,11 +1,25 @@
-import os
 import argparse
+import os
+
 import matplotlib.pyplot as plt
+
 from biomechzoo.mvn.load_mvnx import load_mvnx
 
 
-# Convert mvnx file to python data
-def main(file_name):
+def main(file_name: str) -> None:
+    """
+    Load an .mvnx file and plot the first segment's position.
+
+    Parameters
+    ----------
+    file_name : str
+        Path to the .mvnx file to load.
+
+    Raises
+    ------
+    Exception
+        If ``file_name`` does not exist or is not a .mvnx file.
+    """
     # Check for file existence
     if not os.path.isfile(file_name):
         raise Exception("File %s could not be found" % file_name)
