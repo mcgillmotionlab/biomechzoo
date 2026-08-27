@@ -1,17 +1,23 @@
+from typing import Dict
+
+from ezc3d import c3d
+
 from biomechzoo.utils.set_zoosystem import set_zoosystem
 
-def c3d2zoo_data(c3d_obj):
+
+def c3d2zoo_data(c3d_obj: c3d) -> Dict:
     """
     Convert an ezc3d C3D object to zoo format.
 
     Parameters
     ----------
-    c3d_obj : dict
-        C3D object loaded via ezc3d, containing 'data' and 'parameters' keys.
+    c3d_obj : ezc3d.c3d
+        C3D object loaded via ``ezc3d.c3d(filepath)``, exposing 'data'
+        and 'parameters' via dict-style indexing.
 
     Returns
     -------
-    dict
+    data : dict
         Zoo dictionary with 'line' and 'event' fields per channel, plus
         a 'zoosystem' metadata entry.
     """

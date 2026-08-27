@@ -1,13 +1,50 @@
-import pandas as pd
 import os
 import re
+from typing import Dict, List, Optional, Tuple, Union
+
+import pandas as pd
 
 from biomechzoo.utils.set_zoosystem import set_zoosystem
 from biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_rate_from_time
 
 
-def table2zoo_data(fl, extension, skip_rows=0, freq=None, data_type='Video', sep=None):
+def table2zoo_data(
+        fl: str, extension: str, skip_rows: int = 0,
+        freq: Optional[int] = None, data_type: str = 'Video',
+        sep: Optional[str] = None,
+) -> Dict:
+    """
+    Convert a CSV or Parquet table to zoo format.
 
+    Parameters
+    ----------
+    fl : str
+        Path to the table file.
+    extension : str
+        File extension/format, must contain ``'csv'`` or ``'parquet'``.
+    skip_rows : int, optional
+        Number of header rows to skip when reading a CSV file. Default
+        is 0.
+    freq : int, optional
+        Sampling frequency in Hz. If None, it is inferred from a time
+        column in the table.
+    data_type : {'Video', 'Analog'}, optional
+        Zoo section to store the channels under. Default is 'Video'.
+    sep : str, optional
+        Column separator for CSV files, passed to ``pandas.read_csv``.
+
+    Returns
+    -------
+    data : dict
+        Zoo dictionary with one channel per table column, plus a
+        'zoosystem' metadata entry.
+
+    Raises
+    ------
+    ValueError
+        If ``extension`` is not a supported format, or if ``freq`` is
+        None and no time column can be found to infer it.
+    """
     if 'csv' in extension:
         df, metadata = _csv2zoo(fl, skip_rows=skip_rows, sep=sep)
 
@@ -52,12 +89,52 @@ def table2zoo_data(fl, extension, skip_rows=0, freq=None, data_type='Video', sep
     return data
 
 
-def _parquet2zoo(fl):
+def _parquet2zoo(fl: str) -> Tuple[pd.DataFrame, Optional[Dict]]:
+    """
+    Read a Parquet file into a DataFrame.
+
+    Parameters
+    ----------
+    fl : str
+        Path to the Parquet file.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        Table data.
+    metadata : dict or None
+        Always None; Parquet files carry no header metadata here.
+    """
     df = pd.read_parquet(fl)
     metadata = None
+
     return df, metadata
 
-def _csv2zoo(fl, skip_rows, sep):
+
+def _csv2zoo(
+        fl: str, skip_rows: int, sep: Optional[str],
+) -> Tuple[pd.DataFrame, Dict]:
+    """
+    Read a CSV file (with an optional metadata header) into a
+    DataFrame.
+
+    Parameters
+    ----------
+    fl : str
+        Path to the CSV file.
+    skip_rows : int
+        Number of header rows to skip before the column header row.
+    sep : str or None
+        Column separator, passed to ``pandas.read_csv``.
+
+    Returns
+    -------
+    df : pandas.DataFrame
+        Table data.
+    metadata : dict
+        Key/value metadata parsed from any ``key=value`` header lines
+        preceding an ``ENDHEADER`` line.
+    """
     header_lines = []
     with open(fl, 'r') as f:
         for line in f:
@@ -75,7 +152,24 @@ def _csv2zoo(fl, skip_rows, sep):
 
 
 
-def _parse_metadata(header_lines):
+def _parse_metadata(
+        header_lines: List[str],
+) -> Dict[str, Union[int, float, str]]:
+    """
+    Parse ``key=value`` metadata from CSV header lines.
+
+    Parameters
+    ----------
+    header_lines : list of str
+        Lines preceding (and including) an ``ENDHEADER`` line.
+
+    Returns
+    -------
+    metadata : dict of {str : int or float or str}
+        Parsed key/value pairs. Values are cast to int or float when
+        a leading numeric token is found, otherwise kept as a
+        lowercased string.
+    """
     metadata = {}
     for line in header_lines:
         if '=' in line:
