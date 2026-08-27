@@ -1,8 +1,13 @@
+from typing import Optional, Tuple
+
 import numpy as np
 import matplotlib.pyplot as plt
+from numpy.typing import ArrayLike
 
 
-def fft_analysis(x, fs, thresh=10):
+def fft_analysis(
+        x: ArrayLike, fs: float, thresh: float = 10,
+) -> Tuple[np.ndarray, np.ndarray, float, float, float]:
     """
     FFT analysis with cutoff frequency suggestion.
 
@@ -66,9 +71,28 @@ def fft_analysis(x, fs, thresh=10):
     return freq, amp, mean_freq, max_freq, cutoff_freq
 
 
-def plot_fft(freq, amp, cutoff_freq=None, thresh=10, max_display_freq=50):
+def plot_fft(
+        freq: ArrayLike, amp: ArrayLike, cutoff_freq: Optional[float] = None,
+        thresh: float = 10, max_display_freq: float = 50,
+) -> None:
     """
     Plot normalized FFT spectrum and suggested cutoff frequency.
+
+    Parameters
+    ----------
+    freq : array_like
+        Frequency vector (Hz), as returned by :func:`fft_analysis`.
+    amp : array_like
+        Amplitude spectrum, as returned by :func:`fft_analysis`.
+    cutoff_freq : float, optional
+        Suggested cutoff frequency (Hz) to mark on the plot. If None
+        or NaN, no marker is drawn.
+    thresh : float, optional
+        Threshold percentage used to compute ``cutoff_freq``, shown
+        in the plot title. Default is 10 (%).
+    max_display_freq : float, optional
+        Unused. Reserved for limiting the displayed frequency range;
+        the x-axis is currently fixed to [0, 300] Hz.
     """
 
     amp_norm = amp / np.max(amp)

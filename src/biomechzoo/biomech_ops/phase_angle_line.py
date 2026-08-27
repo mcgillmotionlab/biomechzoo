@@ -1,8 +1,9 @@
 import numpy as np
 from scipy.signal import hilbert
+from numpy.typing import ArrayLike
 
 
-def phase_angle_line(r):
+def phase_angle_line(r: ArrayLike) -> np.ndarray:
     """
     Compute phase angle for a single kinematic waveform using the Hilbert transform.
 
