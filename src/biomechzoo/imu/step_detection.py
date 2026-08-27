@@ -1,11 +1,41 @@
-import numpy as np
-from scipy.signal import find_peaks, butter, filtfilt
+from typing import List, Tuple
 
-def imu_mcgrath(ch_line, fsamp, min_stance_t, is_filtered=False):
+import numpy as np
+from numpy.typing import ArrayLike
+from scipy.signal import butter, filtfilt, find_peaks
+
+
+def imu_mcgrath(
+        ch_line: ArrayLike, fsamp: float, min_stance_t: float,
+        is_filtered: bool = False,
+) -> Tuple[np.ndarray, np.ndarray]:
     """
-    This function detects the steps based on the method of McGrath et al. (2012) https://doi.org/10.1007/s12283-012-0093-8
-    in short, the first minimum after a local maximum is the heel strike. The local maxima are the mid-swing.
-    Data should be filtered
+    Detect gait events using the method of McGrath et al. (2012).
+
+    The first minimum after a local maximum midswing peak is taken as
+    initial contact (heel strike); the first valid minimum before a
+    midswing peak is taken as terminal contact (toe off). Reference:
+    https://doi.org/10.1007/s12283-012-0093-8
+
+    Parameters
+    ----------
+    ch_line : array_like
+        Vertical acceleration signal.
+    fsamp : float
+        Sampling frequency in Hz.
+    min_stance_t : float
+        Minimum stance time, in milliseconds, used to validate
+        detected steps.
+    is_filtered : bool, optional
+        If True, ``ch_line`` is assumed to already be filtered and no
+        additional low-pass filtering is applied. Default is False.
+
+    Returns
+    -------
+    IC : ndarray
+        Indices of detected initial contact (heel strike) events.
+    TC : ndarray
+        Indices of detected terminal contact (toe off) events.
     """
 
     if is_filtered:
@@ -107,7 +137,29 @@ def imu_mcgrath(ch_line, fsamp, min_stance_t, is_filtered=False):
 
     return IC, TC
 
-def crash_catch(min_stance_samples, IC, TC):
+def crash_catch(
+        min_stance_samples: int, IC: List[int], TC: List[int],
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Ensure initial and terminal contact index arrays are the same
+    length, truncating any extra detections.
+
+    Parameters
+    ----------
+    min_stance_samples : int
+        Unused. Reserved for future stance-time validation.
+    IC : list of int
+        Indices of detected initial contact events.
+    TC : list of int
+        Indices of detected terminal contact events.
+
+    Returns
+    -------
+    IC : ndarray
+        Initial contact indices, truncated to match ``TC`` length.
+    TC : ndarray
+        Terminal contact indices, truncated to match ``IC`` length.
+    """
     # Ensure IC and TC arrays are same length and valid
     IC = np.array(IC)
     TC = np.array(TC)
