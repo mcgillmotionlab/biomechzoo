@@ -1,5 +1,5 @@
 def main():
-    print("Hello from biomechzoo!")
+    print("Welcome to biomechZoo!")
 
 
 if __name__ == "__main__":

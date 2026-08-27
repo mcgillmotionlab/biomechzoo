@@ -3,7 +3,7 @@ import json
 import pandas as pd
 from dash import Dash,dcc, html, Input, Output, State, no_update, callback_context
 
-from biomechzoo.visualization.ensembler import Ensembler
+from biomechzoo.ensembler.ensembler import Ensembler
 
 def run_quality_check(fld, ch, out_folder, subj_pattern, conditions=None, name_contains=None, event_name=None):
 

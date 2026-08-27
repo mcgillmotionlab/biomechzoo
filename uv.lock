@@ -65,7 +65,7 @@ wheels = [
 
 [[package]]
 name = "biomechzoo"
-version = "0.8.8"
+version = "0.8.10"
 source = { editable = "." }
 dependencies = [
     { name = "dash" },
@@ -80,7 +80,7 @@ dependencies = [
     { name = "scipy" },
 ]
 
-[package.optional-dependencies]
+[package.dev-dependencies]
 docs = [
     { name = "furo" },
     { name = "sphinx" },
@@ -92,7 +92,6 @@ docs = [
 requires-dist = [
     { name = "dash", specifier = ">=3.3.0" },
     { name = "ezc3d", specifier = ">=1.5.19" },
-    { name = "furo", marker = "extra == 'docs'", specifier = ">=2024.1.29" },
     { name = "kaleido", specifier = ">=1.2.0" },
     { name = "matplotlib", specifier = ">=3.10.6" },
     { name = "numpy", specifier = ">=1.26,<=2.2.6" },
@@ -101,11 +100,15 @@ requires-dist = [
     { name = "pyarrow", specifier = ">=19.0.0" },
     { name = "pycompare", specifier = ">=1.5.4" },
     { name = "scipy", specifier = ">=1.16.2" },
-    { name = "sphinx", marker = "extra == 'docs'", specifier = ">=7.0" },
-    { name = "sphinx-autobuild", marker = "extra == 'docs'", specifier = ">=2024.0.0" },
-    { name = "sphinx-copybutton", marker = "extra == 'docs'", specifier = ">=0.5.2" },
 ]
-provides-extras = ["docs"]
+
+[package.metadata.requires-dev]
+docs = [
+    { name = "furo", specifier = ">=2024.1.29" },
+    { name = "sphinx", specifier = ">=7.0" },
+    { name = "sphinx-autobuild", specifier = ">=2024.0.0" },
+    { name = "sphinx-copybutton", specifier = ">=0.5.2" },
+]
 
 [[package]]
 name = "blinker"

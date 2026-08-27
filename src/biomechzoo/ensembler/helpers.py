@@ -22,6 +22,7 @@ def match_condition(path, conditions):
 def extract_subject_id(f, subj_list, str_pattern):
     """
     Extracts the subject ID from the zoo file path and a string match using a regular expression of a known list of subject IDs.
+
     Parameters
     ----------
     f : str
