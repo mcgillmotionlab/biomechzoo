@@ -1,19 +1,25 @@
 import os
+from typing import Optional
 
-def find_repo_root(path=None, marker="README.md"):
+
+def find_repo_root(
+        path: Optional[str] = None, marker: str = "README.md",
+) -> str:
     """
     Find the nearest parent directory containing the specified marker file.
 
     Parameters
     ----------
-    path : str. If None, defaults to the current working directory.
-        Starting file or directory.
+    path : str, optional
+        Starting file or directory to search upward from. If None,
+        defaults to this module's file location.
     marker : str, optional
-        File used to identify the repository root. Default README.md
+        File used to identify the repository root. Default is
+        ``'README.md'``.
 
     Returns
     -------
-    str
+    path : str
         Absolute path to the repository root.
 
     Raises

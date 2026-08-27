@@ -1,9 +1,33 @@
-from scipy.io import loadmat
 import os
+from typing import Any, Dict
+
 import numpy as np
+from scipy.io import loadmat
 
 
-def zload(filepath):
+def zload(filepath: str) -> Dict:
+    """
+    Load a .zoo file into a zoo data dictionary.
+
+    Parameters
+    ----------
+    filepath : str
+        Path to the .zoo file to load.
+
+    Returns
+    -------
+    data : dict
+        Zoo data dictionary, with MATLAB structs converted to nested
+        Python dicts and Video/Analog channel lists converted to
+        Python lists of stripped strings.
+
+    Raises
+    ------
+    ValueError
+        If ``filepath`` does not end in ``'.zoo'``.
+    FileNotFoundError
+        If ``filepath`` does not exist.
+    """
     if not filepath.endswith('.zoo'):
         raise ValueError(f"{filepath} is not a .zoo file")
 
@@ -16,7 +40,7 @@ def zload(filepath):
     mat_data = {k: v for k, v in mat_data.items() if not k.startswith('__')}
 
     # Convert MATLAB structs to Python dicts (recursively)
-    def mat_struct_to_dict(obj):
+    def mat_struct_to_dict(obj: Any) -> Any:
         if isinstance(obj, dict):
             return {k: mat_struct_to_dict(v) for k, v in obj.items()}
         elif hasattr(obj, '_fieldnames'):

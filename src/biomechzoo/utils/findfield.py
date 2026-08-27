@@ -1,4 +1,11 @@
-def findfield(data, target_event):
+from typing import Dict, Optional, Tuple
+
+import numpy as np
+
+
+def findfield(
+        data: Dict, target_event: str,
+) -> Tuple[Optional[np.ndarray], Optional[str]]:
     """
     Search zoo data for the value and channel associated with a target event.
 
@@ -11,7 +18,7 @@ def findfield(data, target_event):
 
     Returns
     -------
-    events : list or None
+    events : ndarray or None
         Event data as ``[frame_index, value, 0]``, or None if not found.
     channel : str or None
         Name of the channel containing the event, or None if not found.

@@ -1,7 +1,8 @@
 import os
+from typing import Tuple
 
 
-def fileparts(file):
+def fileparts(file: str) -> Tuple[str, str, str]:
     """
     Split a file path into its directory, filename, and extension.
 

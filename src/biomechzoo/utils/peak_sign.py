@@ -1,6 +1,8 @@
 import numpy as np
+from numpy.typing import ArrayLike
 
-def peak_sign(r):
+
+def peak_sign(r: ArrayLike) -> int:
     """
     Determine whether the largest absolute peak in the signal is positive or negative.
 
