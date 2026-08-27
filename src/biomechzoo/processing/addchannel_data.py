@@ -4,7 +4,10 @@ from numpy.typing import ArrayLike
 from biomechzoo.utils.update_channel_list import update_channel_list
 
 
-def addchannel_data(data: Dict, ch_new_name: str, ch_new_data: ArrayLike, section: str = 'Video') -> Dict:
+def addchannel_data(
+        data: Dict, ch_new_name: str, ch_new_data: ArrayLike,
+        section: str = 'Video',
+) -> Dict:
     """
     Add a new channel to zoo data.
 
@@ -21,7 +24,7 @@ def addchannel_data(data: Dict, ch_new_name: str, ch_new_data: ArrayLike, sectio
 
     Returns
     -------
-    dict
+    data : dict
         Updated zoo data with new channel added.
 
     Notes

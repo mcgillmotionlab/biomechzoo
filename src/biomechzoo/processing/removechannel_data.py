@@ -2,9 +2,7 @@ from typing import Dict, List, Any
 from biomechzoo.utils.update_channel_list import update_channel_list
 
 def removechannel_data(
-    data: Dict[str, Any],
-    channels: List[str],
-    mode: str = 'remove'
+        data: Dict[str, Any], channels: List[str], mode: str = 'remove',
 ) -> Dict[str, Any]:
     """
     Remove or keep specified channels in a biomechanical data structure.
@@ -26,7 +24,7 @@ def removechannel_data(
 
     Returns
     -------
-    dict of str to Any
+    data : dict of str to Any
         Modified data dictionary with channels removed or kept according to mode.
 
     Raises

@@ -6,9 +6,7 @@ import numpy as np
 
 
 def partition_data(
-    data: Dict[str, Any],
-    evt_start: str,
-    evt_end: str
+        data: Dict[str, Any], evt_start: str, evt_end: str,
 ) -> Dict[str, Any]:
     """
     Partition data for all channels between two specified events.
@@ -28,7 +26,7 @@ def partition_data(
 
     Returns
     -------
-    dict of str to Any
+    data_new : dict of str to Any
         Deep copy of input data with channels partitioned between the two events.
 
     Raises

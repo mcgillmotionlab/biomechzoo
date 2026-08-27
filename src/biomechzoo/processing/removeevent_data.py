@@ -4,9 +4,8 @@ from typing import Dict, List, Union, Any
 from biomechzoo.utils.findfield import findfield
 
 def removeevent_data(
-    data: Dict[str, Any],
-    events: Union[str, List[str]],
-    mode: str = 'remove'
+        data: Dict[str, Any], events: Union[str, List[str]],
+        mode: str = 'remove',
 ) -> Dict[str, Any]:
     """
     Remove or retain specified events across all channels in a biomechanical
@@ -30,7 +29,7 @@ def removeevent_data(
 
     Returns
     -------
-    dict of str to Any
+    data_new : dict of str to Any
         Deep copy of the input data with events modified according
         to the selected mode.
 

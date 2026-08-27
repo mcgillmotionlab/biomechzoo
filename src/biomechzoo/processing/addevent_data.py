@@ -8,12 +8,9 @@ from biomechzoo.biomech_ops.movement_onset import movement_onset, movement_offse
 from biomechzoo.imu.step_detection import imu_mcgrath
 
 def addevent_data(
-    data: Dict[str, Any],
-    channels: Union[str, List[str]],
-    ename: str,
-    etype: str,
-    fsamp: Optional[float] = None,
-    constant: Optional[float] = None
+        data: Dict[str, Any], channels: Union[str, List[str]], ename: str,
+        etype: str, fsamp: Optional[float] = None,
+        constant: Optional[float] = None,
 ) -> Dict[str, Any]:
     """
     Add events to specified channels in a biomechanical data structure.
@@ -42,7 +39,7 @@ def addevent_data(
 
     Returns
     -------
-    dict of str to Any
+    data_new : dict of str to Any
         Deep copy of input data with events added to specified channels.
 
     Raises
@@ -61,6 +58,14 @@ def addevent_data(
 
     For event types that find multiple events (mcgrath_fs, mcgrath_fo), events
     are numbered sequentially (e.g., 'ename_1', 'ename_2', etc.).
+
+    Channels must already be 1-D (e.g. an exploded ``'<ch>_x'`` component)
+    for 'max', 'min', 'absmax', 'first', 'last', and 'rom'; passing a
+    multi-dimensional channel (e.g. an unexploded n x 3 marker) causes
+    ``np.argmax``/``np.argmin`` to return a flat index into the whole
+    array rather than a per-row index, which will raise an
+    ``IndexError`` or silently select the wrong frame. Use
+    :func:`explodechannel_data` first if needed.
     """
 
     data_new = copy.deepcopy(data)
@@ -201,7 +206,7 @@ def find_first_peak(yd: np.ndarray, constant: Optional[float]) -> int:
 
     Returns
     -------
-    int
+    exd : int
         Index of the first peak in the signal.
 
     Raises

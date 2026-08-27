@@ -1,18 +1,34 @@
 import os
 import time
 import inspect
-import pandas as pd
 from collections import defaultdict
+from typing import List, NoReturn, Optional, Union
+
+import pandas as pd
+
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
 from biomechzoo.utils.batchdisp import batchdisp
 
-def combine_quats_to_csv():
+
+def combine_quats_to_csv() -> NoReturn:
+    """
+    Deprecated. Use :func:`combine_imu_to_csv` instead.
+
+    Raises
+    ------
+    NotImplementedError
+        Always.
+    """
     raise NotImplementedError("Use combine_imu_to_csv() instead")
 
-def combine_imu_to_csv_data(csv_files: list[str], prefixes: list[str], skip_rows:int = None ,out_folder: str = None, out_filename: str = None,
-    verbose: int = 1) -> str:
+
+def combine_imu_to_csv_data(
+        csv_files: List[str], prefixes: List[str],
+        skip_rows: Optional[int] = None, out_folder: Optional[str] = None,
+        out_filename: Optional[str] = None, verbose: int = 1,
+) -> str:
     """
     Merge multiple Xsens DOT CSV files into a single combined CSV file.
 
@@ -39,7 +55,7 @@ def combine_imu_to_csv_data(csv_files: list[str], prefixes: list[str], skip_rows
 
     Returns
     -------
-    str
+    out_file : str
         Absolute path to the saved combined CSV file.
     """
 
@@ -79,8 +95,13 @@ def combine_imu_to_csv_data(csv_files: list[str], prefixes: list[str], skip_rows
 
     return out_file
 
-def combine_imu_to_csv(prefixes: list[str],in_folder,out_folder=None,inplace=False,name_contains=None,subfolders=None,
-    verbose=1):
+def combine_imu_to_csv(
+        prefixes: List[str], in_folder: str,
+        out_folder: Optional[str] = None, inplace: bool = False,
+        name_contains: Optional[Union[str, List[str]]] = None,
+        subfolders: Optional[Union[str, List[str]]] = None,
+        verbose: int = 1,
+) -> None:
     """
     Batch-combine Xsens DOT CSV files for multiple subjects.
 
