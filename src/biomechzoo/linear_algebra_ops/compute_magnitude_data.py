@@ -1,12 +1,16 @@
-import os
-from typing import Optional
+from typing import Dict, Optional
 
 import numpy as np
+from numpy.typing import ArrayLike
+
 from biomechzoo.processing.addchannel_data import addchannel_data
 from biomechzoo.utils.common_substring import common_substring_join
 
 
-def compute_magnitude_data(data:dict, ch_x:None | str, ch_y:None | str, ch_z:None | str, ch_new_name:None | str = None)->dict:
+def compute_magnitude_data(
+        data: Dict, ch_x: Optional[str], ch_y: Optional[str],
+        ch_z: Optional[str], ch_new_name: Optional[str] = None,
+) -> Dict:
     """
     Compute Euclidean magnitude from IMU channels stored in a BiomechZoo-style data dict.
 
@@ -30,7 +34,7 @@ def compute_magnitude_data(data:dict, ch_x:None | str, ch_y:None | str, ch_z:Non
 
     Returns
     -------
-    dict
+    data : dict
         Updated data dictionary with added magnitude channel.
     """
 
@@ -78,19 +82,22 @@ def compute_magnitude_data(data:dict, ch_x:None | str, ch_y:None | str, ch_z:Non
     return data
 
 
-def compute_magnitude_line(x:None | np.ndarray,y:None | np.ndarray, z:None | np.ndarray)-> np.ndarray:
+def compute_magnitude_line(
+        x: Optional[ArrayLike], y: Optional[ArrayLike],
+        z: Optional[ArrayLike],
+) -> np.ndarray:
     """
     Compute Euclidean magnitude (supports 2D by allowing y or z to be None).
 
     Parameters
     ----------
-    x, y, z : array-like or None
+    x, y, z : array_like or None
         Signal components. Any component can be None.
         If a component is None, it is treated as zero (i.e., 2D or 1D data is supported).
 
     Returns
     -------
-    magnitude : array-like
+    magnitude : ndarray
         Vector magnitude sqrt(x^2 + y^2 + z^2)
     """
 
@@ -108,13 +115,29 @@ def compute_magnitude_line(x:None | np.ndarray,y:None | np.ndarray, z:None | np.
 
     return magnitude
 
-def _prep(a, ref):
+def _prep(a: Optional[ArrayLike], ref: np.ndarray) -> np.ndarray:
     """
     Convert input to array or replace None with zeros matching ref shape.
+
+    Parameters
+    ----------
+    a : array_like or None
+        Value to convert. If None, a zero array matching ``ref`` is
+        returned instead.
+    ref : ndarray
+        Reference array whose shape is used when ``a`` is None.
+
+    Returns
+    -------
+    arr : ndarray
+        ``a`` converted to an array, or zeros matching ``ref``'s shape.
     """
     if a is None:
-        return np.zeros_like(ref)
-    return np.asarray(a)
+        arr = np.zeros_like(ref)
+    else:
+        arr = np.asarray(a)
+
+    return arr
 
 
 #-------TESTING-----
