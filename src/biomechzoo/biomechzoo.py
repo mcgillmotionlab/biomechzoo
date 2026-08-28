@@ -1,6 +1,7 @@
-import os
 import inspect
+import os
 import time
+from typing import Dict, List, Optional, Union
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
 from biomechzoo.linear_algebra_ops.kinematics import (quats2euler_data, dcms2euler_data, marker2dcm_data, quats2dcm_data,
@@ -34,7 +35,32 @@ from biomechzoo.utils.group_by_terminal_folder import group_by_terminal_folder
 from biomechzoo.processing.rep_trial_data import reptrial_data
 
 class BiomechZoo:
-    def __init__(self, in_folder, inplace=False, subfolders=None, name_contains=None, name_excludes=None, verbose=0):
+    """Batch-processing pipeline over a folder of .zoo files."""
+
+    def __init__(
+            self, in_folder: str, inplace: bool = False,
+            subfolders: Optional[Union[str, List[str]]] = None,
+            name_contains: Optional[Union[str, List[str]]] = None,
+            name_excludes: Optional[Union[str, List[str]]] = None,
+            verbose: Union[int, str] = 0,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        in_folder : str
+            Root folder to process.
+        inplace : bool, optional
+            If True, each step overwrites files in place. If False,
+            each step writes to a new folder. Default is False.
+        subfolders : str or list of str, optional
+            Restrict processing to these subfolder names.
+        name_contains : str or list of str, optional
+            Only process files whose name contains this substring.
+        name_excludes : str or list of str, optional
+            Skip files whose name contains this substring.
+        verbose : int or str, optional
+            Verbosity level passed to :func:`batchdisp`. Default is 0.
+        """
         self.verbose = verbose
         self.in_folder = in_folder
         self.verbose = verbose
@@ -63,14 +89,20 @@ class BiomechZoo:
         else:
             batchdisp('Processing mode: backup (inplace=False)(each step will be applied to a new folder)', level=1, verbose=verbose)
 
-    def _update_folder(self, out_folder, inplace, in_folder):
+    def _update_folder(
+            self, out_folder: Optional[str], inplace: bool, in_folder: str,
+    ) -> None:
         """
-        Utility to update self.in_folder if not inplace.
+        Update ``self.in_folder`` to the new output folder if not inplace.
 
-        Parameters:
-        - out_folder (str or None): The output folder provided by user
-        - inplace (bool): Whether processing is inplace
-        - in_folder (str): The current input folder
+        Parameters
+        ----------
+        out_folder : str or None
+            The output folder provided by the user.
+        inplace : bool
+            Whether processing is inplace.
+        in_folder : str
+            The current input folder.
         """
         if not inplace:
             # get full path for out_folder
@@ -79,10 +111,24 @@ class BiomechZoo:
 
         batchdisp('all files saved to: {}'.format(self.in_folder ), level=1, verbose=self.verbose)
 
-    def remove_files(self, fl_remove: list[str], out_folder: str | None = None, inplace: bool | None = None) -> None:
+    def remove_files(
+            self, fl_remove: List[str], out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
         """
-        Remove files listed in fl_remove from self.in_folder.
-        Files not in fl_remove are saved using zsave.
+        Remove files listed in ``fl_remove`` from ``self.in_folder``.
+
+        Files not in ``fl_remove`` are saved using :func:`zsave`.
+
+        Parameters
+        ----------
+        fl_remove : list of str
+            Substrings identifying files to remove (a file is removed
+            if any entry is found in its path).
+        out_folder : str, optional
+            Output folder for files that are kept.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
         """
 
         start_time = time.time()
@@ -112,8 +158,19 @@ class BiomechZoo:
         self._update_folder(out_folder, inplace, in_folder)
 
 
-    def mvnx2zoo(self, out_folder=None, inplace=False):
-        """ Converts all .mvnx files in the folder to .zoo format """
+    def mvnx2zoo(
+            self, out_folder: Optional[str] = None, inplace: bool = False,
+    ) -> None:
+        """
+        Convert all .mvnx files in the folder to .zoo format.
+
+        Parameters
+        ----------
+        out_folder : str, optional
+            Output folder for converted files.
+        inplace : bool, optional
+            If True, overwrite in place. Default is False.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -131,8 +188,20 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def c3d2zoo(self, out_folder=None, inplace=None):
-        """ Converts all .c3d files in the folder to .zoo format """
+    def c3d2zoo(
+            self, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Convert all .c3d files in the folder to .zoo format.
+
+        Parameters
+        ----------
+        out_folder : str, optional
+            Output folder for converted files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         from ezc3d import c3d
         verbose = self.verbose
@@ -152,8 +221,29 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def table2zoo(self, extension, out_folder=None, inplace=None, skip_rows=0, freq=None, sep=","):
-        """ Converts generic .csv file in the folder to .zoo format """
+    def table2zoo(
+            self, extension: str, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None, skip_rows: int = 0,
+            freq: Optional[int] = None, sep: str = ",",
+    ) -> None:
+        """
+        Convert generic table files (CSV/Parquet) in the folder to .zoo format.
+
+        Parameters
+        ----------
+        extension : str
+            File extension to convert (e.g. 'csv', 'parquet').
+        out_folder : str, optional
+            Output folder for converted files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        skip_rows : int, optional
+            Number of header rows to skip. Default is 0.
+        freq : int, optional
+            Sampling frequency in Hz. If None, inferred from a time column.
+        sep : str, optional
+            Column separator. Default is ','.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -175,18 +265,66 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def xls2zoo(self, out_folder=None, inplace=None):
+    def xls2zoo(
+            self, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
+        """Deprecated. Raises NotImplementedError; use :meth:`table2zoo`."""
         raise NotImplementedError('Use table2zoo instead')
 
-    def csv2zoo(self, out_folder=None, inplace=None):
+    def csv2zoo(
+            self, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
+        """Deprecated. Raises NotImplementedError; use :meth:`table2zoo`."""
         raise NotImplementedError('Use table2zoo instead')
 
-    def parquet2zoo(self, out_folder=None, inplace=None):
+    def parquet2zoo(
+            self, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
+        """Deprecated. Raises NotImplementedError; use :meth:`table2zoo`."""
         raise NotImplementedError('Use table2zoo instead')
 
-    def combine_files(self, within=True, suffix=None, out_folder=None, inplace=None,
-                      fld1=None, fld2=None, method=None, fl1exlude=None, fl2exclude=None, strmatch=None):
-        """Merge multiple .zoo file into 1 zoo-file."""
+    def combine_files(
+            self, within: bool = True, suffix: Optional[str] = None,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
+            fld1: Optional[str] = None, fld2: Optional[str] = None,
+            method: Optional[str] = None,
+            fl1exlude: Optional[List[str]] = None,
+            fl2exclude: Optional[List[str]] = None,
+            strmatch: Optional[str] = None,
+    ) -> None:
+        """
+        Merge multiple .zoo files into 1 zoo-file.
+
+        Parameters
+        ----------
+        within : bool, optional
+            If True, combine files within ``self.in_folder`` (see
+            :func:`combine_files_within`). If False, combine files
+            between ``fld1`` and ``fld2`` (see
+            :func:`combine_files_between`). Default is True.
+        suffix : str, optional
+            Suffix map / channel suffix used to combine channels.
+        out_folder : str, optional
+            Output folder. Defaults to ``fld2`` when not combining within.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        fld1 : str, optional
+            First folder to combine, when ``within=False``.
+        fld2 : str, optional
+            Second folder to combine, when ``within=False``.
+        method : str, optional
+            Resampling method when combining between folders of
+            different frequencies.
+        fl1exlude : list of str, optional
+            Filenames to ignore from ``fld1``.
+        fl2exclude : list of str, optional
+            Filenames to ignore from ``fld2``.
+        strmatch : str, optional
+            Regular expression to find the common subject folder.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -212,8 +350,26 @@ class BiomechZoo:
 
         self._update_folder(out_folder, inplace, in_folder)
 
-    def tilt_algorithm(self, chname_avert, chname_medlat, chname_antpost, out_folder=None, inplace=False):
-        """ tilt correction for acceleration data """
+    def tilt_algorithm(
+            self, chname_avert: str, chname_medlat: str, chname_antpost: str,
+            out_folder: Optional[str] = None, inplace: bool = False,
+    ) -> None:
+        """
+        Apply tilt correction for acceleration data.
+
+        Parameters
+        ----------
+        chname_avert : str
+            Name of the vertical acceleration channel.
+        chname_medlat : str
+            Name of the mediolateral acceleration channel.
+        chname_antpost : str
+            Name of the anteroposterior acceleration channel.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Default is False.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -233,7 +389,11 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def rep_trial(self, channels='all', method='mean', out_folder=None, inplace=False):
+    def rep_trial(
+            self, channels: Union[List[str], str] = 'all',
+            method: str = 'mean', out_folder: Optional[str] = None,
+            inplace: bool = False,
+    ) -> None:
         """
         Extract representative trial per subject/condition folder.
 
@@ -314,8 +474,26 @@ class BiomechZoo:
         # Update folder after processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def compute_magnitude(self, chname1, chname2, chname3, ch_new_name=None, out_folder=None, inplace=False):
-        """ compute euclidean magnitude as a new channel  """
+    def compute_magnitude(
+            self, chname1: Optional[str], chname2: Optional[str],
+            chname3: Optional[str], ch_new_name: Optional[str] = None,
+            out_folder: Optional[str] = None, inplace: bool = False,
+    ) -> None:
+        """
+        Compute Euclidean magnitude from up to 3 channels as a new channel.
+
+        Parameters
+        ----------
+        chname1, chname2, chname3 : str or None
+            Channel names for the X, Y, Z components. Any may be
+            None; at least 2 must be provided.
+        ch_new_name : str, optional
+            Name of the output magnitude channel. Auto-generated if None.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Default is False.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -335,8 +513,22 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def rectify(self, chs, out_folder=None, inplace=False):
-        """ rectify a signal to absolute value  """
+    def rectify(
+            self, chs: Union[str, List[str]], out_folder: Optional[str] = None,
+            inplace: bool = False,
+    ) -> None:
+        """
+        Rectify one or more channels to their absolute value.
+
+        Parameters
+        ----------
+        chs : str or list of str
+            Channel name(s) to rectify.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Default is False.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -356,8 +548,22 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def phase_angle(self, ch, out_folder=None, inplace=None):
-        """ computes phase angles"""
+    def phase_angle(
+            self, ch: List[str], out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Compute phase angles (Hilbert transform) for the given channels.
+
+        Parameters
+        ----------
+        ch : list of str
+            Channel names to compute phase angle for.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -377,8 +583,24 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def continuous_relative_phase(self, ch_prox, ch_dist, out_folder=None, inplace=None):
-        """ computes CRP angles"""
+    def continuous_relative_phase(
+            self, ch_prox: str, ch_dist: str, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Compute continuous relative phase (CRP) between two channels.
+
+        Parameters
+        ----------
+        ch_prox : str
+            Name of the proximal channel.
+        ch_dist : str
+            Name of the distal channel.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -398,8 +620,23 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def split_trial_by_gait_cycle(self, first_event_name, out_folder=None, inplace=None):
-        """ split by gait cycle according to event_name"""
+    def split_trial_by_gait_cycle(
+            self, first_event_name: str, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Split trials into per-gait-cycle sub-trials using a numbered event.
+
+        Parameters
+        ----------
+        first_event_name : str
+            Name of the first event in the numbered sequence
+            (e.g. 'RFS1'); see :func:`get_split_events`.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -430,8 +667,24 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def renameevent(self, evt, nevt, out_folder=None, inplace=None):
-        """ renames event evt to nevt in all zoo files """
+    def renameevent(
+            self, evt: Union[str, List[str]], nevt: Union[str, List[str]],
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Rename event(s) ``evt`` to ``nevt`` in all zoo files.
+
+        Parameters
+        ----------
+        evt : str or list of str
+            Existing event name(s) to rename.
+        nevt : str or list of str
+            New event name(s). Must be the same length as ``evt``.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -450,8 +703,24 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def renamechannnel(self, ch, ch_new, out_folder=None, inplace=None):
-        """ renames channels from ch to ch_new in all zoo files """
+    def renamechannnel(
+            self, ch: Union[str, List[str]], ch_new: Union[str, List[str]],
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Rename channel(s) from ``ch`` to ``ch_new`` in all zoo files.
+
+        Parameters
+        ----------
+        ch : str or list of str
+            Current channel name(s) to rename.
+        ch_new : str or list of str
+            New channel name(s). Must be the same length as ``ch``.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -470,8 +739,24 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def removechannel(self, ch, mode='remove', out_folder=None, inplace=None):
-        """ removes channels from zoo files """
+    def removechannel(
+            self, ch: List[str], mode: str = 'remove',
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Remove or keep channels from zoo files.
+
+        Parameters
+        ----------
+        ch : list of str
+            Channel names to remove or keep, depending on ``mode``.
+        mode : {'remove', 'keep'}, optional
+            Operation mode. Default is 'remove'.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -491,8 +776,24 @@ class BiomechZoo:
         self._update_folder(out_folder, inplace, in_folder)
 
 
-    def removeevent(self, events, mode='remove', out_folder=None, inplace=None):
-        """ removes channels from zoo files """
+    def removeevent(
+            self, events: Union[str, List[str]], mode: str = 'remove',
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Remove or keep events across all channels in zoo files.
+
+        Parameters
+        ----------
+        events : str or list of str
+            Event name(s) to remove or keep, depending on ``mode``.
+        mode : {'remove', 'keep'}, optional
+            Operation mode. Default is 'remove'.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -512,8 +813,20 @@ class BiomechZoo:
         self._update_folder(out_folder, inplace, in_folder)
 
 
-    def explodechannel(self, out_folder=None, inplace=None):
-        """ explodes all channels in a zoo file """
+    def explodechannel(
+            self, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Explode all n x 3 channels in a zoo file into X, Y, Z components.
+
+        Parameters
+        ----------
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -533,8 +846,22 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def normalize(self, nlen=101, out_folder=None, inplace=None):
-        """ time normalizes all channels to length nlen """
+    def normalize(
+            self, nlen: int = 101, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Time-normalize all channels to a target length.
+
+        Parameters
+        ----------
+        nlen : int, optional
+            Target number of samples. Default is 101.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -554,8 +881,31 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def addevent(self, ch, event_type, event_name, out_folder=None, inplace=None, fsamp = None, constant=None):
-        """ adds events of type evt_type with name evt_name to channel ch """
+    def addevent(
+            self, ch: Union[str, List[str]], event_type: str, event_name: str,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
+            fsamp: Optional[float] = None, constant: Optional[float] = None,
+    ) -> None:
+        """
+        Add an event of type ``event_type`` named ``event_name`` to channel(s).
+
+        Parameters
+        ----------
+        ch : str or list of str
+            Channel name(s) to add the event to.
+        event_type : str
+            Event type; see :func:`addevent_data` for supported values.
+        event_name : str
+            Name of the event to add.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        fsamp : float, optional
+            Sampling frequency in Hz. If None, read from zoosystem metadata.
+        constant : float, optional
+            Threshold/parameter value for certain event types.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -575,9 +925,28 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def sync_channels(self, method, ch_1, ch_2, manual_lag = None, out_folder=None, inplace=None):
+    def sync_channels(
+            self, method: str, ch_1: List[str], ch_2: List[str],
+            manual_lag: Optional[int] = None, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
         """
-        Biomechzoo style implementation of 'sync_channels_data' function
+        Biomechzoo-style wrapper for :func:`sync_channels_data`.
+
+        Parameters
+        ----------
+        method : {'cross-correlation', 'manual'}
+            Synchronization method.
+        ch_1 : list of str
+            First signal group's channel names.
+        ch_2 : list of str
+            Second signal group's channel names.
+        manual_lag : int, optional
+            Number of samples to shift when ``method='manual'``.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -598,8 +967,24 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def partition(self, evt_start, evt_end, out_folder=None, inplace=None):
-        """ partitions data between events evt_start and evt_end """
+    def partition(
+            self, evt_start: str, evt_end: str,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Partition data between events ``evt_start`` and ``evt_end``.
+
+        Parameters
+        ----------
+        evt_start : str
+            Name of the starting event.
+        evt_end : str
+            Name of the ending event.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -618,8 +1003,24 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def filter(self, ch, filt=None, out_folder=None, inplace=None):
-        """ filter data"""
+    def filter(
+            self, ch: Union[str, List[str]], filt: Optional[Dict] = None,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Filter one or more channels.
+
+        Parameters
+        ----------
+        ch : str or list of str
+            Channel name(s) to filter.
+        filt : dict, optional
+            Filter parameters; see :func:`filter_data`.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -639,8 +1040,24 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def resample(self, up:int = 1, down:int = 1, out_folder=None, inplace=None):
-        """ Resamples data"""
+    def resample(
+            self, up: int = 1, down: int = 1, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Resample data using polyphase filtering.
+
+        Parameters
+        ----------
+        up : int, optional
+            Upsampling factor. Default is 1.
+        down : int, optional
+            Downsampling factor. Default is 1.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
         start_time = time.time()
         verbose = self.verbose
         in_folder = self.in_folder
@@ -659,10 +1076,25 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def quats2euler(self, ch_prox: list[str], ch_dist: list[str], sequence: str, out_folder=None, inplace=False):
-
+    def quats2euler(
+            self, ch_prox: List[str], ch_dist: List[str], sequence: str,
+            out_folder: Optional[str] = None, inplace: bool = False,
+    ) -> None:
         """
-        Generates joint angles given proximal and distal quaterion orientation representations.
+        Generate joint angles from proximal/distal quaternion orientations.
+
+        Parameters
+        ----------
+        ch_prox : list of str
+            Proximal segment's quaternion channel names (W, X, Y, Z).
+        ch_dist : list of str
+            Distal segment's quaternion channel names (W, X, Y, Z).
+        sequence : str
+            Euler angle rotation sequence.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Default is False.
         """
 
         start_time = time.time()
@@ -683,9 +1115,25 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def dcms2euler(self, ch_prox: list[str], ch_dist: list[str], sequence: str, out_folder=None, inplace=False):
+    def dcms2euler(
+            self, ch_prox: List[str], ch_dist: List[str], sequence: str,
+            out_folder: Optional[str] = None, inplace: bool = False,
+    ) -> None:
         """
-        Generates joint angles given proximal and distal direction cosine matrix orientation representations.
+        Generate joint angles from proximal/distal DCM orientations.
+
+        Parameters
+        ----------
+        ch_prox : list of str
+            Proximal segment's DCM column-vector channel names (i, j, k).
+        ch_dist : list of str
+            Distal segment's DCM column-vector channel names (i, j, k).
+        sequence : str
+            Euler angle rotation sequence.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Default is False.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -707,9 +1155,27 @@ class BiomechZoo:
         batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
         self._update_folder(out_folder, inplace, in_folder)
 
-    def marker2dcm(self, seg: str, origin: str, marker_1: str, marker_2: str, out_folder=None, inplace=False):
+    def marker2dcm(
+            self, seg: str, origin: str, marker_1: str, marker_2: str,
+            out_folder: Optional[str] = None, inplace: bool = False,
+    ) -> None:
         """
-        Biomechzoo style implementation of marker2dcm_data
+        Biomechzoo-style wrapper for :func:`marker2dcm_data`.
+
+        Parameters
+        ----------
+        seg : str
+            Segment label used to name the output DCM channels.
+        origin : str
+            Marker defining the local coordinate system origin.
+        marker_1 : str
+            Marker defining the primary axis.
+        marker_2 : str
+            Marker used to define the temporary orthogonal-axis vector.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Default is False.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -730,9 +1196,23 @@ class BiomechZoo:
         batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
         self._update_folder(out_folder, inplace, in_folder)
 
-    def quats2dcm(self, seg: str, ch:list[str], out_folder=None, inplace=False):
+    def quats2dcm(
+            self, seg: str, ch: List[str], out_folder: Optional[str] = None,
+            inplace: bool = False,
+    ) -> None:
         """
-        Biomechzoo style implementation of quats2dcm_data
+        Biomechzoo-style wrapper for :func:`quats2dcm_data`.
+
+        Parameters
+        ----------
+        seg : str
+            Segment label used to name the output DCM channels.
+        ch : list of str
+            Quaternion channel names (W, X, Y, Z).
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Default is False.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -754,9 +1234,26 @@ class BiomechZoo:
         batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
         self._update_folder(out_folder, inplace, in_folder)
 
-    def rotate_dcm(self, ch: list[str], axis: str, degrees: float, out_folder=None, inplace=False):
+    def rotate_dcm(
+            self, ch: List[str], axis: str, degrees: float,
+            out_folder: Optional[str] = None, inplace: bool = False,
+    ) -> None:
         """
-        Biomechzoo style implementation of rotate_dcm_data
+        Biomechzoo-style wrapper for :func:`rotate_dcm_data`.
+
+        Parameters
+        ----------
+        ch : list of str
+            DCM column-vector channel names (i, j, k) for the segment
+            to rotate.
+        axis : {'X', 'Y', 'Z'}
+            Principal axis to rotate about.
+        degrees : float
+            Rotation angle in degrees.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Default is False.
         """
         start_time = time.time()
         verbose = self.verbose
