@@ -1,23 +1,28 @@
 from abc import ABC, abstractmethod
-import plotly.graph_objs as go
-import plotly.express as px
+from typing import TYPE_CHECKING
+
 import numpy as np
+import plotly.express as px
+import plotly.graph_objs as go
 # to test my bland-altman plot
 import pyCompare
+
 from biomechzoo.ensembler.data_store import DataStore
-
-
+from biomechzoo.ensembler.helpers import (
+    compute_ensemble, _compute_bandwidth, align_by_subject, resolve_shade,
+)
 from biomechzoo.ensembler.style_content import StyleContext
-from biomechzoo.ensembler.helpers import compute_ensemble, _compute_bandwidth, align_by_subject, resolve_shade
 
-
-
+if TYPE_CHECKING:
+    # deferred import — plot_spec.py imports Renderer from this module
+    from biomechzoo.ensembler.plot_spec import PlotSpec
 
 #### Plot options to add
 # Scatter plot/correlation plots --> regression line option?
 # Violinplots
 # MeanSD
 # RainCloud?
+
 
 class Renderer(ABC):
     """
@@ -26,22 +31,44 @@ class Renderer(ABC):
     """
 
     @abstractmethod
-    def render(self,
-               fig: go.Figure,
-               store: DataStore,
-               style: StyleContext,
-               spec: "PlotSpec",
-               row: int,
-               col: int,
-               ) -> None: ...
+    def render(
+            self, fig: go.Figure, store: DataStore, style: StyleContext,
+            spec: "PlotSpec", row: int, col: int,
+    ) -> None:
+        """
+        Add traces for one (channel, condition) into a subplot.
+
+        Parameters
+        ----------
+        fig : plotly.graph_objs.Figure
+            Figure to add traces to.
+        store : DataStore
+            Data source for the figure.
+        style : StyleContext
+            Shared color/dash/legend assignment state.
+        spec : PlotSpec
+            Describes what to plot and where.
+        row : int
+            Subplot row (1-indexed).
+        col : int
+            Subplot column (1-indexed).
+        """
+        ...
 
 
 class IndividualLinesRenderer(Renderer):
-    def render(self, fig, store, style, spec, row, col):
+    """Plots each subject's individual line, faded, per condition."""
+
+    def render(
+            self, fig: go.Figure, store: DataStore, style: StyleContext,
+            spec: "PlotSpec", row: int, col: int,
+    ) -> None:
         for condition in spec.all_conditions:
             arrays = store.get_lines(spec.channel, condition)
             subjects = store.get_subject_ids(spec.channel, condition)
-            x_norm = np.linspace(0, 100, max((len(a) for a in arrays), default=1))
+            x_norm = np.linspace(
+                0, 100, max((len(a) for a in arrays), default=1),
+            )
 
             for arr, subj in zip(arrays, subjects):
                 color = style.subject_color(subj)
@@ -56,12 +83,20 @@ class IndividualLinesRenderer(Renderer):
                     line=dict(color=color, dash=dash, width=1.2),
                     opacity=0.45,
                     showlegend=show_leg,
-                    hovertemplate=f"<b>{subj}</b><br>%{{x:.1f}}% | %{{y:.2f}}<extra></extra>",
+                    hovertemplate=(
+                        f"<b>{subj}</b><br>"
+                        f"%{{x:.1f}}% | %{{y:.2f}}<extra></extra>"
+                    ),
                 ), row=row, col=col)
 
 
 class MeanSDRenderer(Renderer):
-    def render(self, fig, store, style, spec, row, col):
+    """Plots ensemble mean line with a shaded ±SD ribbon, per condition."""
+
+    def render(
+            self, fig: go.Figure, store: DataStore, style: StyleContext,
+            spec: "PlotSpec", row: int, col: int,
+    ) -> None:
         for condition in spec.all_conditions:
             arrays = store.get_lines(spec.channel, condition)
             if not arrays:
@@ -99,23 +134,36 @@ class MeanSDRenderer(Renderer):
                 name=f"Mean_{condition}",
                 legendgroup=f"Mean_{condition}",
                 line=dict(color=color, width=3, dash=dash),
-                hovertemplate=f"<b>Mean – {condition}</b><br>%{{x:.1f}}% | %{{y:.2f}}<extra></extra>",
+                hovertemplate=(
+                    f"<b>Mean – {condition}</b><br>"
+                    f"%{{x:.1f}}% | %{{y:.2f}}<extra></extra>"
+                ),
                 showlegend=show_leg,
             ), row=row, col=col)
 
 
 class EventOverlayRenderer(Renderer):
-    def render(self, fig, store, style, spec, row, col):
+    """Plots one marker per subject/trial for each named event."""
+
+    def render(
+            self, fig: go.Figure, store: DataStore, style: StyleContext,
+            spec: "PlotSpec", row: int, col: int,
+    ) -> None:
         if not spec.events:
             return
 
         for event_name in spec.events:
             for condition in spec.all_conditions:
-                evs = store.get_events(spec.channel, condition, event_name)  # list[ZooEvent]
-                subjects = store.get_event_subject_ids(spec.channel, condition, event_name)
+                # list[ZooEvent]
+                evs = store.get_events(spec.channel, condition, event_name)
+                subjects = store.get_event_subject_ids(
+                    spec.channel, condition, event_name,
+                )
                 for ev, subj in zip(evs, subjects):
                     color = style.subject_color(subj)
-                    show_leg = style.should_show_legend("event", f"{subj}_{event_name}")
+                    show_leg = style.should_show_legend(
+                        "event", f"{subj}_{event_name}",
+                    )
                     fig.add_trace(go.Scatter(
                         x=[ev.x], y=[ev.y],
                         mode="markers",
@@ -131,33 +179,67 @@ class EventOverlayRenderer(Renderer):
 
 
 class ViolinRenderer(Renderer):
-    def __init__(self, show_points: bool = True, bandwidth: float | None = None):
+    """Plots a violin distribution per condition/event, optionally
+    split into sub-groups (e.g. sex, age group)."""
+
+    def __init__(
+            self, show_points: bool = True,
+            bandwidth: float | None = None,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        show_points : bool, optional
+            Overlay individual data points on the violin. Default True.
+        bandwidth : float, optional
+            Fixed kernel-density bandwidth. If None, it is estimated
+            per group via :func:`_compute_bandwidth`.
+        """
         self.show_points = show_points
         self.bandwidth = bandwidth
 
-    def render(self, fig, store, style, spec, row, col):
+    def render(
+            self, fig: go.Figure, store: DataStore, style: StyleContext,
+            spec: "PlotSpec", row: int, col: int,
+    ) -> None:
         if not spec.events:
             return
 
         for event_name in spec.events:
             for condition in spec.all_conditions:
-                values = store.get_event_values(spec.channel, condition, event_name)  # y-only
-                subjects = store.get_event_subject_ids(spec.channel, condition, event_name)
+                # y-only
+                values = store.get_event_values(
+                    spec.channel, condition, event_name,
+                )
+                subjects = store.get_event_subject_ids(
+                    spec.channel, condition, event_name,
+                )
                 if not values:
                     continue
 
                 if spec.group_by and spec.group_map:
-                    groups = [spec.group_map.get(s, "Unknown") for s in subjects]
+                    groups = [
+                        spec.group_map.get(s, "Unknown") for s in subjects
+                    ]
                 else:
                     groups = [condition] * len(values)
 
                 unique_groups = dict.fromkeys(groups)
                 for grp in unique_groups:
-                    grp_values = [v for v, g in zip(values, groups) if g == grp]
-                    bw = self.bandwidth if self.bandwidth is not None else _compute_bandwidth(grp_values)
+                    grp_values = [
+                        v for v, g in zip(values, groups) if g == grp
+                    ]
+                    bw = (
+                        self.bandwidth if self.bandwidth is not None
+                        else _compute_bandwidth(grp_values)
+                    )
 
                     color = style.condition_color(condition)
-                    label      = f"{condition} – {event_name} – {grp}" if spec.group_by else f"{condition} – {event_name}"
+                    label = (
+                        f"{condition} – {event_name} – {grp}"
+                        if spec.group_by
+                        else f"{condition} – {event_name}"
+                    )
                     show_leg = style.should_show_legend("violin", grp)
 
                     fig.add_trace(go.Violin(
@@ -177,32 +259,56 @@ class ViolinRenderer(Renderer):
 
 class BlandAltmanRenderer(Renderer):
     """
-    Plots a BlandAltman agreement plot between two conditions
+    Plots a Bland-Altman agreement plot between two conditions.
 
-    Requires exactly two conditions via spec.all_conditions.
+    Requires exactly two conditions via ``spec.all_conditions``.
 
-    Computes:
-    mean = (method_A - method_B) / 2
-    diff = methodA - method_B
-    bias = mean(diff)
-    LoA = bias +/- 1.96 * std(diff)
+    Computes::
+
+        mean = (method_A - method_B) / 2
+        diff = method_A - method_B
+        bias = mean(diff)
+        LoA = bias +/- loa_multiplier * std(diff)
 
     Works with either:
-    - line data (Uses a scaler per trial, e.g. mean of the line)
-    - event data (Uses event scaler directly, e.g. "max")
+
+    - line data (uses a scalar per trial, e.g. mean of the line)
+    - event data (uses the event value directly, e.g. "max")
     """
 
-    def __init__(self, use_lines: bool = False, show_subjects: bool = False, loa_multiplier: float = 1.96, line_scalar : str = "mean"):
-
+    def __init__(
+            self, use_lines: bool = False, show_subjects: bool = False,
+            loa_multiplier: float = 1.96, line_scalar: str = "mean",
+    ) -> None:
+        """
+        Parameters
+        ----------
+        use_lines : bool, optional
+            Reserved for future use. Default False.
+        show_subjects : bool, optional
+            Color points by subject and show a per-subject legend.
+            Default False.
+        loa_multiplier : float, optional
+            Multiplier of the SD of differences for the limits of
+            agreement. Default 1.96.
+        line_scalar : {'mean', 'max', 'min', 'median'}, optional
+            Scalar to reduce each line to when comparing line data.
+            Default 'mean'.
+        """
         if line_scalar not in ("mean", "max", "min", "median"):
-            raise ValueError("line_scaler must be one of 'mean', 'max', 'min', or 'median'")
+            raise ValueError(
+                "line_scaler must be one of 'mean', 'max', 'min', "
+                "or 'median'"
+            )
         self.use_lines = use_lines
         self.show_subjects = show_subjects
         self.loa_multiplier = loa_multiplier
         self.line_scalar = line_scalar
 
-
-    def render(self, fig, store, style, spec, row, col):
+    def render(
+            self, fig: go.Figure, store: DataStore, style: StyleContext,
+            spec: "PlotSpec", row: int, col: int,
+    ) -> None:
         if spec.companion_channel is not None:
             vals_a, vals_b, subjects = store.get_intra_channel(
                 channel_a=spec.channel,
@@ -213,8 +319,11 @@ class BlandAltmanRenderer(Renderer):
             )
         else:
             if len(spec.all_conditions) != 2:
-                raise ValueError(f"BlandAltmanRenderer requires exactly two conditions, "
-                                 f"got {spec.all_conditions}. Use companions= to specify the second")
+                raise ValueError(
+                    f"BlandAltmanRenderer requires exactly two "
+                    f"conditions, got {spec.all_conditions}. Use "
+                    f"companions= to specify the second"
+                )
             cond_a, cond_b = spec.all_conditions
             vals_a, vals_b, subjects = store.get_paired(
                 channel = spec.channel,
@@ -242,8 +351,14 @@ class BlandAltmanRenderer(Renderer):
         x_range = [x_min - x_pad, x_max + x_pad]
 
         for mean_val, diff_val, subj in zip(means, diffs, subjects):
-            color = style.subject_color(subj) if self.show_subjects else "#1f77b4"
-            show_leg = style.should_show_legend("ba_subj", subj) if self.show_subjects else False
+            color = (
+                style.subject_color(subj) if self.show_subjects
+                else "#1f77b4"
+            )
+            show_leg = (
+                style.should_show_legend("ba_subj", subj)
+                if self.show_subjects else False
+            )
 
             # subject scatter
             fig.add_trace(go.Scatter(
@@ -266,20 +381,38 @@ class BlandAltmanRenderer(Renderer):
                       annotation_text = f"LoA: {loa_lower:.2f}",
                       annotation_position = "bottom right", row=row, col=col)
 
-        fig.add_hline(y=0, line_color="grey", line_dash="dash", row=row, col=col)
+        fig.add_hline(
+            y=0, line_color="grey", line_dash="dash", row=row, col=col,
+        )
 
 
 class ScatterRenderer(Renderer):
-    """
-    """
+    """Plots one point per subject/trial comparing two channels or
+    two conditions, with optional identity and OLS regression lines."""
 
-    def __init__(self, regression_line: bool = False, show_subjects: bool = False, identity_line: bool = True,):
+    def __init__(
+            self, regression_line: bool = False,
+            show_subjects: bool = False, identity_line: bool = True,
+    ) -> None:
+        """
+        Parameters
+        ----------
+        regression_line : bool, optional
+            Overlay an OLS regression line. Default False.
+        show_subjects : bool, optional
+            Color points by subject and show a per-subject legend.
+            Default False.
+        identity_line : bool, optional
+            Overlay a y=x identity line. Default True.
+        """
         self.regression_line = regression_line
         self.show_subjects = show_subjects
         self.identity_line = identity_line
 
-
-    def render(self, fig, store, style, spec, row, col):
+    def render(
+            self, fig: go.Figure, store: DataStore, style: StyleContext,
+            spec: "PlotSpec", row: int, col: int,
+    ) -> None:
         event_name = spec.events[0]
 
         if spec.companion_channel is not None:
@@ -293,8 +426,11 @@ class ScatterRenderer(Renderer):
 
         else:
             if not spec.events:
-                raise ValueError(f"ScatterRenderer requires 2 events to be specified, "
-                                 f"got {spec.all_conditions}. Use companions= to specify the second")
+                raise ValueError(
+                    f"ScatterRenderer requires 2 events to be "
+                    f"specified, got {spec.all_conditions}. Use "
+                    f"companions= to specify the second"
+                )
             cond_a, cond_b = spec.all_conditions
             vals_a, vals_b, subjects = store.get_paired(
                 channel = spec.channel,
@@ -311,8 +447,14 @@ class ScatterRenderer(Renderer):
         arr_b = np.asarray(vals_b)
 
         for a, b, subj in zip(arr_a, arr_b, subjects):
-            color = style.subject_color(subj) if self.show_subjects else style.condition_color(cond_a)
-            show_leg = style.should_show_legend("scatter_subj", subj) if self.show_subjects else False
+            color = (
+                style.subject_color(subj) if self.show_subjects
+                else style.condition_color(cond_a)
+            )
+            show_leg = (
+                style.should_show_legend("scatter_subj", subj)
+                if self.show_subjects else False
+            )
 
             # subject scatter
             fig.add_trace(go.Scatter(
@@ -333,7 +475,6 @@ class ScatterRenderer(Renderer):
                 line=dict(color="grey", width=1.5, dash="dot"),
                 showlegend=True,
             ), row=row, col=col)
-
 
         # Get the OLS regression line
         if self.regression_line:
@@ -356,11 +497,20 @@ class ScatterRenderer(Renderer):
 
 # Compose renderers freely
 class CompositeRenderer(Renderer):
-    """Run multiple renderers on the same subplot"""
+    """Runs multiple renderers on the same subplot."""
 
-    def __init__(self, *renderers: Renderer):
+    def __init__(self, *renderers: Renderer) -> None:
+        """
+        Parameters
+        ----------
+        *renderers : Renderer
+            Renderers to run, in order, on the same subplot.
+        """
         self._renderers = renderers
 
-    def render(self, fig, store, style, spec, row, col):
+    def render(
+            self, fig: go.Figure, store: DataStore, style: StyleContext,
+            spec: "PlotSpec", row: int, col: int,
+    ) -> None:
         for r in self._renderers:
             r.render(fig, store, style, spec, row, col)
