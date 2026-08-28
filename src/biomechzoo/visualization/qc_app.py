@@ -1,12 +1,61 @@
 import os
 import json
+from typing import Any, Dict, List, Optional, Tuple, Union
+
 import pandas as pd
-from dash import Dash,dcc, html, Input, Output, State, no_update, callback_context
+from dash import (
+    Dash, dcc, html, Input, Output, State, no_update, callback_context,
+)
 
 from biomechzoo.ensembler.ensembler import Ensembler
 
-def run_quality_check(fld, ch, out_folder, subj_pattern, conditions=None, name_contains=None, event_name=None):
 
+def run_quality_check(
+        fld: str, ch: Union[str, List[str]], out_folder: str,
+        subj_pattern: str, conditions: Optional[Union[str, List[str]]] = None,
+        name_contains: Optional[Union[str, List[str]]] = None,
+        event_name: Optional[str] = None,
+) -> None:
+    """
+    Launch an interactive Dash app for reviewing and removing
+    wrongfully-segmented cycles.
+
+    Click a line in the plot to mark its cycle for removal; use
+    "Undo last removal" / "Reset figure" to adjust, and "Download
+    CSV" to export the removed-cycle records.
+
+    Parameters
+    ----------
+    fld : str
+        Root data folder to load.
+    ch : str or list of str
+        Channel(s) to display.
+    out_folder : str
+        Folder used for click-export output (currently only the
+        directory is created; the CSV write itself is commented out).
+    subj_pattern : str
+        Subject-matching pattern.
+    conditions : str or list of str, optional
+        Condition(s) to include.
+    name_contains : str or list of str, optional
+        Filename substring filter(s).
+    event_name : str, optional
+        Event name used to define cycles.
+
+    Notes
+    -----
+    Currently non-functional: the ``Ensembler(...)`` call below passes
+    keyword arguments (``fld``, ``ch``, ``conditions``,
+    ``name_contains``, ``subj_pattern``) that don't match
+    :class:`~biomechzoo.ensembler.ensembler.Ensembler`'s actual
+    constructor (``in_folder``, ``channels``, ``n_rows``, ``n_cols``,
+    ``condition_spec``, ``subj_list``, ``str_match``, ``events``),
+    and immediately raises ``TypeError``. It also calls
+    ``ensembler.quality_check_cycles(...)`` and reads ``ensembler.fig``,
+    neither of which exist on the current ``Ensembler`` class (which
+    instead uses ``add_subplot()`` and ``build()``, the latter
+    returning a figure rather than storing it as an attribute).
+    """
     if isinstance(ch, str):
         ch = [ch]
 
@@ -105,7 +154,31 @@ def run_quality_check(fld, ch, out_folder, subj_pattern, conditions=None, name_c
         State("base-figure", "data"),
         prevent_initial_call=True
     )
-    def multi_action(clickData, n_undo, n_reset, clicks, fig, undo_stack, base_fig):
+    def multi_action(
+            clickData: Optional[Dict], n_undo: int, n_reset: int,
+            clicks: Optional[List[Dict]], fig: Optional[Dict],
+            undo_stack: Optional[List[Dict]], base_fig: Optional[Dict],
+    ) -> Tuple[Any, Any, List[Dict], Any, List[Dict], bool]:
+        """
+        Handle plot clicks, undo, and reset for the cycle-removal graph.
+
+        Dispatches on which input fired (click, undo, or reset).
+
+        Returns
+        -------
+        last_click_msg : str or dash.no_update
+            JSON dump of the most recent click record, if changed.
+        click_count_msg : str or dash.no_update
+            Updated "Total clicks: N" message, if changed.
+        clicks_out : list of dict
+            Updated click-store records.
+        fig_out : dict or dash.no_update
+            Updated figure data/layout.
+        undo_out : list of dict
+            Updated undo-stack records.
+        undo_disabled_out : bool
+            Whether the undo button should be disabled.
+        """
         # Default passthroughs
         last_click_msg = no_update
         click_count_msg = no_update
@@ -165,7 +238,8 @@ def run_quality_check(fld, ch, out_folder, subj_pattern, conditions=None, name_c
 
             cd = pt.get("customdata") or {}
 
-            def _get(k, default=None):
+            def _get(k: str, default: Any = None) -> Any:
+                """Look up ``k`` in ``cd`` (a dict or list of dicts)."""
                 if isinstance(cd, dict):
                     return cd.get(k, default)
                 if isinstance(cd, list) and cd and isinstance(cd[0], dict):
@@ -277,7 +351,25 @@ def run_quality_check(fld, ch, out_folder, subj_pattern, conditions=None, name_c
         State("click-store", "data"),
         prevent_initial_call=True
     )
-    def download_csv(n, clicks_out):
+    def download_csv(
+            n: Optional[int], clicks_out: Optional[List[Dict]],
+    ) -> Any:
+        """
+        Build a downloadable CSV of removed-cycle records.
+
+        Parameters
+        ----------
+        n : int or None
+            Number of clicks on the download button.
+        clicks_out : list of dict or None
+            Click-store records; only entries with
+            ``action == 'remove'`` and not ``undone`` are exported.
+
+        Returns
+        -------
+        Dash download payload (dict) if there is data to export,
+        otherwise ``dash.no_update``.
+        """
         if not n or not clicks_out:
             return no_update
 
