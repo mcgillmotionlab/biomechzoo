@@ -79,6 +79,77 @@ class BiomechZoo:
 
         batchdisp('all files saved to: {}'.format(self.in_folder ), level=1, verbose=self.verbose)
 
+    def info(self, trial_number: int = 0) -> None:
+        """
+        Display information about a trial in the BiomechZoo folder.
+
+        Parameters
+        ----------
+        trial_number : int, optional
+            Index of the trial to inspect. Default is 0.
+        """
+        fl = engine(
+            self.in_folder,
+            extension='.zoo',
+            name_contains=self.name_contains,
+            name_excludes=self.name_excludes,
+            subfolders=self.subfolders
+        )
+
+        if len(fl) == 0:
+            batchdisp(
+                'info: no zoo files found',
+                level=1,
+                verbose=self.verbose
+            )
+            return
+
+        if not isinstance(trial_number, int):
+            raise TypeError('trial_number must be an integer')
+
+        if trial_number < 0 or trial_number >= len(fl):
+            raise IndexError(
+                'trial_number {} is out of range; {} zoo files found'.format(
+                    trial_number,
+                    len(fl)
+                )
+            )
+
+        f = fl[trial_number]
+        data = zload(f)
+
+        channels = [
+            key for key, value in data.items()
+            if (
+                    isinstance(value, dict) and
+                    'line' in value and
+                    key.lower() != 'zooinfo'
+            )
+        ]
+
+        print('')
+        print('BiomechZoo trial information')
+        print('---------------------------')
+        print('Trial: {} of {}'.format(trial_number + 1, len(fl)))
+        print('File: {}'.format(f))
+        print('Channels: {}'.format(len(channels))) 
+
+        for ch in channels:
+            line = data[ch]['line']
+            shape = getattr(line, 'shape', None)
+
+            if shape is None:
+                try:
+                    shape = (len(line),)
+                except TypeError:
+                    shape = ()
+
+            print('')
+            print('{}:'.format(ch))
+            print('  shape: {}'.format(shape))
+
+
+
     def remove_files(self, fl_remove: list[str], out_folder: str | None = None, inplace: bool | None = None) -> None:
         """
         Remove files listed in fl_remove from self.in_folder.
