@@ -1,6 +1,6 @@
 [project]
 name = "biomechzoo"
-version = "0.8.12"
+version = "0.8.14"
 description = "Python implementation of the biomechZoo toolbox"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"   # max version for opencap-process tools is 3.11
@@ -31,6 +31,14 @@ requires = ["setuptools>=78.1.0", "wheel>=0.45.1"]
 build-backend = "setuptools.build_meta"
 
 [dependency-groups]
+docs = [
+    "sphinx>=7.0",
+    "furo>=2024.1.29",
+    "sphinx-copybutton>=0.5.2",
+    "sphinx-autobuild>=2024.0.0",
+]
+
+[project.optional-dependencies]
 docs = [
     "sphinx>=7.0",
     "furo>=2024.1.29",
