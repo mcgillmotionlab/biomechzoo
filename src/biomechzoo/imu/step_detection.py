@@ -1,9 +1,101 @@
 from typing import List, Tuple
 
 import numpy as np
-from numpy.typing import ArrayLike
+from numpy.typing import ArrayLike, NDArray
 from scipy.signal import butter, filtfilt, find_peaks
 
+from kielmat.utils.preprocessing import (
+    signal_decomposition_algorithm,
+)
+
+
+def imu_kielmat(
+    vertical_acceleration: NDArray[np.floating],
+    fsamp: float,
+) -> Tuple[NDArray[np.int_], NDArray[np.int_]]:
+    """Detect foot-strike and foot-off events using KielMAT.
+
+    Parameters
+    ----------
+    vertical_acceleration : ndarray
+        One-dimensional vertical acceleration signal in m/s/s.
+    fsamp : float
+        Sampling frequency in Hz.
+
+    Returns
+    -------
+    fs : ndarray
+        Foot-strike frame indices.
+    fo : ndarray
+        Foot-off frame indices.
+
+    Raises
+    ------
+    ValueError
+        If the acceleration signal is not one-dimensional, contains
+        non-finite values, or if the sampling frequency is invalid.
+    """
+    vertical_acceleration = np.asarray(
+        vertical_acceleration,
+        dtype=float,
+    ).squeeze()
+
+    if vertical_acceleration.ndim != 1:
+        raise ValueError(
+            'Vertical acceleration must be one-dimensional'
+        )
+
+    if not np.all(np.isfinite(vertical_acceleration)):
+        raise ValueError(
+            'Vertical acceleration contains non-finite values'
+        )
+
+    if fsamp <= 0:
+        raise ValueError(
+            'Sampling frequency must be greater than zero'
+        )
+
+    fs_times, fo_times = signal_decomposition_algorithm(
+        vertical_accelerarion_data=vertical_acceleration,
+        initial_sampling_frequency=fsamp,
+    )
+
+    fs = _times_to_frames(fs_times, fsamp, len(vertical_acceleration))
+    fo = _times_to_frames(fo_times, fsamp, len(vertical_acceleration))
+
+    return fs, fo
+
+
+def _times_to_frames(
+    event_times: NDArray[np.floating],
+    fsamp: float,
+    n_frames: int,
+) -> NDArray[np.int_]:
+    """Convert event times in seconds to valid zero-based frame indices.
+
+    Parameters
+    ----------
+    event_times : ndarray
+        Event times in seconds relative to the signal start.
+    fsamp : float
+        Sampling frequency in Hz.
+    n_frames : int
+        Number of signal frames.
+
+    Returns
+    -------
+    frames : ndarray
+        Sorted, unique, zero-based frame indices.
+    """
+    event_times = np.asarray(event_times, dtype=float).squeeze()
+
+    if event_times.size == 0:
+        return np.array([], dtype=int)
+
+    frames = np.rint(np.atleast_1d(event_times) * fsamp).astype(int)
+    frames = frames[(frames >= 0) & (frames < n_frames)]
+
+    return np.unique(frames)
 
 def imu_mcgrath(
         ch_line: ArrayLike, fsamp: float, min_stance_t: float,

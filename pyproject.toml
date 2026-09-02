@@ -1,6 +1,6 @@
 [project]
 name = "biomechzoo"
-version = "0.8.11"
+version = "0.8.12"
 description = "Python implementation of the biomechZoo toolbox"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"   # max version for opencap-process tools is 3.11
@@ -12,11 +12,12 @@ dependencies = [
     "numpy>=1.26,<=2.2.6",         # max version for opencap-process tools
     "pandas>=2.3.2",
     "scipy>=1.16.2",
-    "pyarrow>=19.0.0",      # for parquet support
+    "pyarrow>=15.0.0, <16.0.0",      # for parquet support
     "plotly>=6.4.0",        # for ensembler
     "kaleido>=1.2.0",       # for ensembler (saving images)
     "dash>=3.3.0",          # for ensembler (quality check)
     "pycompare>=1.5.4",     # for ensembler (Bland-Altman plots)
+    "kielmat==0.0.5",        # for kielmat foot strike event detection
 ]
 
 [project.urls]
