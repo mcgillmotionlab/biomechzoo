@@ -32,7 +32,7 @@ from biomechzoo.linear_algebra_ops.compute_magnitude_data import compute_magnitu
 from biomechzoo.linear_algebra_ops.rectify import rectify_data
 from biomechzoo.utils.group_by_terminal_folder import group_by_terminal_folder
 from biomechzoo.processing.rep_trial_data import reptrial_data
-from biomechzoo.non_linear_dynamics import signal_analysis_data
+from biomechzoo.signal_analysis.signal_analysis_data import signal_analysis_data
 
 class BiomechZoo:
     def __init__(self, in_folder, inplace=False, subfolders=None, name_contains=None, name_excludes=None, verbose=0):
@@ -106,9 +106,6 @@ class BiomechZoo:
             )
             return
 
-        if not isinstance(trial_number, int):
-            raise TypeError('trial_number must be an integer')
-
         if trial_number < 0 or trial_number >= len(fl):
             raise IndexError(
                 'trial_number {} is out of range; {} zoo files found'.format(
@@ -151,49 +148,6 @@ class BiomechZoo:
             print('  shape: {}'.format(shape))
 
 
-    def non_linear_dynamics(in_folder, channels, etype, ename, name_contains=None, subfolders=None,
-                        verbose=None, out_folder=None, inplace=False, single_channel=True, save_channel=None):
-        """
-        Call function for linear and non-linear signal analysis.
-
-
-        Parameters
-        ----------
-        in_folder : str
-            Path to the root folder containing the zoo files.
-        channels : str or list[str]
-            Names of channel(s) to analyze
-        etype : str
-            Name of the function to call
-        ename : str
-            Event name of saving purposes.
-        name_contains : bool default=None
-            To only target zoo files that contain this name
-        subfolders: str, default=None
-        verbose : str, default=None
-        out_folder : str, default=None
-        inplace : bool, default=False
-        single_channel=True
-        save_channel=None
-
-        Returns
-        -------
-        None. Automatically saves the zoo-files in the specified out-folder.
-        """
-        start_time = time.time()
-
-        fl = engine(in_folder, name_contains=name_contains, subfolders=subfolders)
-        for f in fl:
-            batchdisp('Computing {} for {}'.format(etype, f), level=2, verbose=verbose)
-            data = zload(f)
-            data = signal_analysis_data(data, channels=channels, ename=ename, etype=etype,
-                                        single_channel=single_channel,
-                                        save_channel=save_channel)
-            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
-        batchdisp(
-            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
-            level=1, verbose=verbose)
 
     def remove_files(self, fl_remove: list[str], out_folder: str | None = None, inplace: bool | None = None) -> None:
         """
@@ -328,6 +282,8 @@ class BiomechZoo:
 
         self._update_folder(out_folder, inplace, in_folder)
 
+
+
     def tilt_algorithm(self, chname_avert, chname_medlat, chname_antpost, out_folder=None, inplace=False):
         """ tilt correction for acceleration data """
         start_time = time.time()
@@ -348,6 +304,63 @@ class BiomechZoo:
             level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
+
+
+    def signal_analysis(self, channels: str | list[str], etype: str, ename: str, out_folder: str | None = None,
+                        inplace: bool | None = None, single_channel: bool = True, save_channel: bool = False,) -> None:
+        """
+        Compute linear or non-linear signal analysis metrics.
+
+        Parameters
+        ----------
+        channels : str or list[str]
+            Channel name(s) to analyze.
+        etype : str
+            Signal analysis function to compute.
+        ename : str
+            Event name used when saving results.
+
+        out_folder : str, optional
+            Output directory for processed files.
+        inplace : bool, optional
+            Override the class ``inplace`` setting.
+        single_channel : bool, default=True
+            Analyze channels independently.
+        save_channel : bool, optional
+            Save the computed metric as a channel instead of an event.
+
+        Returns
+        -------
+        None
+            Processed files are automatically saved.
+        """
+
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+
+        if inplace is None:
+            inplace = self.inplace
+
+        # find all zoo files
+
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('Computing {} for {}'.format(etype, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = signal_analysis_data(data, channels=channels, ename=ename, etype=etype,
+                                        single_channel=single_channel,
+                                        save_channel=save_channel)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl),
+                                                                       time.time() - start_time),
+            level=1, verbose=verbose)
+
+        # Update folder after processing
+        self._update_folder(out_folder, inplace, in_folder)
+
 
     def rep_trial(self, channels='all', method='mean', out_folder=None, inplace=False):
         """

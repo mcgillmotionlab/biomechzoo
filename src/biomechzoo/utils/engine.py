@@ -10,7 +10,7 @@ def engine(
         name_contains: Optional[Union[str, List[str]]] = None,
         name_excludes: Optional[Union[str, List[str]]] = None,
         match_all: bool = False, verbose: bool = False,
-) -> np.ndarray:
+) -> list[str]:
     """
     Recursively search for files with a given extension, with optional filters.
 
@@ -35,8 +35,8 @@ def engine(
 
     Returns
     -------
-    matched_files : ndarray of str
-        Sorted array of absolute file paths matching the search criteria.
+    matched_files : list[str]
+        Sorted list of string of absolute file paths matching the search criteria.
     """
 
     # check format of subfolders
@@ -94,7 +94,7 @@ def engine(
             matched_files.append(full_path)
 
     # sort list
-    matched_files = np.sort(matched_files)
+    matched_files = sorted(matched_files)
 
     if verbose:
         print("Found {} {} file(s) in subfolder(s) {} with name contains {} and name excludes {} (match_all={}):"
