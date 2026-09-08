@@ -1,0 +1,103 @@
+import pandas as pd
+import copy
+
+from src.analysis.compute_entropy import sample_entropy
+from src.analysis.compute_impact import impact_peak, loading_rate
+from src.analysis.compute_smoothness import log_dimensionless_jerk_imu
+from src.analysis.compute_rms import rms_ratio_analysis
+def signal_analysis_data(data, channels, etype, ename, single_channel, constant=None, save_channel=None):
+
+    """
+    This collection of functions operates on predetermined channels to calculate the parameter of preference on the given channel.
+
+    Currently implemented for single channel analysis: impact peak, loading rate, sample entropy;
+    Currently implemented for multichannel analysis: LDLJ, RMS ratio.
+
+    Parameters
+    ----------
+    data : dict
+        zoo type dictionary
+    channels : str or list[str]
+        channel name of list of channel names for the analysis
+    etype : str
+        Name of the function to call
+    ename : str
+        Event name of saving purposes.
+    single_channel : bool
+        if False, the analysis needs multiple channels to work.
+    constant : list, default=None
+        Any type of constants needed for the specific analysis.
+    save_channel : str, default=None
+        Name of the channel to save the data to. Useful if the analysis needs multiple channels.
+
+
+    Returns
+    -------
+    data_new : dict
+        A zoo type dictionary containing the added data
+
+    Raises
+    ------
+    ValueError
+
+    """
+
+    data_new = copy.deepcopy(data)
+
+    freq = data["zoosystem"]["Video"]["Freq"]
+
+    # single channel analysis i.e. analysis only requires a single channel to compute.
+    if single_channel:
+        for channel in channels:
+            yd = data_new[channel]['line']
+            etype = etype.lower()
+
+            if etype == 'impact_peak':
+                exd, eyd = impact_peak(ch_line=yd, freq=freq)
+            elif etype == 'loading_rate':
+                exd, eyd = loading_rate(ch_line=yd, freq=freq, pre_peak_window=20)
+            elif etype == 'sample_entropy':
+                eyd = sample_entropy(ch_line=yd, freq=freq)
+                exd = 0
+            elif etype =="step_symmetry":
+                NotImplementedError()
+            elif etype == 'stride_symmetry':
+                NotImplementedError()
+            elif etype=="rms":
+                NotImplementedError()
+            else:
+                raise ValueError(f'Unknown event type: {etype}')
+
+
+            # Add event to the channel's event dict
+            if isinstance(exd, list):
+                for i, ex in enumerate(exd):
+                    name = ename + '_' + str(i + 1)
+                    data_new[channel]['event'][name] = [int(ex), eyd[i], 0]
+            else:
+                data_new[channel]['event'][ename] = [exd, eyd, 0]
+
+    # Multiple channel analysis i.e. multiple channels are needed for the analysis.
+    else:
+        if save_channel is not None:
+            channel = save_channel
+        else:
+            channel = channels[0]
+
+        etype = etype.lower()
+
+        if etype == 'ldlj':
+            eyd = log_dimensionless_jerk_imu(data=data_new, ch=channels, event=constant)
+            exd = 0
+        elif etype == "rmsr":
+            eyd = rms_ratio_analysis(data=data_new, ch=channels)
+            exd = 0
+
+        # Add event to the channel's event dict
+        if isinstance(eyd, dict):
+            for channel, ey in eyd.items():
+                data_new[channel]['event'][ename] = [0, ey, 0]
+        else:
+            data_new[channel]['event'][ename] = [exd, eyd, 0]
+
+    return data_new
