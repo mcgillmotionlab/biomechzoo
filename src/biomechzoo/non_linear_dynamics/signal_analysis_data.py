@@ -1,10 +1,9 @@
-import pandas as pd
 import copy
 
-from src.analysis.compute_entropy import sample_entropy
-from src.analysis.compute_impact import impact_peak, loading_rate
-from src.analysis.compute_smoothness import log_dimensionless_jerk_imu
-from src.analysis.compute_rms import rms_ratio_analysis
+from compute_entropy import sample_entropy
+from compute_impact import impact_peak, loading_rate
+from compute_smoothness import log_dimensionless_jerk_imu
+from compute_rms import rms_ratio_analysis
 def signal_analysis_data(data, channels, etype, ename, single_channel, constant=None, save_channel=None):
 
     """

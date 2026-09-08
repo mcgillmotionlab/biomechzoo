@@ -32,6 +32,7 @@ from biomechzoo.linear_algebra_ops.compute_magnitude_data import compute_magnitu
 from biomechzoo.linear_algebra_ops.rectify import rectify_data
 from biomechzoo.utils.group_by_terminal_folder import group_by_terminal_folder
 from biomechzoo.processing.rep_trial_data import reptrial_data
+from biomechzoo.non_linear_dynamics import signal_analysis_data
 
 class BiomechZoo:
     def __init__(self, in_folder, inplace=False, subfolders=None, name_contains=None, name_excludes=None, verbose=0):
@@ -78,6 +79,7 @@ class BiomechZoo:
             self.in_folder = os.path.join(in_folder_path, out_folder)
 
         batchdisp('all files saved to: {}'.format(self.in_folder ), level=1, verbose=self.verbose)
+
 
     def info(self, trial_number: int = 0) -> None:
         """
@@ -149,6 +151,49 @@ class BiomechZoo:
             print('  shape: {}'.format(shape))
 
 
+    def non_linear_dynamics(in_folder, channels, etype, ename, name_contains=None, subfolders=None,
+                        verbose=None, out_folder=None, inplace=False, single_channel=True, save_channel=None):
+        """
+        Call function for linear and non-linear signal analysis.
+
+
+        Parameters
+        ----------
+        in_folder : str
+            Path to the root folder containing the zoo files.
+        channels : str or list[str]
+            Names of channel(s) to analyze
+        etype : str
+            Name of the function to call
+        ename : str
+            Event name of saving purposes.
+        name_contains : bool default=None
+            To only target zoo files that contain this name
+        subfolders: str, default=None
+        verbose : str, default=None
+        out_folder : str, default=None
+        inplace : bool, default=False
+        single_channel=True
+        save_channel=None
+
+        Returns
+        -------
+        None. Automatically saves the zoo-files in the specified out-folder.
+        """
+        start_time = time.time()
+
+        fl = engine(in_folder, name_contains=name_contains, subfolders=subfolders)
+        for f in fl:
+            batchdisp('Computing {} for {}'.format(etype, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = signal_analysis_data(data, channels=channels, ename=ename, etype=etype,
+                                        single_channel=single_channel,
+                                        save_channel=save_channel)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
+            level=1, verbose=verbose)
 
     def remove_files(self, fl_remove: list[str], out_folder: str | None = None, inplace: bool | None = None) -> None:
         """
