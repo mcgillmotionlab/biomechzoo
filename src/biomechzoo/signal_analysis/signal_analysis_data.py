@@ -17,7 +17,7 @@ def signal_analysis_data(data, channels, etype, ename, single_channel, constant=
     data : dict
         zoo type dictionary
     channels : str or list[str]
-        channel name of list of channel names for the analysis
+        channel names for the analysis
     etype : str
         Name of the function to call
     ename : str
@@ -100,3 +100,21 @@ def signal_analysis_data(data, channels, etype, ename, single_channel, constant=
             data_new[channel]['event'][ename] = [exd, eyd, 0]
 
     return data_new
+
+if __name__ == '__main__':
+    import os
+    from biomechzoo.utils.zload import zload
+    from biomechzoo.conversion.table2zoo_data import table2zoo_data
+    # load a sample zoo file
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    fl = os.path.join(project_root, 'data', 'csv', 'manheim', 'subject_1_acc_running_waist.csv')
+    data = table2zoo_data(fl, extension='csv', freq=50)
+
+    # conduct signal analysis on single channels
+    data = signal_analysis_data(data, channels=['attr_x'], single_channel=True, etype='impact_peak', ename='sample_entropy')
+    data = signal_analysis_data(data, channels=['attr_x'], single_channel=True, etype='loading_rate', ename='sample_entropy')
+    data = signal_analysis_data(data, channels=['attr_x'], single_channel=True, etype='sample_entropy', ename='sample_entropy')
+
+    # conduction signal analysis of multiple (3D channels required)
+    data = signal_analysis_data(data, channels=['attr_x', 'attr_y', 'attr_z'], single_channel=False, etype='ldlj', ename='ldlj')
+    data = signal_analysis_data(data, channels=['attr_x', 'attr_y', 'attr_z'], single_channel=False, etype='rmsr', ename='rmsr')
