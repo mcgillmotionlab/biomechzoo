@@ -103,7 +103,6 @@ def signal_analysis_data(data, channels, etype, ename, single_channel, constant=
 
 if __name__ == '__main__':
     import os
-    from biomechzoo.utils.zload import zload
     from biomechzoo.conversion.table2zoo_data import table2zoo_data
     # load a sample zoo file
     project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
@@ -111,8 +110,8 @@ if __name__ == '__main__':
     data = table2zoo_data(fl, extension='csv', freq=50)
 
     # conduct signal analysis on single channels
-    data = signal_analysis_data(data, channels=['attr_x'], single_channel=True, etype='impact_peak', ename='sample_entropy')
-    data = signal_analysis_data(data, channels=['attr_x'], single_channel=True, etype='loading_rate', ename='sample_entropy')
+    data = signal_analysis_data(data, channels=['attr_x'], single_channel=True, etype='impact_peak', ename='impact_peak')
+    data = signal_analysis_data(data, channels=['attr_x'], single_channel=True, etype='loading_rate', ename='loading_rate')
     data = signal_analysis_data(data, channels=['attr_x'], single_channel=True, etype='sample_entropy', ename='sample_entropy')
 
     # conduction signal analysis of multiple (3D channels required)
