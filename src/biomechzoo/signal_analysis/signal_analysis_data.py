@@ -1,10 +1,13 @@
 import copy
+from typing import Dict
 
 from compute_entropy import sample_entropy
 from compute_impact import impact_peak, loading_rate
 from compute_smoothness import log_dimensionless_jerk_imu
 from compute_rms import rms_ratio_analysis
-def signal_analysis_data(data, channels, etype, ename, single_channel, constant=None, save_channel=None):
+def signal_analysis_data(
+        data: Dict, channels:str | list[str], etype:str, ename:str, single_channel:bool, constant:list=None, save_channel:bool=None
+) -> Dict:
 
     """
     This collection of functions operates on predetermined channels to calculate the parameter of preference on the given channel.
@@ -15,7 +18,7 @@ def signal_analysis_data(data, channels, etype, ename, single_channel, constant=
     Parameters
     ----------
     data : dict
-        zoo type dictionary
+        Biomechanical data dictionary loaded from a zoo file.
     channels : str or list[str]
         channel names for the analysis
     etype : str

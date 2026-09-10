@@ -1,21 +1,42 @@
 import numpy as np
 import math
+from typing import Dict
 
 
-def log_dimensionless_jerk_imu(data, ch, **kwargs):
+def log_dimensionless_jerk_imu(
+        data: Dict, ch:str, **kwargs
+) -> float:
+
     """
-    Calculates the log dimensionless jerk for a given acceleration signal.
+    Calculate the log dimensionless jerk from a tri-axial acceleration signal.
 
-    Code adapted from:
-    Melendez-Calderon, A., Shirota, C., & Balasubramanian, S. (2021). Estimating movement smoothness
-    from inertial measurement units. Frontiers in bioengineering and biotechnology, 8, 558771.
+    This metric quantifies movement smoothness using the logarithm of the dimensionless jerk computed from the
+    Euclidean norm of the acceleration signal.
 
-    :param data: dictionary containing all data.
-    :param ch: list of strings that provide the names three acceleration direction.
-    :param kwargs: "event" provides the last step index. Used as input for the Euclidean
-    norm. If left empty, the entire timeseries will be analysed.
-    :return:
+    Implementation adapted from: Melendez-Calderon, A., Shirota, C., & Balasubramanian, S. (2021). Estimating movement
+     smoothness from inertial measurement units. Frontiers in Bioengineering and Biotechnology, 8, 558771.
+
+    Parameters
+    ----------
+    data : dict
+        Dictionary containing the signal data.
+
+    ch : list[str]
+        Names of the three acceleration channels used to compute the
+        Euclidean norm.
+
+    event : int, optional
+        Index corresponding to the final step of the analysis window.
+        If provided, the Euclidean norm is computed only up to this
+        sample. If omitted, the entire time series is analysed.
+
+    Returns
+    -------
+    float
+        Log dimensionless jerk value. Lower values indicate less smooth
+        movement, whereas higher values indicate smoother movement.
     """
+
     if kwargs['event'] is not None:
         last_step = kwargs.get("event")
         ldlj_factor = log_dimensionless_jerk_factors(data, ch, last_step)
