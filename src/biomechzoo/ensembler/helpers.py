@@ -1,15 +1,37 @@
 import re
-import numpy as np
-from typing import NamedTuple
-from enum import Enum
-from dataclasses import dataclass, field
-from scipy.stats import iqr
-from collections import defaultdict
 import warnings
+from collections import defaultdict
+from dataclasses import dataclass, field
+from enum import Enum
+from typing import Dict, List, NamedTuple, Optional, Tuple
+
+import numpy as np
+from scipy.stats import iqr
 
 _NO_CONDITIONS = "__all__"
 
-def match_condition(path, conditions):
+
+def match_condition(
+        path: str, conditions: Optional[List[str]],
+) -> Optional[str]:
+    """
+    Find which condition name appears (case-insensitively) in a path.
+
+    Parameters
+    ----------
+    path : str
+        File path to search.
+    conditions : list of str or None
+        Candidate condition names. If falsy, no condition matching is
+        applied.
+
+    Returns
+    -------
+    condition : str or None
+        ``_NO_CONDITIONS`` ('__all__') if ``conditions`` is falsy, the
+        matching condition name if one is found in ``path``, or None
+        if no condition matches.
+    """
     if not conditions:
         return _NO_CONDITIONS
 
@@ -19,9 +41,13 @@ def match_condition(path, conditions):
     return None
 
 
-def extract_subject_id(f, subj_list, str_pattern):
+def extract_subject_id(
+        f: str, subj_list: Optional[List[str]],
+        str_pattern: Optional[List[str]],
+) -> Optional[str]:
     """
-    Extracts the subject ID from the zoo file path and a string match using a regular expression of a known list of subject IDs.
+    Extract the subject ID from a zoo file path, matching either a
+    regular expression or a known list of subject IDs.
 
     Parameters
     ----------
@@ -54,8 +80,23 @@ class ZooEvent(NamedTuple):
     y: float   # amplitude value
 
 
-def extract_events(ch_data, event_name):
-    """Extracts the named event scalers (value and frame) from a zoo file."""
+def extract_events(ch_data: Dict, event_name: str) -> Optional[ZooEvent]:
+    """
+    Extract the named event's (frame, value) scalars from a zoo channel.
+
+    Parameters
+    ----------
+    ch_data : dict
+        Zoo channel dictionary (with an 'event' key).
+    event_name : str
+        Name of the event to extract.
+
+    Returns
+    -------
+    event : ZooEvent or None
+        The event's (x, y) values, or None if not found, malformed,
+        or flagged with the sentinel value 999.
+    """
     try:
         x = ch_data["event"][event_name][0]
         y = ch_data["event"][event_name][1]
@@ -65,27 +106,37 @@ def extract_events(ch_data, event_name):
     except (KeyError, TypeError, ValueError):
         return None
 
-def compute_ensemble(arrays):
-    """Compute time normalized mean and standard deviation for a list of arrays.
+
+def compute_ensemble(
+        arrays: List[np.ndarray],
+) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
+    """
+    Compute time normalized mean and standard deviation for a list
+    of arrays.
 
     Parameters
     ----------
-    arrays : list[np.ndarray]
+    arrays : list of ndarray
+        Time-normalized arrays (must all be the same length).
 
     Returns
     -------
-    mean : array
-    upper : array
-        mean + std
-    lower : array
-        mean - std
+    mean : ndarray
+        Pointwise mean across ``arrays``.
+    upper : ndarray
+        ``mean + std``.
+    lower : ndarray
+        ``mean - std``.
     """
 
     stack = np.vstack(arrays)
     mean = np.nanmean(stack, axis=0)
     std = np.nanstd(stack, axis=0)
+    upper = mean + std
+    lower = mean - std
 
-    return mean, mean+std, mean-std
+    return mean, upper, lower
+
 
 class ConditionSource(Enum):
     """Enum defining condition sources."""
@@ -102,13 +153,18 @@ class ConditionSpec:
     base_channels : list[str]    = field(default_factory=list)
     suffix_map : dict[str, str] | None = None
 
-    def __post_init__(self):
+    def __post_init__(self) -> None:
+        """Auto-build ``channel_map``/``conditions`` for WITHIN sources."""
         if self.source == ConditionSource.WITHIN:
 
             #auto built channel_map from suffix pattern if not provided
             if self.channel_map is None:
                 if not self.suffix_map or not self.base_channels:
-                    raise ValueError("ConditionSpec with WITHIN source require either a channel_map or both suffix_map and base_channels.")
+                    raise ValueError(
+                        "ConditionSpec with WITHIN source require "
+                        "either a channel_map or both suffix_map "
+                        "and base_channels."
+                    )
                 self.channel_map = {
                     cond: {
                         base : f"{base}{suffix}"
@@ -121,9 +177,21 @@ class ConditionSpec:
 
 
 def _compute_bandwidth(values: list[float]) -> float:
-    """Silverman's rule of thumb — bandwidth scaled to data spread.
-    More robust than Scott's rule when outliers are present."""
+    """
+    Silverman's rule of thumb — bandwidth scaled to data spread.
 
+    More robust than Scott's rule when outliers are present.
+
+    Parameters
+    ----------
+    values : list of float
+        Sample values to compute a kernel-density bandwidth for.
+
+    Returns
+    -------
+    bandwidth : float
+        Estimated bandwidth.
+    """
     arr = np.asarray(values)
     n=len(arr)
     std = np.std(arr, ddof=1)
@@ -131,8 +199,37 @@ def _compute_bandwidth(values: list[float]) -> float:
     return 0.9 * spread * n ** (-1 / 5)
 
 
-def align_by_subject(vals_a:list[float], subjects_a:list[str], vals_b:list[float], subjects_b:list[str]):
+def align_by_subject(
+        vals_a: list[float], subjects_a: list[str],
+        vals_b: list[float], subjects_b: list[str],
+) -> tuple[list[float], list[float], list[str]]:
+    """
+    Pair values from two conditions by matching subject IDs.
 
+    When a subject has a different number of trials in each condition,
+    only the first ``min(n_a, n_b)`` trials are paired (a warning is
+    raised).
+
+    Parameters
+    ----------
+    vals_a : list of float
+        Values for condition A.
+    subjects_a : list of str
+        Subject ID for each entry in ``vals_a``.
+    vals_b : list of float
+        Values for condition B.
+    subjects_b : list of str
+        Subject ID for each entry in ``vals_b``.
+
+    Returns
+    -------
+    aligned_a : list of float
+        Paired values from condition A.
+    aligned_b : list of float
+        Paired values from condition B.
+    aligned_s : list of str
+        Subject ID for each paired entry.
+    """
     idx_a: dict[str, list[int]] = defaultdict(list)
     idx_b: dict[str, list[int]] = defaultdict(list)
 
@@ -164,7 +261,21 @@ def align_by_subject(vals_a:list[float], subjects_a:list[str], vals_b:list[float
 
     return aligned_a, aligned_b, aligned_s
 
-def resolve_shade(color):
+
+def resolve_shade(color: str) -> str:
+    """
+    Convert a hex color to a translucent rgba string for shading.
+
+    Parameters
+    ----------
+    color : str
+        Hex color string (e.g. '#1f77b4').
+
+    Returns
+    -------
+    shade_color : str
+        ``rgba(...)`` string with opacity 0.2.
+    """
     h = color.lstrip('#')
     rgb = tuple(int(h[i:i + 2], 16) for i in (0, 2, 4))
 

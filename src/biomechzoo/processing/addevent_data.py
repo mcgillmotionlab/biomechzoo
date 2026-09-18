@@ -5,7 +5,7 @@ from typing import Dict, List, Union, Optional, Any
 from scipy.signal import find_peaks
 from biomechzoo.utils.peak_sign import peak_sign
 from biomechzoo.biomech_ops.movement_onset import movement_onset, movement_offset
-from biomechzoo.imu.step_detection import imu_mcgrath
+from biomechzoo.imu.step_detection import imu_mcgrath, imu_kielmat
 
 def addevent_data(
         data: Dict[str, Any], channels: Union[str, List[str]], ename: str,
@@ -30,7 +30,7 @@ def addevent_data(
     etype : str
         Event type, one of: 'max', 'min', 'absmax', 'first', 'last', 'rom',
         'first peak', 'movement_onset', 'movement_offset', 'mcgrath_fs',
-        'mcgrath_fo', 'fs_fp', 'fo_fp'.
+        'mcgrath_fo', 'kielmat_fs', 'kielmat_fo', 'forceplate_fs', 'fp_fs'.
     fsamp : float, optional
         Sampling frequency in Hz. If None, extracted from zoosystem metadata.
     constant : float, optional
@@ -56,8 +56,8 @@ def addevent_data(
     Event format in data structure: [index, value, 0] where index is the frame
     number, value is the signal value at that frame, and 0 is a placeholder.
 
-    For event types that find multiple events (mcgrath_fs, mcgrath_fo), events
-    are numbered sequentially (e.g., 'ename_1', 'ename_2', etc.).
+    For event types that find multiple events (kielmat_fs, kielmat_fo, mcgrath_fs, mcgrath_fo),
+    events are numbered sequentially (e.g., 'ename_1', 'ename_2', etc.).
 
     Channels must already be 1-D (e.g. an exploded ``'<ch>_x'`` component)
     for 'max', 'min', 'absmax', 'first', 'last', and 'rom'; passing a
@@ -143,7 +143,17 @@ def addevent_data(
             for i, ex in enumerate(exd):
                 ey.append(yd[ex])
             eyd = [float(y) for y in ey]
-        elif etype in ['fs_fp', 'fo_fp']:
+
+        elif etype == 'kielmat_fs':
+            fs, _ = imu_kielmat(yd, fsamp)
+            exd = fs.tolist()
+            eyd = [float(yd[ex]) for ex in exd]
+        elif etype == 'kielmat_fo':
+            _, fo = imu_kielmat(yd, fsamp)
+            exd = fo.tolist()
+            eyd = [float(yd[ex]) for ex in exd]
+
+        elif etype in ['forceplate_fs', 'fp_fs']:
             # --- Handle constant ---
             if constant is None:
                 print('Warning: Force plate threshold not set, defaulting to 0.')

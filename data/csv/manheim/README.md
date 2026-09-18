@@ -1,0 +1,1 @@
+https://www.uni-mannheim.de/dws/research/projects/activity-recognition/dataset/dataset-realworld/
