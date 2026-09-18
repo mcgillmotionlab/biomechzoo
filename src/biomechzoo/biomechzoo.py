@@ -32,37 +32,36 @@ from biomechzoo.linear_algebra_ops.compute_magnitude_data import compute_magnitu
 from biomechzoo.linear_algebra_ops.rectify import rectify_data
 from biomechzoo.utils.group_by_terminal_folder import group_by_terminal_folder
 from biomechzoo.processing.rep_trial_data import reptrial_data
-from biomechzoo.signal_analysis.signal_analysis_data import signal_analysis_data
+#from biomechzoo.signal_analysis.signal_analysis_data import signal_analysis_data
 
 class BiomechZoo:
     def __init__(self, in_folder, inplace=False, subfolders=None, name_contains=None, name_excludes=None, verbose=0):
         self.verbose = verbose
         self.in_folder = in_folder
-        self.verbose = verbose
         self.inplace = inplace               # choice to save processed files to new folder
         self.subfolders = subfolders         # only run processes on list in subfolder
         self.name_contains = name_contains   # only run processes on files with name_contains in file name
         self.name_excludes = name_excludes   # only run processes on files without name_excludes in file name
-        batchdisp('BiomechZoo initialized', level=1, verbose=verbose)
-        batchdisp('verbosity set to: {}'.format(verbose), level=1, verbose=verbose)
-        batchdisp('root processing folder set to: {}'.format(self.in_folder), level=1, verbose=verbose)
+        print('BiomechZoo initialized')
+        print('verbosity set to: {}'.format(verbose))
+        print('root processing folder set to: {}'.format(self.in_folder))
+
         if name_contains is not None:
-            batchdisp('only include files containing name_contains string: {}'.format(self.name_contains), level=1, verbose=verbose)
+            print('only include files containing name_contains string: {}'.format(self.name_contains))
         if name_excludes is not None:
-            batchdisp('excludes files containing name_excludes string: {}'.format(self.name_excludes), level=1,
-                      verbose=verbose)
+            print('excludes files containing name_excludes string: {}'.format(self.name_excludes))
         if subfolders is not None:
             if type(subfolders) is list:
-                batchdisp('only process files in subfolder(s):', level=1, verbose=verbose)
+                print('only process files in subfolder(s):')
                 for subfolder in self.subfolders:
-                    batchdisp('{}'.format(os.path.join(self.in_folder, subfolder)), level=1, verbose=verbose)
+                    print('{}'.format(os.path.join(self.in_folder, subfolder)))
             else:
-                batchdisp('only process files in subfolder(s): {}'.format(os.path.join(self.in_folder, self.subfolders)), level=1, verbose=verbose)
+                print('only process files in subfolder(s): {}'.format(os.path.join(self.in_folder, self.subfolders)))
 
         if inplace:
-            batchdisp('Processing mode: overwrite (inplace=True) (each step will be applied to same folder)', level=1, verbose=verbose)
+            print('Processing mode: overwrite (inplace=True) (each step will be applied to same folder)')
         else:
-            batchdisp('Processing mode: backup (inplace=False)(each step will be applied to a new folder)', level=1, verbose=verbose)
+            print('Processing mode: backup (inplace=False)(each step will be applied to a new folder)')
 
     def _update_folder(self, out_folder, inplace, in_folder):
         """
@@ -156,7 +155,6 @@ class BiomechZoo:
         """
 
         start_time = time.time()
-        verbose = self.verbose
         in_folder = self.in_folder
 
         inplace = self.inplace if inplace is None else inplace
@@ -168,7 +166,7 @@ class BiomechZoo:
         for f in fl:
             if any(rem in f for rem in fl_remove):
                 removed += 1
-                batchdisp('not copying {} to new folder {}'.format(f, out_folder), level=2, verbose=verbose)
+                batchdisp('not copying {} to new folder {}'.format(f, out_folder), verbose=self.verbose, level=2)
                 continue
 
             # Save only good files
@@ -178,7 +176,7 @@ class BiomechZoo:
         method_name = inspect.currentframe().f_code.co_name
         t = time.time() - start_time
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, removed, t), level=1,
-                  verbose=verbose)
+                  verbose=self.verbose)
         self._update_folder(out_folder, inplace, in_folder)
 
 
@@ -906,3 +904,7 @@ class BiomechZoo:
             level=1, verbose=self.verbose)
         batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
         self._update_folder(out_folder, inplace, in_folder)
+
+
+
+
