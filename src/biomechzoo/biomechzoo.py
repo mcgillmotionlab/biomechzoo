@@ -2,6 +2,7 @@ import os
 import inspect
 import time
 
+
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
 from biomechzoo.linear_algebra_ops.kinematics import (quats2euler_data, dcms2euler_data, marker2dcm_data, quats2dcm_data,
                                                       rotate_dcm_data)
@@ -32,7 +33,7 @@ from biomechzoo.linear_algebra_ops.compute_magnitude_data import compute_magnitu
 from biomechzoo.linear_algebra_ops.rectify import rectify_data
 from biomechzoo.utils.group_by_terminal_folder import group_by_terminal_folder
 from biomechzoo.processing.rep_trial_data import reptrial_data
-#from biomechzoo.signal_analysis.signal_analysis_data import signal_analysis_data
+from biomechzoo.signal_analysis.signal_analysis_data import signal_analysis_data
 
 class BiomechZoo:
     def __init__(self, in_folder, inplace=False, subfolders=None, name_contains=None, name_excludes=None, verbose=0):
@@ -904,7 +905,3 @@ class BiomechZoo:
             level=1, verbose=self.verbose)
         batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
         self._update_folder(out_folder, inplace, in_folder)
-
-
-
-

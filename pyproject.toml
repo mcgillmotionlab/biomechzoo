@@ -1,6 +1,6 @@
 [project]
 name = "biomechzoo"
-version = "0.8.15"
+version = "0.8.16"
 description = "Python implementation of the biomechZoo toolbox"
 readme = "README.md"
 requires-python = ">=3.11,<3.12"   # max version for opencap-process tools is 3.11
@@ -19,7 +19,7 @@ dependencies = [
     "pycompare>=1.5.4",         # for ensembler (Bland-Altman plots)
     "kielmat==0.0.5",           # for kielmat foot strike event detection
     "entropyhub==2.0",          # for entropy calculations in signal analysis
-    "statsmodels==0.15.0",      # for entropy calculations in signal analysis
+    "statsmodels>=0.14.0",      # for entropy calculations in signal analysis
 ]
 
 [project.urls]

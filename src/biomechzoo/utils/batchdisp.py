@@ -38,10 +38,5 @@ def batchdisp(
 if __name__ == '__main__':
 
     print('Testing batchdisp()')
-
-    batchdisp(
-        msg='This should print',
-        level='dsd',
-        verbose=1,
-    )
+    batchdisp(msg='This should print', level=1, verbose=1)
 
