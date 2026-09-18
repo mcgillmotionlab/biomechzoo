@@ -3,9 +3,12 @@ Script to load an mvnx
 
 """
 
-import xml.etree.ElementTree as ET
 import collections
+import xml.etree.ElementTree as ET
+from typing import Any, Dict, List, Tuple
+
 import numpy as np
+
 from biomechzoo.mvn.mvnx_file_accessor import MvnxFileAccessor
 from biomechzoo.mvn import mvn
 
@@ -19,12 +22,19 @@ FOOT_CONTACT_MAP = {'LeftFoot_Heel': {'type': 1, 'segment_index': mvn.SEGMENT_LE
                     'RightFoot_Toe': {'type': 1, 'segment_index': mvn.SEGMENT_RIGHT_TOE, 'point_index': 1}}
 
 
-def load_mvnx(file_name):
+def load_mvnx(file_name: str) -> MvnxFileAccessor:
     """
-    This function opens and reads the file as an mvnx formatted XML file
+    Open and read a file as an mvnx-formatted XML file.
 
-    :param file_name: Name of the file to open, must have full path and .mvnx extension
-    :returns: A dictionary with the data from the mvnx file
+    Parameters
+    ----------
+    file_name : str
+        Path to the file to open, must have a .mvnx extension.
+
+    Returns
+    -------
+    mvnx_file : MvnxFileAccessor
+        Accessor wrapping the parsed data from the mvnx file.
     """
 
     mvnx_file = MvnxFileAccessor()
@@ -108,13 +118,25 @@ def load_mvnx(file_name):
     return mvnx_file
 
 
-def parse_sensor(sensors_element, segment_names):
+def parse_sensor(
+        sensors_element: ET.Element, segment_names: List[str],
+) -> Dict[str, Any]:
     """
-    Parse the sensor element
+    Parse the sensors element.
 
-    :param sensors_element: The joint element to parse
-    :param segment_names: a list with the segment names
-    :return: a dictionary with sensor data indexed by sensor name and a list with the sensor names
+    Parameters
+    ----------
+    sensors_element : xml.etree.ElementTree.Element
+        The sensors element to parse.
+    segment_names : list of str
+        Segment names, used to resolve each sensor's location.
+
+    Returns
+    -------
+    result : dict
+        Keys 'names' (list of str) and 'elements' (dict of str to
+        dict) -- sensor data indexed by sensor name, and a list of
+        sensor names.
     """
     sensor_elements = sensors_element.findall('mvn:sensor', ns)
     sensor_number = 0
@@ -131,16 +153,30 @@ def parse_sensor(sensors_element, segment_names):
 
         sensors[sensor_name] = sensor
         sensor_number += 1
-    return {'names': sensor_names, 'elements': sensors}
+
+    result = {'names': sensor_names, 'elements': sensors}
+
+    return result
 
 
-def parse_joints(joints_element, segments):
+def parse_joints(
+        joints_element: ET.Element, segments: Dict[str, Any],
+) -> Dict[str, Any]:
     """
-    Parse the joint element
+    Parse the joints element.
 
-    :param joints_element: The joint element to parse
-    :param segments: The dictionary with segment data
-    :return: a dictionary with joint data indexed by joint name and a list with the joint names
+    Parameters
+    ----------
+    joints_element : xml.etree.ElementTree.Element
+        The joints element to parse.
+    segments : dict
+        Segment data, as returned by :func:`parse_segments`.
+
+    Returns
+    -------
+    result : dict
+        Keys 'names' (list of str) and 'elements' (list of dict) --
+        joint data, and a list of joint names.
     """
     joint_elements = joints_element.findall('mvn:joint', ns)
 
@@ -156,15 +192,25 @@ def parse_joints(joints_element, segments):
         joint['seg_points'] = np.array([[segment1_index, point1_index], [segment2_index, point2_index]])
         joints.append(joint)
 
-    return {'names': joint_names, 'elements': joints}
+    result = {'names': joint_names, 'elements': joints}
+
+    return result
 
 
-def parse_ergo_joints(ergo_joints_element):
+def parse_ergo_joints(ergo_joints_element: ET.Element) -> Dict[str, Any]:
     """
-    Parse the ergo joint element
+    Parse the ergonomic joint angles element.
 
-    :param ergo_joints_element: The joint element to parse
-    :return: a dictionary with ergo joint data indexed by joint name and a list with the ergo joint names
+    Parameters
+    ----------
+    ergo_joints_element : xml.etree.ElementTree.Element
+        The ergonomic joint angles element to parse.
+
+    Returns
+    -------
+    result : dict
+        Keys 'names' (list of str) and 'elements' (list of dict) --
+        ergo joint data, and a list of ergo joint names.
     """
     ergo_joint_elements = ergo_joints_element.findall('mvn:ergonomicJointAngle', ns)
 
@@ -179,15 +225,26 @@ def parse_ergo_joints(ergo_joints_element):
         ergo_joint_names.append(ergo_joint['label'])
         ergo_joints.append(ergo_joint)
 
-    return {'names': ergo_joint_names, 'elements': ergo_joints}
+    result = {'names': ergo_joint_names, 'elements': ergo_joints}
+
+    return result
 
 
-def parse_segments(segment_elements):
+def parse_segments(segment_elements: List[ET.Element]) -> Dict[str, Any]:
     """
-    Parse the segment element
+    Parse a list of segment elements.
 
-    :param segment_elements: The segment element to parse
-    :return: a dictionary a list with the segment names and segment data indexed by segment name
+    Parameters
+    ----------
+    segment_elements : list of xml.etree.ElementTree.Element
+        The segment elements to parse.
+
+    Returns
+    -------
+    result : dict
+        Keys 'names' (list of str) and 'elements'
+        (collections.OrderedDict) -- a list of segment names, and
+        segment data indexed by segment name.
     """
     segments = collections.OrderedDict()
     segment_names = []
@@ -231,10 +288,34 @@ def parse_segments(segment_elements):
         segment['info'] = info
         segments[segment_name] = segment
 
-    return {'names': segment_names, 'elements': segments}
+    result = {'names': segment_names, 'elements': segments}
+
+    return result
 
 
-def get_connector_indices(joint_element, connector, segments):
+def get_connector_indices(
+        joint_element: ET.Element, connector: str, segments: Dict[str, Any],
+) -> Tuple[int, int]:
+    """
+    Resolve a joint connector to its segment and point indices.
+
+    Parameters
+    ----------
+    joint_element : xml.etree.ElementTree.Element
+        The joint element containing the connector.
+    connector : str
+        Name of the connector sub-element (e.g. 'mvn:connector1').
+    segments : dict
+        Segment data, as returned by :func:`parse_segments`.
+
+    Returns
+    -------
+    segment_index : int
+        Index of the connected segment.
+    point_index : int
+        Index of the connected point on that segment, or -1 if not
+        found.
+    """
     connector_element = joint_element.find(connector, ns)
     tokens = connector_element.text.split('/')
     segment_index = segments['names'].index(tokens[0])
@@ -247,13 +328,31 @@ def get_connector_indices(joint_element, connector, segments):
     return segment_index, point_index
 
 
-def parse_frames(frames_element, mvnx_file):
+def parse_frames(
+        frames_element: ET.Element, mvnx_file: MvnxFileAccessor,
+) -> Tuple[Dict[str, Any], Dict[str, Any], Dict[str, Any], Dict[str, Any]]:
     """
-    Parse the frames element
+    Parse the frames element.
 
-    :param frames_element: The frames element to parse
-    :param mvnx_file: a dictionary containing, among others, a list of names
-    :return: a dictionary with frames data
+    Parameters
+    ----------
+    frames_element : xml.etree.ElementTree.Element
+        The frames element to parse.
+    mvnx_file : MvnxFileAccessor
+        Accessor whose ``file_data`` holds the segment/joint/sensor
+        names already parsed from earlier in the file.
+
+    Returns
+    -------
+    frames : dict
+        Per-frame time series data for segments, joints, sensors,
+        contacts, and finger tracking.
+    tpose : dict
+        T-pose frame data.
+    tpose_isb : dict
+        ISB-convention T-pose frame data.
+    identity : dict
+        Identity-pose frame data.
     """
     frames = {'time': [],
               'segment_data': [],
@@ -312,14 +411,26 @@ def parse_frames(frames_element, mvnx_file):
     return frames, tpose, tpose_isb, identity
 
 
-def get_joint_data_from_frame(frame_element, joint_element_name, joint_names):
+def get_joint_data_from_frame(
+        frame_element: ET.Element, joint_element_name: str,
+        joint_names: List[str],
+) -> Dict[str, np.ndarray]:
     """
-    Extract joint data from a frame
+    Extract joint data from a frame.
 
-    :param frame_element: The frame element to process
-    :param joint_element_name: The name of the frame element to process
-    :param joint_names: a list with the joint names
-    :return: a dictionary with joint data indexed by joint name
+    Parameters
+    ----------
+    frame_element : xml.etree.ElementTree.Element
+        The frame element to process.
+    joint_element_name : str
+        Name of the frame sub-element to process (e.g. 'jointAngle').
+    joint_names : list of str
+        Joint names, in element order.
+
+    Returns
+    -------
+    joint_data : dict of {str : ndarray}
+        3-element angle vector per joint, indexed by joint name.
     """
 
     joint_data = collections.OrderedDict()
@@ -332,13 +443,24 @@ def get_joint_data_from_frame(frame_element, joint_element_name, joint_names):
     return joint_data
 
 
-def get_t_pose_data_from_frame(frame_element, segment_names):
+def get_t_pose_data_from_frame(
+        frame_element: ET.Element, segment_names: List[str],
+) -> Dict[str, Any]:
     """
-    Extract segment data from a frame
+    Extract pose data (position and orientation) from a frame.
 
-    :param frame_element: The frame element to process
-    :param segment_names: a list with the segment names
-    :return: a dictionary with segment data indexed by segment name
+    Parameters
+    ----------
+    frame_element : xml.etree.ElementTree.Element
+        The frame element to process.
+    segment_names : list of str
+        Segment names, in element order.
+
+    Returns
+    -------
+    t_pose : dict
+        Keys: 'segments_counts' (int) and 'segments' (list of dict,
+        each with 'pos_g' and 'q_gb' ndarray entries).
     """
 
     t_pose = {'segments_counts': len(segment_names), 'segments': []}
@@ -354,13 +476,26 @@ def get_t_pose_data_from_frame(frame_element, segment_names):
     return t_pose
 
 
-def get_segment_data_from_frame(frame_element, segment_names):
+def get_segment_data_from_frame(
+        frame_element: ET.Element, segment_names: List[str],
+) -> Dict[str, Any]:
     """
-    Extract segment data from a frame
+    Extract segment kinematics data from a frame.
 
-    :param frame_element: The frame element to process
-    :param segment_names: a list with the segment names
-    :return: a dictionary with segment data indexed by segment name
+    Parameters
+    ----------
+    frame_element : xml.etree.ElementTree.Element
+        The frame element to process.
+    segment_names : list of str
+        Segment names, in element order.
+
+    Returns
+    -------
+    segment_data : dict of {str : dict}
+        Per-segment dict with 'ori', 'pos', 'vel', 'acc', 'ang_vel',
+        'ang_acc' ndarray entries, indexed by segment name. If the
+        frame includes center-of-mass data, it is also present under
+        the key 'com' (lowercase), with 'pos', 'vel', 'acc' entries.
     """
 
     segment_data = collections.OrderedDict()
@@ -393,13 +528,24 @@ def get_segment_data_from_frame(frame_element, segment_names):
     return segment_data
 
 
-def get_sensor_data_from_frame(frame_element, sensor_names):
+def get_sensor_data_from_frame(
+        frame_element: ET.Element, sensor_names: List[str],
+) -> Dict[str, Any]:
     """
-    Extract sensor data from a frame
+    Extract sensor data from a frame.
 
-    :param frame_element: The frame element to process
-    :param sensor_names: a list with the segment names
-    :return: a dictionary with sensor data indexed by sensor name
+    Parameters
+    ----------
+    frame_element : xml.etree.ElementTree.Element
+        The frame element to process.
+    sensor_names : list of str
+        Sensor names, in element order.
+
+    Returns
+    -------
+    sensor_data : dict of {str : dict}
+        Per-sensor dict with 'ori', 'mag', 'acc' ndarray entries,
+        indexed by sensor name.
     """
 
     sensor_data = collections.OrderedDict()
@@ -418,13 +564,25 @@ def get_sensor_data_from_frame(frame_element, sensor_names):
     return sensor_data
 
 
-def get_finger_data_from_frame(frame_element, finger_segment_names):
+def get_finger_data_from_frame(
+        frame_element: ET.Element, finger_segment_names: Dict[str, List[str]],
+) -> Dict[str, Dict[str, Any]]:
     """
-    Extract finger data from a frame
+    Extract finger tracking data from a frame.
 
-    :param frame_element: The frame element to process
-    :param finger_segment_names: a list with the finger segment names
-    :return: a dictionary with finger data indexed by finger name
+    Parameters
+    ----------
+    frame_element : xml.etree.ElementTree.Element
+        The frame element to process.
+    finger_segment_names : dict of {str : list of str}
+        Finger segment names per side, keyed by 'left'/'right'.
+
+    Returns
+    -------
+    finger_data : dict of {str : dict}
+        Per-side ('left'/'right') dict of per-segment dicts with
+        'ori' and 'pos' ndarray entries, indexed by finger segment
+        name.
     """
 
     finger_data = {'left': {}, 'right': {}}
@@ -442,13 +600,27 @@ def get_finger_data_from_frame(frame_element, finger_segment_names):
     return finger_data
 
 
-def get_contact_data_from_frame(frame_element, foot_contact_def):
+def get_contact_data_from_frame(
+        frame_element: ET.Element, foot_contact_def: Dict[int, Dict],
+) -> List[Dict]:
     """
-    Extract contact data from a frame
+    Extract foot-contact event data from a frame.
 
-    :param frame_element: The frame element to process
-    :param foot_contact_def: a list with the foot contact definitions
-    :return: a list with contacts
+    Parameters
+    ----------
+    frame_element : xml.etree.ElementTree.Element
+        The frame element to process.
+    foot_contact_def : dict of {int : dict}
+        Foot contact definitions indexed by contact index, as parsed
+        by :func:`load_mvnx` from the ``footContactDefinition``
+        element.
+
+    Returns
+    -------
+    contact_data : list of dict
+        One contact-definition dict (each with 'type',
+        'segment_index', 'point_index' keys) per active contact in
+        this frame.
     """
 
     contact_data = []
@@ -463,29 +635,42 @@ def get_contact_data_from_frame(frame_element, foot_contact_def):
     return contact_data
 
 
-def frame_element_as_floats(frame_element, element):
+def frame_element_as_floats(
+        frame_element: ET.Element, element: str,
+) -> List[float]:
     """
-    Find a named element in a frame element, extract the text from it, split that and return
-    the values as an array of floats
+    Find a named sub-element, split its text, and return the values
+    as a list of floats.
 
-    :param frame_element: The mvnx frame element to process
-    :param element: The name of the sub element to find
-    :return: an array of floating point values
+    Parameters
+    ----------
+    frame_element : xml.etree.ElementTree.Element
+        The mvnx frame element to process.
+    element : str
+        Name of the sub-element to find.
+
+    Returns
+    -------
+    values : list of float
+        Parsed values, or an empty list if the sub-element is absent.
     """
 
     element_value = frame_element.find('mvn:' + element, ns)
     return [float(value) for value in element_value.text.split(' ')] if element_value is not None else []
 
 
-def get_4d_vector(raw_vector, index):
+def get_4d_vector(raw_vector: List[float], index: int) -> np.ndarray:
+    """Slice a 4-element (e.g. quaternion) vector at ``index``."""
     return np.array(raw_vector[index * 4:index * 4 + 4])
 
 
-def get_3d_vector(raw_vector, index):
+def get_3d_vector(raw_vector: List[float], index: int) -> np.ndarray:
+    """Slice a 3-element (e.g. XYZ) vector at ``index`` from a flat list."""
     return np.array(raw_vector[index * 3:index * 3 + 3])
 
 
-def init_file_data(mvnx_file):
+def init_file_data(mvnx_file: MvnxFileAccessor) -> None:
+    """Initialize ``mvnx_file.file_data`` with the empty data tree."""
     meta_data = {'version': '',
                  'original_filename': '',
                  'rec_date': '',
