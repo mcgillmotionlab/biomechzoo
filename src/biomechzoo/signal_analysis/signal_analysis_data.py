@@ -1,10 +1,10 @@
 import copy
 from typing import Dict
 
-from compute_entropy import sample_entropy
-from compute_impact import impact_peak, loading_rate
-from compute_smoothness import log_dimensionless_jerk_imu
-from compute_rms import rms_ratio_analysis
+from .compute_entropy import sample_entropy
+from .compute_impact import impact_peak, loading_rate
+from .compute_smoothness import log_dimensionless_jerk_imu
+from .compute_rms import rms_ratio_analysis
 def signal_analysis_data(
         data: Dict, channels:str | list[str], etype:str, ename:str, single_channel:bool, constant:list=None, save_channel:bool=None
 ) -> Dict:
