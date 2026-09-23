@@ -1,7 +1,7 @@
 import inspect
 import os
 import time
-from typing import Dict, List, Optional, Union
+from typing import Dict, List, Literal, Optional, Union
 
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
@@ -44,7 +44,7 @@ class BiomechZoo:
             subfolders: Optional[Union[str, List[str]]] = None,
             name_contains: Optional[Union[str, List[str]]] = None,
             name_excludes: Optional[Union[str, List[str]]] = None,
-            verbose: Union[int, str] = 0,
+            verbose: Literal[0, 1, 2] = 0,
     ) -> None:
         """
         Parameters
@@ -60,35 +60,45 @@ class BiomechZoo:
             Only process files whose name contains this substring.
         name_excludes : str or list of str, optional
             Skip files whose name contains this substring.
-        verbose : int or str, optional
+        verbose : {0, 1, 2}, optional
             Verbosity level passed to :func:`batchdisp`. Default is 0.
+            0 means no output, 1 means minimal output, and 2 means all output.
         """
+        if isinstance(verbose, bool) or not isinstance(verbose, int) or verbose not in (0, 1, 2):
+            raise ValueError('verbose must be 0, 1, or 2.')
+
         self.verbose = verbose
         self.in_folder = in_folder
         self.inplace = inplace               # choice to save processed files to new folder
         self.subfolders = subfolders         # only run processes on list in subfolder
         self.name_contains = name_contains   # only run processes on files with name_contains in file name
         self.name_excludes = name_excludes   # only run processes on files without name_excludes in file name
-        print('BiomechZoo initialized')
-        print('verbosity set to: {}'.format(verbose))
-        print('root processing folder set to: {}'.format(self.in_folder))
+        batchdisp('BiomechZoo initialized', level=1, verbose=self.verbose)
+        batchdisp('verbosity set to: {}'.format(verbose), level=1, verbose=self.verbose)
+        batchdisp('root processing folder set to: {}'.format(self.in_folder), level=1, verbose=self.verbose)
 
         if name_contains is not None:
-            print('only include files containing name_contains string: {}'.format(self.name_contains))
+            batchdisp('only include files containing name_contains string: {}'.format(self.name_contains),
+                      level=1, verbose=self.verbose)
         if name_excludes is not None:
-            print('excludes files containing name_excludes string: {}'.format(self.name_excludes))
+            batchdisp('excludes files containing name_excludes string: {}'.format(self.name_excludes),
+                      level=1, verbose=self.verbose)
         if subfolders is not None:
             if type(subfolders) is list:
-                print('only process files in subfolder(s):')
+                batchdisp('only process files in subfolder(s):', level=1, verbose=self.verbose)
                 for subfolder in self.subfolders:
-                    print('{}'.format(os.path.join(self.in_folder, subfolder)))
+                    batchdisp('{}'.format(os.path.join(self.in_folder, subfolder)),
+                              level=1, verbose=self.verbose)
             else:
-                print('only process files in subfolder(s): {}'.format(os.path.join(self.in_folder, self.subfolders)))
+                batchdisp('only process files in subfolder(s): {}'.format(
+                    os.path.join(self.in_folder, self.subfolders)), level=1, verbose=self.verbose)
 
         if inplace:
-            print('Processing mode: overwrite (inplace=True) (each step will be applied to same folder)')
+            batchdisp('Processing mode: overwrite (inplace=True) (each step will be applied to same folder)',
+                      level=1, verbose=self.verbose)
         else:
-            print('Processing mode: backup (inplace=False)(each step will be applied to a new folder)')
+            batchdisp('Processing mode: backup (inplace=False)(each step will be applied to a new folder)',
+                      level=1, verbose=self.verbose)
 
     def _update_folder(
             self, out_folder: Optional[str], inplace: bool, in_folder: str,
@@ -106,7 +116,7 @@ class BiomechZoo:
             The current input folder.
         """
         if not inplace:
-            # get full path for out_folder
+            out_folder = out_folder or 'processed'
             in_folder_path = os.path.dirname(in_folder)
             self.in_folder = os.path.join(in_folder_path, out_folder)
 
@@ -159,7 +169,7 @@ class BiomechZoo:
 
 
     def mvnx2zoo(
-            self, out_folder: Optional[str] = None, inplace: bool = False,
+            self, out_folder: Optional[str] = None, inplace: Optional[bool] = None,
     ) -> None:
         """
         Convert all .mvnx files in the folder to .zoo format.
@@ -169,7 +179,7 @@ class BiomechZoo:
         out_folder : str, optional
             Output folder for converted files.
         inplace : bool, optional
-            If True, overwrite in place. Default is False.
+            If True, overwrite in place. Defaults to ``self.inplace``.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -185,7 +195,7 @@ class BiomechZoo:
             zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
-        # Update self.folder after  processing
+        # Update self.folder after processing
         self._update_folder(out_folder, inplace, in_folder)
 
     def c3d2zoo(
@@ -352,7 +362,7 @@ class BiomechZoo:
 
     def tilt_algorithm(
             self, chname_avert: str, chname_medlat: str, chname_antpost: str,
-            out_folder: Optional[str] = None, inplace: bool = False,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
     ) -> None:
         """
         Apply tilt correction for acceleration data.
@@ -368,7 +378,7 @@ class BiomechZoo:
         out_folder : str, optional
             Output folder for processed files.
         inplace : bool, optional
-            If True, overwrite in place. Default is False.
+            If True, overwrite in place. Defaults to ``self.inplace``.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -392,7 +402,7 @@ class BiomechZoo:
     def rep_trial(
             self, channels: Union[List[str], str] = 'all',
             method: str = 'mean', out_folder: Optional[str] = None,
-            inplace: bool = False,
+            inplace: Optional[bool] = None,
     ) -> None:
         """
         Extract representative trial per subject/condition folder.
@@ -406,7 +416,7 @@ class BiomechZoo:
         out_folder : str, optional
             Output folder path.
         inplace : bool, optional
-            If True, overwrite existing files. Default is False.
+            If True, overwrite existing files. Defaults to ``self.inplace``.
         """
 
         start_time = time.time()
@@ -449,10 +459,6 @@ class BiomechZoo:
             # compute representative trial
             data, file_index = reptrial_data(gdata, channels, method)
 
-            # delete old trials
-            for f in files:
-                os.remove(f)
-
             # output filename
             if method == 'mean':
                 fout = files[0].replace('.zoo', '_mean.zoo')
@@ -467,6 +473,13 @@ class BiomechZoo:
             zsave(fout, data, inplace=inplace,
                   out_folder=out_folder, root_folder=in_folder)
 
+            # Delete source trials only after the representative trial is saved.
+            files_to_remove = files
+            if inplace:
+                files_to_remove = [f for f in files if f != fout]
+            for f in files_to_remove:
+                os.remove(f)
+
         method_name = inspect.currentframe().f_code.co_name
         batchdisp('{} process complete in {:.2f} secs'.format(method_name, time.time() - start_time),
             level=1, verbose=verbose)
@@ -477,7 +490,7 @@ class BiomechZoo:
     def compute_magnitude(
             self, chname1: Optional[str], chname2: Optional[str],
             chname3: Optional[str], ch_new_name: Optional[str] = None,
-            out_folder: Optional[str] = None, inplace: bool = False,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
     ) -> None:
         """
         Compute Euclidean magnitude from up to 3 channels as a new channel.
@@ -492,7 +505,7 @@ class BiomechZoo:
         out_folder : str, optional
             Output folder for processed files.
         inplace : bool, optional
-            If True, overwrite in place. Default is False.
+            If True, overwrite in place. Defaults to ``self.inplace``.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -515,7 +528,7 @@ class BiomechZoo:
 
     def rectify(
             self, chs: Union[str, List[str]], out_folder: Optional[str] = None,
-            inplace: bool = False,
+            inplace: Optional[bool] = None,
     ) -> None:
         """
         Rectify one or more channels to their absolute value.
@@ -527,7 +540,7 @@ class BiomechZoo:
         out_folder : str, optional
             Output folder for processed files.
         inplace : bool, optional
-            If True, overwrite in place. Default is False.
+            If True, overwrite in place. Defaults to ``self.inplace``.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -649,7 +662,8 @@ class BiomechZoo:
             data = zload(f)
             split_events = get_split_events(data, first_event_name)
             if split_events is None:
-                print('no event {} found, saving original file'.format(first_event_name))
+                batchdisp('no event {} found, saving original file'.format(first_event_name),
+                          level=1, verbose=verbose)
                 zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
             else:
                 for i, _ in enumerate(split_events[0:-1]):
@@ -1078,7 +1092,7 @@ class BiomechZoo:
 
     def quats2euler(
             self, ch_prox: List[str], ch_dist: List[str], sequence: str,
-            out_folder: Optional[str] = None, inplace: bool = False,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
     ) -> None:
         """
         Generate joint angles from proximal/distal quaternion orientations.
@@ -1094,7 +1108,7 @@ class BiomechZoo:
         out_folder : str, optional
             Output folder for processed files.
         inplace : bool, optional
-            If True, overwrite in place. Default is False.
+            If True, overwrite in place. Defaults to ``self.inplace``.
         """
 
         start_time = time.time()
@@ -1117,7 +1131,7 @@ class BiomechZoo:
 
     def dcms2euler(
             self, ch_prox: List[str], ch_dist: List[str], sequence: str,
-            out_folder: Optional[str] = None, inplace: bool = False,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
     ) -> None:
         """
         Generate joint angles from proximal/distal DCM orientations.
@@ -1133,7 +1147,7 @@ class BiomechZoo:
         out_folder : str, optional
             Output folder for processed files.
         inplace : bool, optional
-            If True, overwrite in place. Default is False.
+            If True, overwrite in place. Defaults to ``self.inplace``.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -1157,7 +1171,7 @@ class BiomechZoo:
 
     def marker2dcm(
             self, seg: str, origin: str, marker_1: str, marker_2: str,
-            out_folder: Optional[str] = None, inplace: bool = False,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
     ) -> None:
         """
         Biomechzoo-style wrapper for :func:`marker2dcm_data`.
@@ -1175,7 +1189,7 @@ class BiomechZoo:
         out_folder : str, optional
             Output folder for processed files.
         inplace : bool, optional
-            If True, overwrite in place. Default is False.
+            If True, overwrite in place. Defaults to ``self.inplace``.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -1198,7 +1212,7 @@ class BiomechZoo:
 
     def quats2dcm(
             self, seg: str, ch: List[str], out_folder: Optional[str] = None,
-            inplace: bool = False,
+            inplace: Optional[bool] = None,
     ) -> None:
         """
         Biomechzoo-style wrapper for :func:`quats2dcm_data`.
@@ -1212,7 +1226,7 @@ class BiomechZoo:
         out_folder : str, optional
             Output folder for processed files.
         inplace : bool, optional
-            If True, overwrite in place. Default is False.
+            If True, overwrite in place. Defaults to ``self.inplace``.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -1236,7 +1250,7 @@ class BiomechZoo:
 
     def rotate_dcm(
             self, ch: List[str], axis: str, degrees: float,
-            out_folder: Optional[str] = None, inplace: bool = False,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
     ) -> None:
         """
         Biomechzoo-style wrapper for :func:`rotate_dcm_data`.
@@ -1253,7 +1267,7 @@ class BiomechZoo:
         out_folder : str, optional
             Output folder for processed files.
         inplace : bool, optional
-            If True, overwrite in place. Default is False.
+            If True, overwrite in place. Defaults to ``self.inplace``.
         """
         start_time = time.time()
         verbose = self.verbose

@@ -16,7 +16,8 @@ def batchdisp(
         Verbosity level required for ``msg`` to be printed. Default is 1.
     verbose : {0, 1, 2}, optional
         Current verbosity setting. ``msg`` is printed when ``verbose``
-        is greater than or equal to ``level``. Default is 0.
+        is greater than or equal to ``level``. Default is 0. Here, 0 is
+        no output, 1 is minimal output, and 2 is all output.
     """
     # level = _normalize_verbose(level)
     # verbose = _normalize_verbose(verbose)
