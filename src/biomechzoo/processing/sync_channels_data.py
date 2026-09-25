@@ -37,15 +37,16 @@ def _cross_correlation(sig1: np.ndarray, sig2: np.ndarray) -> int:
 
     return lag
 
-def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str], manual_lag: int = None,
-                       corr_ch_1: list[str] = None, corr_ch_2: list[str] = None) -> dict:
+def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str],
+                       manual_lag: int = None) -> dict:
     """
     Synchronize two groups of channels within a data dictionary by estimating
     or applying a temporal lag.
 
-    The lag is estimated from a representative subset of channels (`ch_1`, `ch_2`)
-    and then applied to all channels sharing the same suffix. After alignment,
-    all affected channels are trimmed to a common length.
+    In 'cross-correlation' mode, the lag is estimated from `ch_1` and `ch_2`
+    directly. In both modes, the lag is applied to ALL channels sharing the
+    same suffix as `ch_1[0]` / `ch_2[0]` respectively. After alignment, all
+    affected channels are trimmed to a common length.
 
     Parameters
     ----------
@@ -55,20 +56,23 @@ def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str]
         Synchronization method. Supported options:
 
         - ``'cross-correlation'`` : estimates lag automatically using
-          normalized cross-correlation across the provided channel pairs.
+          normalized cross-correlation between `ch_1` and `ch_2`.
         - ``'manual'`` : applies a user-specified lag via ``manual_lag``.
     ch_1 : list of str
-        Channel names from the first signal group used to estimate the lag.
-        Must have the same length as `ch_2`. The suffix of ``ch_1[0]``
-        determines which channels in `data` are shifted.
+        Channel names for group 1. Used to estimate the lag when
+        ``method='cross-correlation'``. Must have the same length as `ch_2`.
+        The suffix of ``ch_1[0]`` determines which channels in `data` are
+        shifted as group 1, regardless of method.
     ch_2 : list of str
-        Channel names from the second signal group used to estimate the lag.
-        Must have the same length as `ch_1`. The suffix of ``ch_2[0]``
-        determines which channels in `data` are shifted.
+        Channel names for group 2. Used to estimate the lag when
+        ``method='cross-correlation'``. Must have the same length as `ch_1`.
+        The suffix of ``ch_2[0]`` determines which channels in `data` are
+        shifted as group 2, regardless of method.
     manual_lag : int, optional
         Number of samples to shift when ``method='manual'``. Positive values
-        shift `ch_1` channels forward; negative values shift `ch_2` channels
-        forward. Required when ``method='manual'``, ignored otherwise.
+        shift group-1 channels forward; negative values shift group-2
+        channels forward. Required when ``method='manual'``, ignored
+        otherwise.
 
     Returns
     -------
@@ -97,15 +101,9 @@ def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str]
 
     data_copy = copy.deepcopy(data)
 
-    sig1_stack = [np.array(data_copy[ch]['line']) for ch in ch_1]
-    sig2_stack = [np.array(data_copy[ch]['line']) for ch in ch_2]
-
     if method == "cross-correlation":
-        _corr_ch_1 = corr_ch_1 if corr_ch_1 is not None else ch_1
-        _corr_ch_2 = corr_ch_2 if corr_ch_2 is not None else ch_2
-
-        sig1_stack = [np.array(data_copy[ch]['line']) for ch in _corr_ch_1]
-        sig2_stack = [np.array(data_copy[ch]['line']) for ch in _corr_ch_2]
+        sig1_stack = [np.array(data_copy[ch]['line']) for ch in ch_1]
+        sig2_stack = [np.array(data_copy[ch]['line']) for ch in ch_2]
 
         max_len = max(len(s) for s in sig1_stack + sig2_stack)
         sig1 = np.stack([np.pad(s, (0, max_len - len(s))) for s in sig1_stack], axis=0)
