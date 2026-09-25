@@ -1,12 +1,14 @@
 import numpy as np
+import csv, os
 
 def compute_rmse(a, b):
     a = np.asarray(a)
     b = np.asarray(b)
+    if a.shape != b.shape:
+        raise ValueError(f"Shape mismatch: {a.shape} vs {b.shape}")
     return np.sqrt(np.mean((a - b) ** 2))
 
 def _export_rmse_csv(all_rmse: dict, out_folder: str):
-    import csv, os
 
     os.makedirs(out_folder, exist_ok=True)
     out_file = os.path.join(out_folder, 'rmse_results.csv')
