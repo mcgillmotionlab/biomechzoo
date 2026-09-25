@@ -18,6 +18,8 @@ def mvnx2zoo_data(fl):
                 'line': np.array(r),
                 'event': {}
             }
+            data['zoosystem']['Video']['Channels'].append(val)
+
         except KeyError:
             print('joint {} does not exist, skipping'.format(val))
 
@@ -30,6 +32,8 @@ def mvnx2zoo_data(fl):
                 'line': np.array(r),
                 'event': {}
             }
+            data['zoosystem']['Video']['Channels'].append(val)
+
         except KeyError:
             print('segment {} does not exist, skipping'.format(val))
 
