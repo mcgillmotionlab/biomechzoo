@@ -11,7 +11,7 @@ from biomechzoo.biomech_ops.resample import resample_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
-from biomechzoo.statistics.rmse import rmse_data, _export_rmse_csv
+from biomechzoo.statistics.rmse_data import rmse_data, _export_rmse_csv
 from biomechzoo.utils.batchdisp import batchdisp
 from biomechzoo.utils.get_split_events import get_split_events
 from biomechzoo.processing.split_trial_data import split_trial_data
@@ -35,6 +35,7 @@ from biomechzoo.linear_algebra_ops.compute_magnitude_data import compute_magnitu
 from biomechzoo.linear_algebra_ops.rectify import rectify_data
 from biomechzoo.utils.group_by_terminal_folder import group_by_terminal_folder
 from biomechzoo.processing.rep_trial_data import reptrial_data
+from biomechzoo.statistics.rmse_data import rmse_data
 from biomechzoo.signal_analysis.signal_analysis_data import signal_analysis_data
 
 class BiomechZoo:
@@ -978,6 +979,44 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
+
+    def rmse(
+            self, suffix1: str, suffix2: str,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Compute RMSE between channels with specified suffixes.
+
+        Parameters
+        ----------
+        suffix1 : str
+            Suffix for the first channel group.
+        suffix2 : str
+            Suffix for the second channel group.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
+        for f in fl:
+            if verbose:
+                batchdisp('computing RMSE between channels with suffix {} and {} for {}'.format(suffix1, suffix2, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = rmse_data(data, suffix1, suffix2)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
+        # Update self.folder after processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    
     def partition(
             self, evt_start: str, evt_end: str,
             out_folder: Optional[str] = None, inplace: Optional[bool] = None,

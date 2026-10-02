@@ -1,7 +1,7 @@
 import numpy as np
 import csv, os
 
-def compute_rmse(a, b):
+def rmse_line(a, b):
     a = np.asarray(a)
     b = np.asarray(b)
     if a.shape != b.shape:
@@ -42,7 +42,7 @@ def rmse_data(data: dict, suff1: str, suff2: str):
     for base_name in sorted(matching_bases):
         k1 = base_to_key1[base_name]
         k2 = base_to_key2[base_name]
-        rmse = compute_rmse(data[k1]['line'], data[k2]['line'])
+        rmse = rmse_line(data[k1]['line'], data[k2]['line'])
         rmse_values[base_name] = rmse
 
     data['zoosystem'].setdefault('RMSE', {}).update(rmse_values)
