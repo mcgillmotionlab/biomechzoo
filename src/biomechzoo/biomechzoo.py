@@ -1016,7 +1016,7 @@ class BiomechZoo:
         # Update self.folder after processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    
+
     def partition(
             self, evt_start: str, evt_end: str,
             out_folder: Optional[str] = None, inplace: Optional[bool] = None,
