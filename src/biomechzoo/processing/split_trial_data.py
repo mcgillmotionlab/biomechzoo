@@ -55,10 +55,6 @@ def split_trial_data(
     if end_event_indx is None:
         raise ValueError('event_event {} not found'.format(end_event))
 
-    # hard fix integer
-    start_event_indx = int(start_event_indx[0])
-    end_event_indx = int(end_event_indx[0])
-
     for key, value in data_new.items():
         if key == 'zoosystem':
             continue

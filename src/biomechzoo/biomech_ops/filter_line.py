@@ -43,7 +43,7 @@ def filter_line(
     #todo: add more filters
     #todo: consider using kineticstoolkit
     #todo: check filtfilt options
-    
+
     if filt is None:
         filt = {'ftype': 'butter',
                 'order': 4,
