@@ -2,6 +2,7 @@ import os
 import re
 import copy
 import warnings
+from typing import List, Optional, Union
 
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
@@ -11,8 +12,10 @@ from biomechzoo.processing.renamechannel_data import renamechannel_data
 from biomechzoo.utils.zsave import zsave
 
 
-def combine_files_within(fld:str, suffix_map:list[str], name_contains:str | list[str], subfolders:str | list[str],
-                         inplace:bool, out_folder:str):
+def combine_files_within(
+        fld: str, suffix_map: List[str], name_contains: Union[str, List[str]],
+        subfolders: Union[str, List[str]], inplace: bool, out_folder: str,
+) -> None:
     """
     Combines zoo-files within a subfolder into a single file
 
@@ -89,11 +92,15 @@ def combine_files_within(fld:str, suffix_map:list[str], name_contains:str | list
         zsave(fl[0], data_new, inplace=inplace, out_folder=out_folder, root_folder=fld)
 
 
-def combine_files_between(in_folder:str, fld1:str, fld2:str, suffix:str,  name_contains:str | list[str], subfolders:str | list[str],
-                          method:str="down",inplace:bool=False,
-                          fl1exclude:list=None, fl2exclude:list=None,
-                          out_folder:str=None, strmatch:str=None,):
-
+def combine_files_between(
+        in_folder: str, fld1: str, fld2: str, suffix: str,
+        name_contains: Union[str, List[str]],
+        subfolders: Union[str, List[str]],
+        method: str = "down", inplace: bool = False,
+        fl1exclude: Optional[List[str]] = None,
+        fl2exclude: Optional[List[str]] = None,
+        out_folder: Optional[str] = None, strmatch: Optional[str] = None,
+) -> None:
     """
     Combines 2 zoo-files in different subfolders into a single file.
 

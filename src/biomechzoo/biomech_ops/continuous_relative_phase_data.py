@@ -1,8 +1,12 @@
+from typing import Dict
+
 from biomechzoo.biomech_ops.continuous_relative_phase_line import continuous_relative_phase_line
 from biomechzoo.processing.addchannel_data import addchannel_data
 
 
-def continuous_relative_phase_data(data, ch_dist, ch_prox):
+def continuous_relative_phase_data(
+        data: Dict, ch_dist: str, ch_prox: str,
+) -> Dict:
     """
     Compute continuous relative phase (CRP) between two kinematic channels.
 
@@ -20,7 +24,7 @@ def continuous_relative_phase_data(data, ch_dist, ch_prox):
 
     Returns
     -------
-    dict
+    data_new : dict
         Updated data dictionary with a new CRP channel appended,
         named '<ch_dist>_<ch_prox>_crp'.
 

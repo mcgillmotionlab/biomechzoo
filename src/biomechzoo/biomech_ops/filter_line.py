@@ -1,8 +1,14 @@
+from typing import Dict, Optional, Tuple, Union
+
 import numpy as np
 import scipy.signal as sgl
+from numpy.typing import ArrayLike
 
 
-def filter_line(signal_raw, filt=None, fs=None):
+def filter_line(
+        signal_raw: ArrayLike, filt: Optional[Dict] = None,
+        fs: Optional[float] = None,
+) -> np.ndarray:
     """
     Filter a 1-D signal array using a Butterworth filter.
 
@@ -34,9 +40,9 @@ def filter_line(signal_raw, filt=None, fs=None):
     NotImplementedError
         If a filter type other than 'butter' is specified.
     """
-    #todo: verify that filter is working correctly
-    #todo add more filters
+    #todo: add more filters
     #todo: consider using kineticstoolkit
+    #todo: check filtfilt options
 
     if filt is None:
         filt = {'ftype': 'butter',
@@ -44,8 +50,11 @@ def filter_line(signal_raw, filt=None, fs=None):
                 'cutoff': 10,
                 'btype': 'lowpass',
                 'filtfilt': True}
+
         if fs is None:
-            raise ValueError('fs is required if no filt is specified')
+            raise ValueError('fs must be provided if filt is None')
+        else:
+            filt['fs'] = fs
 
     else:
         if 'fs' not in filt:
@@ -54,9 +63,9 @@ def filter_line(signal_raw, filt=None, fs=None):
     # Normalize filter type strings
     if filt['ftype'] == 'butterworth':
         filt['ftype'] = 'butter'
-    if filt['btype'] is 'low':
+    if filt['btype'] == 'low':
         filt['btype'] = 'lowpass'
-    if filt['btype'] is 'high':
+    if filt['btype'] == 'high':
         filt['btype'] = 'highpass'
 
     # Extract parameters
@@ -69,9 +78,11 @@ def filter_line(signal_raw, filt=None, fs=None):
 
     # prepare normalized cutoff(s)
     nyq = 0.5 * fs
-    norm_cutoff = np.atleast_1d(np.array(cutoff) / nyq)
+    norm_cutoff = np.asarray(cutoff) / nyq
+    if np.size(norm_cutoff) == 1:
+        norm_cutoff = float(norm_cutoff)
 
-    if ftype is 'butter':
+    if ftype == 'butter':
         [b, a] = sgl.butter(N=order, Wn=norm_cutoff, btype=btype, )
         signal_filtered = sgl.filtfilt(b, a, signal_raw)
     else:
@@ -80,7 +91,10 @@ def filter_line(signal_raw, filt=None, fs=None):
     return signal_filtered
 
 
-def kt_butter(ts, fc, fs, order=2, btype='lowpass', filtfilt=True):
+def kt_butter(
+        ts: ArrayLike, fc: Union[float, Tuple[float, float]], fs: float,
+        order: int = 2, btype: str = 'lowpass', filtfilt: bool = True,
+) -> np.ndarray:
     """
     Apply a Butterworth filter to a time series.
 
@@ -121,3 +135,45 @@ def kt_butter(ts, fc, fs, order=2, btype='lowpass', filtfilt=True):
         ts_f = sgl.sosfilt(sos,ts, axis=0)
 
     return ts_f
+
+
+if __name__ == "__main__":
+    # Basic usage example
+    fs = 1000  # Sampling frequency in Hz
+    t = np.linspace(0, 1, fs, endpoint=False)  # Time vector
+    signal_raw = np.sin(2 * np.pi * 5 * t) + 0.5 * np.random.randn(fs)  # Raw signal with noise
+    signal_filtered = filter_line(signal_raw, fs=fs)
+
+    # Usage with filter parameters specified
+    filt_params = {
+        'ftype': 'butter',
+        'order': 4,
+        'cutoff': 10,
+        'btype': 'lowpass',
+        'filtfilt': True,
+        'fs': fs
+    }
+    signal_filtered = filter_line(signal_raw, filt=filt_params)
+
+
+    # import matplotlib.pyplot as plt
+    #
+    # plt.figure(figsize=(12, 6))
+    # plt.subplot(2, 1, 1)
+    # plt.plot(t, signal_raw, label='Raw Signal')
+    # plt.title('Raw Signal')
+    # plt.xlabel('Time [s]')
+    # plt.ylabel('Amplitude')
+    # plt.grid()
+    # plt.legend()
+    #
+    # plt.subplot(2, 1, 2)
+    # plt.plot(t, signal_filtered, label='Filtered Signal', color='orange')
+    # plt.title('Filtered Signal')
+    # plt.xlabel('Time [s]')
+    # plt.ylabel('Amplitude')
+    # plt.grid()
+    # plt.legend()
+    #
+    # plt.tight_layout()
+    # plt.show()

@@ -1,18 +1,37 @@
 import os
+from typing import List, Optional
 
 import pandas as pd
 
 
 def combine_quats_to_csv(
-    csv_files: list[str],
-    prefixes: list[str],
-    out_folder: str = None,
-    out_filename: str = None
-    ) -> str:
+        csv_files: List[str], prefixes: List[str],
+        out_folder: Optional[str] = None, out_filename: Optional[str] = None,
+) -> str:
+    """
+    Concatenate time, quaternion, gyroscope, and accelerometer data
+    from multiple CSV files into a single CSV file, with column
+    prefixes identifying each segment.
 
-    """Concatenates time, quaternions, gyroscope, and accelerometer data
-    from multiple CSV files into a single CSV file with prefixes defining segment."""
+    Parameters
+    ----------
+    csv_files : list of str
+        Paths to the input CSV files, one per sensor/segment.
+    prefixes : list of str
+        Column-name prefix to apply for each file in ``csv_files``,
+        identifying the segment (e.g. ``'pelvis'``).
+    out_folder : str, optional
+        Folder (relative to the current working directory) to save
+        the combined CSV to. Default is ``'combined_csvs'``.
+    out_filename : str, optional
+        Name of the combined output CSV file. Default is
+        ``'combined_sensors.csv'``.
 
+    Returns
+    -------
+    out_file : str
+        Full path to the saved combined CSV file.
+    """
     if out_folder is None:
         out_folder = "combined_csvs"
 

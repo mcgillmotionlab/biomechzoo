@@ -27,5 +27,17 @@ BiomechZoo is a biomechanics processing toolbox for human movement analysis.
 - cd biomechzoo root folder
 - pip install -e ".[dev]"
 
+### Updating the package on pypi (developers only)
+open terminal
+cd to directory of repo
+uv version --bump <major/minor/patch etc.>
+uv sync --group docs   
+uv run make -C docs html
+rm dist/*
+uv build
+uv publish --token <API TOKEN>
+Commit & push changes
+
+
 ### IDE setup (PyCharm)
 - If imports are not resolving, mark the `src/` directory as a source root.

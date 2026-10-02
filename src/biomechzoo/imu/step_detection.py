@@ -1,11 +1,133 @@
-import numpy as np
-from scipy.signal import find_peaks, butter, filtfilt
+from typing import List, Tuple
 
-def imu_mcgrath(ch_line, fsamp, min_stance_t, is_filtered=False):
+import numpy as np
+from numpy.typing import ArrayLike, NDArray
+from scipy.signal import butter, filtfilt, find_peaks
+
+from kielmat.utils.preprocessing import (
+    signal_decomposition_algorithm,
+)
+
+
+def imu_kielmat(
+    vertical_acceleration: NDArray[np.floating],
+    fsamp: float,
+) -> Tuple[NDArray[np.int_], NDArray[np.int_]]:
+    """Detect foot-strike and foot-off events using KielMAT.
+
+    Parameters
+    ----------
+    vertical_acceleration : ndarray
+        One-dimensional vertical acceleration signal in m/s/s.
+    fsamp : float
+        Sampling frequency in Hz.
+
+    Returns
+    -------
+    fs : ndarray
+        Foot-strike frame indices.
+    fo : ndarray
+        Foot-off frame indices.
+
+    Raises
+    ------
+    ValueError
+        If the acceleration signal is not one-dimensional, contains
+        non-finite values, or if the sampling frequency is invalid.
     """
-    This function detects the steps based on the method of McGrath et al. (2012) https://doi.org/10.1007/s12283-012-0093-8
-    in short, the first minimum after a local maximum is the heel strike. The local maxima are the mid-swing.
-    Data should be filtered
+    vertical_acceleration = np.asarray(
+        vertical_acceleration,
+        dtype=float,
+    ).squeeze()
+
+    if vertical_acceleration.ndim != 1:
+        raise ValueError(
+            'Vertical acceleration must be one-dimensional'
+        )
+
+    if not np.all(np.isfinite(vertical_acceleration)):
+        raise ValueError(
+            'Vertical acceleration contains non-finite values'
+        )
+
+    if fsamp <= 0:
+        raise ValueError(
+            'Sampling frequency must be greater than zero'
+        )
+
+    fs_times, fo_times = signal_decomposition_algorithm(
+        vertical_accelerarion_data=vertical_acceleration,
+        initial_sampling_frequency=fsamp,
+    )
+
+    fs = _times_to_frames(fs_times, fsamp, len(vertical_acceleration))
+    fo = _times_to_frames(fo_times, fsamp, len(vertical_acceleration))
+
+    return fs, fo
+
+
+def _times_to_frames(
+    event_times: NDArray[np.floating],
+    fsamp: float,
+    n_frames: int,
+) -> NDArray[np.int_]:
+    """Convert event times in seconds to valid zero-based frame indices.
+
+    Parameters
+    ----------
+    event_times : ndarray
+        Event times in seconds relative to the signal start.
+    fsamp : float
+        Sampling frequency in Hz.
+    n_frames : int
+        Number of signal frames.
+
+    Returns
+    -------
+    frames : ndarray
+        Sorted, unique, zero-based frame indices.
+    """
+    event_times = np.asarray(event_times, dtype=float).squeeze()
+
+    if event_times.size == 0:
+        return np.array([], dtype=int)
+
+    frames = np.rint(np.atleast_1d(event_times) * fsamp).astype(int)
+    frames = frames[(frames >= 0) & (frames < n_frames)]
+
+    return np.unique(frames)
+
+def imu_mcgrath(
+        ch_line: ArrayLike, fsamp: float, min_stance_t: float,
+        is_filtered: bool = False,
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Detect gait events using the method of McGrath et al. (2012).
+
+    The first minimum after a local maximum midswing peak is taken as
+    initial contact (heel strike); the first valid minimum before a
+    midswing peak is taken as terminal contact (toe off). Reference:
+    https://doi.org/10.1007/s12283-012-0093-8
+
+    Parameters
+    ----------
+    ch_line : array_like
+        Vertical acceleration signal.
+    fsamp : float
+        Sampling frequency in Hz.
+    min_stance_t : float
+        Minimum stance time, in milliseconds, used to validate
+        detected steps.
+    is_filtered : bool, optional
+        If True, ``ch_line`` is assumed to already be filtered and no
+        additional low-pass filtering is applied. Default is False.
+
+    Returns
+    -------
+    IC : ndarray
+        Indices of detected initial contact (heel strike) events.
+    TC : ndarray
+        Indices of detected terminal contact (toe off) events.
     """
 
     if is_filtered:
@@ -107,7 +229,29 @@ def imu_mcgrath(ch_line, fsamp, min_stance_t, is_filtered=False):
 
     return IC, TC
 
-def crash_catch(min_stance_samples, IC, TC):
+def crash_catch(
+        min_stance_samples: int, IC: List[int], TC: List[int],
+) -> Tuple[np.ndarray, np.ndarray]:
+    """
+    Ensure initial and terminal contact index arrays are the same
+    length, truncating any extra detections.
+
+    Parameters
+    ----------
+    min_stance_samples : int
+        Unused. Reserved for future stance-time validation.
+    IC : list of int
+        Indices of detected initial contact events.
+    TC : list of int
+        Indices of detected terminal contact events.
+
+    Returns
+    -------
+    IC : ndarray
+        Initial contact indices, truncated to match ``TC`` length.
+    TC : ndarray
+        Terminal contact indices, truncated to match ``IC`` length.
+    """
     # Ensure IC and TC arrays are same length and valid
     IC = np.array(IC)
     TC = np.array(TC)

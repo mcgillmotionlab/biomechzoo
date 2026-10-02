@@ -1,9 +1,37 @@
+from typing import Dict
+
 import numpy as np
 from scipy.signal import resample_poly
 
-def resample_data(signal_dict:dict, up:int, down:int, axis:int = 0)-> dict:
+
+def resample_data(
+        signal_dict: Dict, up: int, down: int, axis: int = 0,
+) -> Dict:
     """
-    Upsamples / downsamples data using scipy.signal.resample_poly
+    Upsample/downsample data using ``scipy.signal.resample_poly``.
+
+    Parameters
+    ----------
+    signal_dict : dict
+        Zoo data dictionary. Only numeric ndarray/list-valued entries
+        are resampled; the 'zoosystem' entry and non-numeric or empty
+        arrays are copied through unchanged.
+    up : int
+        Upsampling factor.
+    down : int
+        Downsampling factor.
+    axis : int, optional
+        Axis along which to resample. Default is 0.
+
+    Returns
+    -------
+    new_dict : dict
+        New dictionary with resampled arrays.
+
+    Raises
+    ------
+    ValueError
+        If both ``up`` and ``down`` are 1 (no resampling requested).
     """
 
     if up == 1 and down == 1:

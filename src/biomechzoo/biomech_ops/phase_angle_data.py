@@ -1,8 +1,10 @@
+from typing import Dict, List
+
 from biomechzoo.biomech_ops.phase_angle_line import phase_angle_line
 from biomechzoo.processing.addchannel_data import addchannel_data
 
 
-def phase_angle_data(data, channels):
+def phase_angle_data(data: Dict, channels: List[str]) -> Dict:
     """
     Compute phase angle for one or more channels using the Hilbert transform.
 
@@ -15,7 +17,7 @@ def phase_angle_data(data, channels):
 
     Returns
     -------
-    dict
+    data_new : dict
         Updated data dictionary with phase angle results appended as new
         channels named '<channel>_phase_angle'.
 

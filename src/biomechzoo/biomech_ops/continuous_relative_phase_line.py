@@ -1,4 +1,10 @@
-def continuous_relative_phase_line(dist, prox):
+import numpy as np
+from numpy.typing import ArrayLike
+
+
+def continuous_relative_phase_line(
+        dist: ArrayLike, prox: ArrayLike,
+) -> np.ndarray:
     """
     Compute continuous relative phase (CRP) between two kinematic waveforms.
 

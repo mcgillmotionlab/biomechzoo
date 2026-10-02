@@ -6,9 +6,7 @@ import numpy as np
 
 
 def partition_data(
-    data: Dict[str, Any],
-    evt_start: str,
-    evt_end: str
+        data: Dict[str, Any], evt_start: str, evt_end: str,
 ) -> Dict[str, Any]:
     """
     Partition data for all channels between two specified events.
@@ -28,7 +26,7 @@ def partition_data(
 
     Returns
     -------
-    dict of str to Any
+    data_new : dict of str to Any
         Deep copy of input data with channels partitioned between the two events.
 
     Raises
@@ -51,10 +49,6 @@ def partition_data(
 
     if e1 is None or e2 is None or len(e1) == 0 or len(e2) == 0:
         raise ValueError(f"Event not found: evt_start='{evt_start}' returned {e1}, evt_end='{evt_end}' returned {e2}")
-
-    # convert to int and get first value
-    e1 = int(e1[0])
-    e2 = int(e2[0])
 
     data_new = copy.deepcopy(data)
     for ch_name, ch_data in sorted(data_new.items()):

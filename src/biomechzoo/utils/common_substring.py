@@ -1,4 +1,23 @@
-def common_substring_join(strings):
+from typing import List
+
+
+def common_substring_join(strings: List[str]) -> str:
+    """
+    Join the substrings common to every string in a list of
+    underscore-separated names.
+
+    Parameters
+    ----------
+    strings : list of str
+        Underscore-separated strings to compare, e.g.
+        ``'a_pelvis_antpost_tilt_corr'``.
+
+    Returns
+    -------
+    joined : str
+        Underscore-joined string of the parts shared by every entry
+        in ``strings``, in their original order.
+    """
     # Split each string into parts
     split_lists = [s.split('_') for s in strings]
 
@@ -11,7 +30,9 @@ def common_substring_join(strings):
             # As soon as one position differs, skip but keep checking further ones
             continue
 
-    return "_".join(common_parts)
+    joined = "_".join(common_parts)
+
+    return joined
 
 if __name__ == '__main__':
     # Example

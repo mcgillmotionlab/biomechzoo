@@ -3,9 +3,7 @@ import pandas as pd
 from typing import Dict, List, Optional
 
 def lineval_wide2arrays(
-    df: pd.DataFrame,
-    condition_col: str = 'condition',
-    conditions: Optional[List[str]] = None
+        df: pd.DataFrame, condition_col: str = 'condition', conditions: Optional[List[str]] = None,
 ) -> Dict[str, np.ndarray]:
     """
     Convert a wide-format DataFrame into arrays grouped by condition.
@@ -23,7 +21,7 @@ def lineval_wide2arrays(
 
     Returns
     -------
-    Dict[str, np.ndarray]
+    cond_arrays : Dict[str, np.ndarray]
         Keys = condition labels
         Values = 2D numpy arrays (n_trials x n_timepoints)
     """

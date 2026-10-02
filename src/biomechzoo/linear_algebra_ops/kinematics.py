@@ -1,5 +1,4 @@
 import numpy as np
-from typing import Any
 from scipy.spatial.transform import Rotation as R
 from biomechzoo.processing.addchannel_data import addchannel_data
 from biomechzoo.linear_algebra_ops.make_unit import make_unit
@@ -17,13 +16,17 @@ def _extract_segment_label(channel_name: str) -> str:
 
     Returns
     -------
-    str
+    label : str
         The segment label (e.g., 'LSh').
     """
-    return channel_name.rsplit("_", maxsplit=1)[-1]
+    label = channel_name.rsplit("_", maxsplit=1)[-1]
+
+    return label
 
 
-def _stack_channel_data(data: dict, channels: list[str], axis: int = -1) -> np.ndarray:
+def _stack_channel_data(
+        data: dict, channels: list[str], axis: int = -1,
+) -> np.ndarray:
     """
     Stack channel data from zoo dictionary into a single array.
 
@@ -38,7 +41,7 @@ def _stack_channel_data(data: dict, channels: list[str], axis: int = -1) -> np.n
 
     Returns
     -------
-    np.ndarray
+    stacked : np.ndarray
         Stacked data array.
 
     Raises
@@ -46,7 +49,9 @@ def _stack_channel_data(data: dict, channels: list[str], axis: int = -1) -> np.n
     KeyError
         If any channel is not found in data.
     """
-    return np.stack([data[ch]['line'] for ch in channels], axis=axis)
+    stacked = np.stack([data[ch]['line'] for ch in channels], axis=axis)
+
+    return stacked
 
 def _resolve_marker_label(data: dict, marker: str) -> str:
     """
@@ -67,7 +72,7 @@ def _resolve_marker_label(data: dict, marker: str) -> str:
 
     Returns
     -------
-    str
+    key : str
         The matching key as it exists in ``data``.
 
     Raises
@@ -95,7 +100,10 @@ def _resolve_marker_label(data: dict, marker: str) -> str:
     raise KeyError(f"Trajectory '{marker}' not found. Available markers: {list(data.keys())}")
 
 
-def _decomp2euler(R_rel: R, data: dict, ch_prox: list[str], ch_dist: list[str], sequence: str) -> dict:
+def _decomp2euler(
+        R_rel: R, data: dict, ch_prox: list[str], ch_dist: list[str],
+        sequence: str,
+) -> dict:
     """
     Decompose a relative DCM into Euler angles and store them in a zoo
     data dictionary.
@@ -122,7 +130,7 @@ def _decomp2euler(R_rel: R, data: dict, ch_prox: list[str], ch_dist: list[str], 
 
     Returns
     -------
-    dict
+    data : dict
         The input ``data`` dictionary updated with three new channels:
         ``'<prox>_<dist>_alpha'``, ``'<prox>_<dist>_beta'``,
         and ``'<prox>_<dist>_gamma'``, containing the first, second,
@@ -139,7 +147,7 @@ def _decomp2euler(R_rel: R, data: dict, ch_prox: list[str], ch_dist: list[str], 
 
     return data
 
-def _explodedcm(data:dict, dcm:np.ndarray, seg:str)-> dict:
+def _explodedcm(data: dict, dcm: np.ndarray, seg: str) -> dict:
 
     """
      Store the column vectors of a direction cosine matrix (DCM) as separate
@@ -157,7 +165,7 @@ def _explodedcm(data:dict, dcm:np.ndarray, seg:str)-> dict:
 
      Returns
      -------
-     dict
+     data : dict
          The input ``data`` dictionary updated with three new channels:
          ``'i_<seg>'``, ``'j_<seg>'``, and ``'k_<seg>'``, containing the
          first, second, and third column vectors of the DCM respectively.
@@ -192,7 +200,7 @@ def _create_rot_matrix(axis: str, degrees: float) -> np.ndarray:
 
     Returns
     -------
-    ndarray of shape (3, 3)
+    R : ndarray of shape (3, 3)
         Rotation matrix describing the rotation about the given axis.
 
     Raises
@@ -219,7 +227,9 @@ def _create_rot_matrix(axis: str, degrees: float) -> np.ndarray:
 
     return R
 
-def rotate_dcm_data(data: dict, ch: list[str], axis: str, degrees: float)-> dict:
+def rotate_dcm_data(
+        data: dict, ch: list[str], axis: str, degrees: float,
+) -> dict:
     """
     Apply a rotation about a principal axis to one segment's DCM.
 
@@ -238,7 +248,7 @@ def rotate_dcm_data(data: dict, ch: list[str], axis: str, degrees: float)-> dict
 
     Returns
     -------
-    dict
+    data : dict
         The input ``data`` dictionary with the DCM channels updated in place
         to reflect the applied rotation.
 
@@ -270,7 +280,9 @@ def rotate_dcm_data(data: dict, ch: list[str], axis: str, degrees: float)-> dict
 
     return data
 
-def quats2euler_data(data: dict, ch_prox: list[str], ch_dist: list[str], sequence: str) -> dict:
+def quats2euler_data(
+        data: dict, ch_prox: list[str], ch_dist: list[str], sequence: str,
+) -> dict:
     """
     Compute Euler angles of the distal segment relative to the proximal segment
     from quaternion data stored in a zoo data dictionary.
@@ -294,7 +306,7 @@ def quats2euler_data(data: dict, ch_prox: list[str], ch_dist: list[str], sequenc
 
     Returns
     -------
-    dict
+    data : dict
         The input ``data`` dictionary updated with three new channels:
         ``'<prox>_<dist>_alpha'``, ``'<prox>_<dist>_beta'``,
         and ``'<prox>_<dist>_gamma'``, containing the first, second,
@@ -329,7 +341,9 @@ def quats2euler_data(data: dict, ch_prox: list[str], ch_dist: list[str], sequenc
 
     return data
 
-def dcms2euler_data(data: dict, ch_prox: list[str], ch_dist: list[str], sequence: str) -> dict:
+def dcms2euler_data(
+        data: dict, ch_prox: list[str], ch_dist: list[str], sequence: str,
+) -> dict:
     """
     Compute Euler angles of the distal segment relative to the proximal segment
     from direction cosine matrices (DCMs) stored in a zoo data dictionary.
@@ -353,7 +367,7 @@ def dcms2euler_data(data: dict, ch_prox: list[str], ch_dist: list[str], sequence
 
     Returns
     -------
-    dict
+    data : dict
         The input ``data`` dictionary updated with three new channels:
         ``'<prox>_<dist>_alpha'``, ``'<prox>_<dist>_beta'``,
         and ``'<prox>_<dist>_gamma'``, containing the first, second,
@@ -388,7 +402,9 @@ def dcms2euler_data(data: dict, ch_prox: list[str], ch_dist: list[str], sequence
 
     return data
 
-def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: str)-> dict:
+def marker2dcm_data(
+        data: dict, seg: str, origin: str, marker_1: str, marker_2: str,
+) -> dict:
     """
     Compute a right-handed local coordinate system (LCS) from motion capture marker positions
     and store it as a direction cosine matrix (DCM) in the zoo data dictionary.
@@ -414,7 +430,7 @@ def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: 
 
     Returns
     -------
-    dict
+    data : dict
         The input ``data`` dictionary updated with three new channels:
         ``'i_<seg>'``, ``'j_<seg>'``, and ``'k_<seg>'``, containing the
         first, second, and third column vectors of the DCM respectively.
@@ -461,7 +477,7 @@ def marker2dcm_data(data: dict, seg: str, origin: str, marker_1: str, marker_2: 
 
     return data
 
-def quats2dcm_data(data:dict, seg:str, ch:list[str]) -> dict:
+def quats2dcm_data(data: dict, seg: str, ch: list[str]) -> dict:
     """
     Compute a direction cosine matrix (DCM) from quaternion data and store it in the zoo data dictionary.
 
@@ -478,7 +494,7 @@ def quats2dcm_data(data:dict, seg:str, ch:list[str]) -> dict:
 
     Returns
     -------
-    dict
+    data : dict
         The input ``data`` dictionary updated with three new channels:
         ``'i_<seg>'``, ``'j_<seg>'``, and ``'k_<seg>'``, containing the
         first, second, and third column vectors of the DCM respectively.

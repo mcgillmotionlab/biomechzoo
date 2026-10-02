@@ -1,28 +1,76 @@
+from typing import Dict, Optional
+
 import numpy as np
+from numpy.typing import ArrayLike
+
 from biomechzoo.processing.addchannel_data import addchannel_data
 from biomechzoo.utils.common_substring import common_substring_join
 
-def compute_magnitude_line(x,y,z):
-    magnitude = np.sqrt((x**2) + (y**2) + (z **2))
-    return magnitude
 
-def compute_magnitude_data(data, ch_x, ch_y, ch_z, ch_new_name=None):
+def compute_magnitude_data(
+        data: Dict, ch_x: Optional[str], ch_y: Optional[str],
+        ch_z: Optional[str], ch_new_name: Optional[str] = None,
+) -> Dict:
     """
-    Compute the magnitude of acceleration data from IMU channels (BiomechZoo format).
+    Compute Euclidean magnitude from IMU channels stored in a BiomechZoo-style data dict.
 
-    Returns the magnitude
+    Parameters
+    ----------
+    data : dict
+        BiomechZoo data structure where each channel is stored as:
+        data[channel]['line'] -> np.ndarray
+
+    ch_x, ch_y, ch_z : str or None
+        Channel names for X, Y, Z components.
+        Any channel can be None (treated as missing / ignored).
+
+        Rules:
+        - At least 2 channels must be provided
+        - Missing channels are treated as zero contribution
+
+    ch_new_name : str or None
+        Name of output magnitude channel.
+        If None, a name is automatically generated.
+
+    Returns
+    -------
+    data : dict
+        Updated data dictionary with added magnitude channel.
     """
-    # extract channels from data
-    x = data[ch_x]['line']
-    y = data[ch_y]['line']
-    z = data[ch_z]['line']
+
+    if ch_x is None:
+        x = None
+    else:
+        x = data[ch_x]['line']
+
+    if ch_y is None:
+        y = None
+    else:
+        y = data[ch_y]['line']
+
+    if ch_z is None:
+        z = None
+    else:
+        z = data[ch_z]['line']
+
+    # sanity check
+    n_channels = sum(c is not None for c in [x, y, z])
+
+    if n_channels == 0:
+        raise ValueError("No valid channels provided for magnitude computation.")
+
+    if n_channels < 2:
+        raise ValueError(
+            "At least 2 channels are required for magnitude computation."
+        )
 
     #calculate the magnitude of the data
-    magnitude_data = compute_magnitude_line(x,y,z)
+    magnitude_data = compute_magnitude_line(x, y, z)
 
-    # get name of new channel:
+    # get name of the new channel:
     if ch_new_name is None:
-        ch_new_name = common_substring_join([ch_x, ch_y, ch_z])
+        valid_names = [ch for ch in [ch_x, ch_y, ch_z] if ch is not None]
+        ch_new_name = common_substring_join(valid_names)
 
         if ch_new_name.startswith("_"):
             ch_new_name = ch_new_name[1:]
@@ -34,4 +82,92 @@ def compute_magnitude_data(data, ch_x, ch_y, ch_z, ch_new_name=None):
     return data
 
 
+def compute_magnitude_line(
+        x: Optional[ArrayLike], y: Optional[ArrayLike],
+        z: Optional[ArrayLike],
+) -> np.ndarray:
+    """
+    Compute Euclidean magnitude (supports 2D by allowing y or z to be None).
 
+    Parameters
+    ----------
+    x, y, z : array_like or None
+        Signal components. Any component can be None.
+        If a component is None, it is treated as zero (i.e., 2D or 1D data is supported).
+
+    Returns
+    -------
+    magnitude : ndarray
+        Vector magnitude sqrt(x^2 + y^2 + z^2)
+    """
+
+    # Find a reference length from the first non-None input
+    ref = x if x is not None else (y if y is not None else z)
+    if ref is None:
+        raise ValueError("At least one of x, y, z must be provided")
+    ref = np.asarray(ref)
+
+    x = _prep(x, ref)
+    y = _prep(y, ref)
+    z = _prep(z, ref)
+
+    magnitude = np.sqrt(x**2 + y**2 + z**2)
+
+    return magnitude
+
+def _prep(a: Optional[ArrayLike], ref: np.ndarray) -> np.ndarray:
+    """
+    Convert input to array or replace None with zeros matching ref shape.
+
+    Parameters
+    ----------
+    a : array_like or None
+        Value to convert. If None, a zero array matching ``ref`` is
+        returned instead.
+    ref : ndarray
+        Reference array whose shape is used when ``a`` is None.
+
+    Returns
+    -------
+    arr : ndarray
+        ``a`` converted to an array, or zeros matching ``ref``'s shape.
+    """
+    if a is None:
+        arr = np.zeros_like(ref)
+    else:
+        arr = np.asarray(a)
+
+    return arr
+
+
+#-------TESTING-----
+if __name__ == "__main__":
+    import numpy as np
+    from biomechzoo.utils.get_sample_zoo_file import load_sample_zoo_file
+    from biomechzoo.processing.explodechannel_data import explodechannel_data
+    data = load_sample_zoo_file()
+    data = explodechannel_data(data)
+
+    # test compute_magnitude_data
+    data = compute_magnitude_data(data, ch_x='SACR_x', ch_y='SACR_y', ch_z='SACR_z')
+    data = compute_magnitude_data(data, ch_x='SACR_x', ch_y='SACR_y', ch_z=None)
+
+    # test compute_magnitude_line
+    x = np.array([3, 0, 0])
+    y = np.array([4, 0, 0])
+    z = np.array([5, 0, 0])
+
+    mag = compute_magnitude_line(x, y, z)
+    print("3D Magnitude output:")
+    print(mag)
+    print("Expected output:[7.07106781, 0, 0]")
+
+    mag = compute_magnitude_line(x, y, z=None)
+    print("2D Magnitude output:")
+    print(mag)
+    print("Expected output:[5, 0, 0]")
+
+    mag = compute_magnitude_line(x, y=None, z=None)
+    print("1D Magnitude output:")
+    print(mag)
+    print("Expected output:[3, 0, 0]")

@@ -1,9 +1,10 @@
-import numpy as np
 from pathlib import Path
+from typing import Dict, Optional
+
 from biomechzoo.utils.version import get_biomechzoo_version
 
 
-def set_zoosystem(fl=None):
+def set_zoosystem(fl: Optional[str] = None) -> Dict:
     """
     Create the 'zoosystem' metadata branch for data imported into BiomechZoo.
 
@@ -14,9 +15,10 @@ def set_zoosystem(fl=None):
 
     Returns
     -------
-    dict
-        Dictionary containing default BiomechZoo system parameters including
-        Video, Analog, Anthro, Units, Version, and CompInfo sections.
+    zoosystem : dict
+        Dictionary containing default BiomechZoo system parameters
+        including Video, Analog, Anthro, Units, Version, and CompInfo
+        sections.
     """
 
     # Default top-level fields

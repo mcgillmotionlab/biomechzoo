@@ -1,9 +1,27 @@
 import copy
+from typing import Dict, List, Optional
+
 import numpy as np
 
 
 def _apply_lag(sig: np.ndarray, lag: int) -> np.ndarray:
-    """Trim `lag` samples from the start (positive) or end (negative) of a signal."""
+    """
+    Trim ``lag`` samples from the start (positive) or end (negative)
+    of a signal.
+
+    Parameters
+    ----------
+    sig : ndarray
+        Input signal.
+    lag : int
+        Number of samples to trim. Positive trims from the start,
+        negative trims from the end, zero leaves ``sig`` unchanged.
+
+    Returns
+    -------
+    trimmed : ndarray
+        Trimmed signal.
+    """
     if lag > 0:
         return sig[lag:]
     elif lag < 0:
@@ -24,7 +42,7 @@ def _cross_correlation(sig1: np.ndarray, sig2: np.ndarray) -> int:
 
     Returns
     -------
-    int
+    lag : int
         Estimated lag in samples. Positive means sig1 leads sig2;
         negative means sig2 leads sig1.
     """
@@ -76,7 +94,7 @@ def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str]
 
     Returns
     -------
-    dict
+    data_copy : dict
         A deep copy of `data` with the lagged channels shifted and all
         affected channels trimmed to a common length.
 

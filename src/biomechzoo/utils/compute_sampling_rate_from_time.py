@@ -1,7 +1,10 @@
 import numpy as np
+from numpy.typing import ArrayLike
 
 
-def compute_sampling_rate_from_time(t, verbose=False):
+def compute_sampling_rate_from_time(
+        t: ArrayLike, verbose: bool = False,
+) -> int:
     """
     Compute the sampling rate from a time column.
 

@@ -2,7 +2,7 @@ import numpy as np
 from scipy.interpolate import interp1d
 
 
-def normalize_line(channel_data, nlength=101):
+def normalize_line(channel_data: np.ndarray, nlength: int = 101) -> np.ndarray:
     """
     Interpolate a channel array to a target length.
 

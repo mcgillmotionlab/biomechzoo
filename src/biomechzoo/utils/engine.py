@@ -1,9 +1,16 @@
 import os
+from typing import List, Optional, Union
+
 import numpy as np
 
 
-def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, name_excludes=None,
-           match_all=False, verbose=False):
+def engine(
+        root_folder: str, extension: str = '.zoo',
+        subfolders: Optional[Union[str, List[str]]] = None,
+        name_contains: Optional[Union[str, List[str]]] = None,
+        name_excludes: Optional[Union[str, List[str]]] = None,
+        match_all: bool = False, verbose: bool = False,
+) -> list[str]:
     """
     Recursively search for files with a given extension, with optional filters.
 
@@ -28,8 +35,8 @@ def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, n
 
     Returns
     -------
-    list of str
-        Sorted list of absolute file paths matching the search criteria.
+    matched_files : list[str]
+        Sorted list of string of absolute file paths matching the search criteria.
     """
 
     # check format of subfolders
@@ -87,7 +94,7 @@ def engine(root_folder, extension='.zoo', subfolders=None, name_contains=None, n
             matched_files.append(full_path)
 
     # sort list
-    matched_files = np.sort(matched_files)
+    matched_files = sorted(matched_files)
 
     if verbose:
         print("Found {} {} file(s) in subfolder(s) {} with name contains {} and name excludes {} (match_all={}):"

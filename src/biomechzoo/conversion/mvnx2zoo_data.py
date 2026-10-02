@@ -1,10 +1,28 @@
+from typing import Any, Dict
+
 import numpy as np
+
 from biomechzoo.mvn.load_mvnx import load_mvnx
 from biomechzoo.mvn.mvn import JOINTS, SEGMENTS
+from biomechzoo.mvn.mvnx_file_accessor import MvnxFileAccessor
 from biomechzoo.utils.set_zoosystem import set_zoosystem
 
-def mvnx2zoo_data(fl):
-    """ loads mvnx file from xsens"""
+
+def mvnx2zoo_data(fl: str) -> Dict:
+    """
+    Convert an Xsens .mvnx file to zoo format.
+
+    Parameters
+    ----------
+    fl : str
+        Path to the .mvnx file.
+
+    Returns
+    -------
+    data : dict
+        Zoo dictionary with joint angle and segment orientation
+        channels, foot strike events, and 'zoosystem' metadata.
+    """
 
     mvnx_file = load_mvnx(fl)
 
@@ -46,9 +64,20 @@ def mvnx2zoo_data(fl):
     return data
 
 
-def is_valid_for_zoo(val):
+def is_valid_for_zoo(val: Any) -> bool:
     """
-    Returns True if the value is valid for a MATLAB-compatible zoo structure.
+    Check whether a value is valid for a MATLAB-compatible zoo structure.
+
+    Parameters
+    ----------
+    val : Any
+        Value to check.
+
+    Returns
+    -------
+    valid : bool
+        True if the value is valid for a MATLAB-compatible zoo
+        structure (i.e. not None and not an empty list/array).
     """
     if val is None:
         return False
@@ -59,7 +88,27 @@ def is_valid_for_zoo(val):
     return True
 
 
-def _get_meta_info(fl, mvnx_file, data):
+def _get_meta_info(
+        fl: str, mvnx_file: MvnxFileAccessor, data: Dict,
+) -> Dict:
+    """
+    Add mvnx metadata to the 'zoosystem' branch of zoo data.
+
+    Parameters
+    ----------
+    fl : str
+        Path to the source .mvnx file. Unused; reserved for future
+        metadata that requires the original file path.
+    mvnx_file : MvnxFileAccessor
+        Parsed mvnx file accessor.
+    data : dict
+        Zoo data dictionary to update.
+
+    Returns
+    -------
+    data : dict
+        Zoo data dictionary with mvnx metadata added to 'zoosystem'.
+    """
     # todo: add more, see mvnx_file object
     data['zoosystem']['Video']['Freq'] = int(mvnx_file.frame_rate)
     data['zoosystem']['mvnx_version'] = mvnx_file.version
@@ -70,7 +119,25 @@ def _get_meta_info(fl, mvnx_file, data):
     return data
 
 
-def _get_foot_strike_events(mvnx_file, data):
+def _get_foot_strike_events(
+        mvnx_file: MvnxFileAccessor, data: Dict,
+) -> Dict:
+    """
+    Detect right/left heel-strike frames and add them as events.
+
+    Parameters
+    ----------
+    mvnx_file : MvnxFileAccessor
+        Parsed mvnx file accessor.
+    data : dict
+        Zoo data dictionary to update.
+
+    Returns
+    -------
+    data : dict
+        Zoo data dictionary with 'R_FS<n>'/'L_FS<n>' foot-strike
+        events added to one channel's 'event' branch.
+    """
     RHeel = np.zeros(mvnx_file.frame_count)
     LHeel = np.zeros(mvnx_file.frame_count)
 

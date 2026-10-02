@@ -1,21 +1,43 @@
-def batchdisp(msg, level=1, verbose='none'):
-    """ utility to control verbosity level during batch processing"""
-    level = _normalize_verbose(level)
-    verbose = _normalize_verbose(verbose)
+from typing import Union
+
+
+def batchdisp(
+        msg: str, level: int = 1,
+        verbose: int = 0,
+) -> None:
+    """
+    Print a message if the verbosity level permits.
+
+    Parameters
+    ----------
+    msg : str
+        Message to print.
+    level : {0, 1, 2}, optional
+        Verbosity level required for ``msg`` to be printed. Default is 1.
+    verbose : {0, 1, 2}, optional
+        Current verbosity setting. ``msg`` is printed when ``verbose``
+        is greater than or equal to ``level``. Default is 0. Here, 0 is
+        no output, 1 is minimal output, and 2 is all output.
+    """
+    # level = _normalize_verbose(level)
+    # verbose = _normalize_verbose(verbose)
+
+    if level not in (0, 1, 2):
+        raise ValueError(
+            'level must be 0, 1, or 2.'
+        )
+
+    if verbose not in (0, 1, 2):
+        raise ValueError(
+            'verbose must be 0, 1, or 2.'
+        )
+
     if verbose >= level:
         print(msg)
 
-def _normalize_verbose(verbose):
-    if isinstance(verbose, int):
-        if verbose not in (0, 1, 2):
-            raise ValueError("Integer verbose level must be 0 (none), 1 (minimal), or 2 (all)")
-        return verbose
-    elif isinstance(verbose, str):
-        verbose_map = {'none': 0, 'minimal': 1, 'all': 2}
-        if verbose.lower() not in verbose_map:
-            raise ValueError("String verbose level must be 'none', 'minimal', or 'all'")
-        return verbose_map[verbose.lower()]
-    else:
-        raise TypeError("Verbose must be an int (0–2) or str ('none', 'minimal', 'all')")
 
+if __name__ == '__main__':
+
+    print('Testing batchdisp()')
+    batchdisp(msg='This should print', level=1, verbose=1)
 

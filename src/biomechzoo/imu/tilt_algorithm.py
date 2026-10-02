@@ -1,10 +1,40 @@
-import numpy as np
 import math
+from typing import Dict, Optional, Tuple
+
+import numpy as np
 import pandas as pd
+from numpy.typing import ArrayLike
+
 from biomechzoo.processing.addchannel_data import addchannel_data
 
-def tilt_algorithm_data(data,ch_vert, ch_medlat, ch_antpost, plot_or_not=None):
 
+def tilt_algorithm_data(
+        data: Dict, ch_vert: str, ch_medlat: str, ch_antpost: str,
+        plot_or_not: Optional[bool] = None,
+) -> Dict:
+    """
+    Apply the tilt correction algorithm to the vertical, mediolateral,
+    and anteroposterior channels of zoo data.
+
+    Parameters
+    ----------
+    data : dict
+        Zoo file data dictionary.
+    ch_vert : str
+        Name of the vertical acceleration channel.
+    ch_medlat : str
+        Name of the mediolateral acceleration channel.
+    ch_antpost : str
+        Name of the anteroposterior acceleration channel.
+    plot_or_not : bool, optional
+        Unused. Reserved for future plotting support.
+
+    Returns
+    -------
+    data : dict
+        Zoo file data dictionary with the tilt-corrected channels
+        (``<channel>_tilt_corr``) added.
+    """
     # extract channels from data
     avert = data[ch_vert]['line']
     amedlat = data[ch_medlat]['line']
@@ -19,9 +49,12 @@ def tilt_algorithm_data(data,ch_vert, ch_medlat, ch_antpost, plot_or_not=None):
     return data
 
 
-def tilt_algorithm_line(avert, amedlat, aantpost):
+def tilt_algorithm_line(
+        avert: ArrayLike, amedlat: ArrayLike, aantpost: ArrayLike,
+) -> Tuple[pd.DataFrame, np.ndarray, np.ndarray, np.ndarray]:
     """
-    TiltAlgorithm - to account for gravity and improper tilt alignment of a tri-axial trunk accelerometer.
+    Account for gravity and improper tilt alignment of a tri-axial
+    trunk accelerometer.
 
     Step 1: Extract raw measured (mean) accelerations
     Step 2: Calculate tilt angles
@@ -34,23 +67,28 @@ def tilt_algorithm_line(avert, amedlat, aantpost):
 
     Parameters
     ----------
-    avert : 1D-array
-        data predominantly in vertical direction. Expressed in g's
-    amedlat : 1D-array:
-        data predominantly in medio-lateral direction. Expressed in g's
-    aantpost : 1D-array
-        data predominantly in anterior-posterior direction. Expressed in g's
+    avert : array_like
+        Data predominantly in vertical direction. Expressed in g's.
+    amedlat : array_like
+        Data predominantly in medio-lateral direction. Expressed in g's.
+    aantpost : array_like
+        Data predominantly in anterior-posterior direction. Expressed
+        in g's.
+
     Returns
     -------
-    df_corrected : Nx3 DataFrame
-        the tilt corrected and gravity subtracted vertical, medio-lateral and anterior-posterior
-        acceleration signals
-    avert2: 1D-array
-        the tilt corrected acceleration data in vertical direction
-    amedlat2 : 1D-array
-        the tilt corrected acceleration data in medio-lateral direction
-    aantpost2: 1D-array
-        the tilt corrected acceleration data in anterior-posterior direction
+    df_corrected : pandas.DataFrame
+        The tilt corrected and gravity subtracted vertical,
+        medio-lateral, and anterior-posterior acceleration signals
+        (n x 3).
+    avert2 : ndarray
+        The tilt corrected acceleration data in vertical direction.
+    amedlat2 : ndarray
+        The tilt corrected acceleration data in medio-lateral direction.
+    aantpost2 : ndarray
+        The tilt corrected acceleration data in anterior-posterior
+        direction.
+
     Notes
     -----
     -  If average acceleration is above 5m/s^2, the signal will be corrected.

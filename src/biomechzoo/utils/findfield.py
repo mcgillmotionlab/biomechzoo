@@ -1,4 +1,11 @@
-def findfield(data, target_event):
+from typing import Dict, Optional, Tuple
+
+import numpy as np
+
+
+def findfield(
+        data: Dict, target_event: str,
+) -> Tuple[Optional[np.ndarray], Optional[str]]:
     """
     Search zoo data for the value and channel associated with a target event.
 
@@ -11,7 +18,7 @@ def findfield(data, target_event):
 
     Returns
     -------
-    events : list or None
+    events : ndarray or None
         Event data as ``[frame_index, value, 0]``, or None if not found.
     channel : str or None
         Name of the channel containing the event, or None if not found.
@@ -22,8 +29,17 @@ def findfield(data, target_event):
         events = content.get('event', {})
         if target_event in events:
             val = events[target_event]
+            val = [int(val[0]), int(val[1]), int(val[2])]
             return val, channel
 
     return None, None
 
 
+if __name__ == "__main__":
+    import os
+    from biomechzoo.utils.zload import zload
+
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    fl = os.path.join(project_root, 'data', 'sample_study', 'normalized', 'HC002D', 'Straight', 'HC002D06.zoo')
+    data = zload(fl)
+    val, channel = findfield(data, 'Left_FootOff1')
