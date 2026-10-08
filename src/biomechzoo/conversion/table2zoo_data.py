@@ -1,5 +1,6 @@
 import os
 import re
+import tempfile
 from typing import Dict, List, Optional, Tuple, Union
 
 import pandas as pd
@@ -11,7 +12,7 @@ from biomechzoo.utils.compute_sampling_rate_from_time import compute_sampling_ra
 def table2zoo_data(
         fl: str, extension: str, skip_rows: int = 0,
         freq: Optional[int] = None, data_type: str = 'Video',
-        sep: Optional[str] = None,
+        sep: Optional[str] = None, time_column: Optional[str] = None,
 ) -> Dict:
     """
     Convert a CSV or Parquet table to zoo format.
@@ -32,6 +33,9 @@ def table2zoo_data(
         Zoo section to store the channels under. Default is 'Video'.
     sep : str, optional
         Column separator for CSV files, passed to ``pandas.read_csv``.
+    time_column : str, optional
+        Name of the column containing timestamps. If None, the first
+        column with ``'time'`` in its name is used. Only used if freq is None.
 
     Returns
     -------
@@ -43,7 +47,7 @@ def table2zoo_data(
     ------
     ValueError
         If ``extension`` is not a supported format, or if ``freq`` is
-        None and no time column can be found to infer it.
+        None and the specified or inferred time column cannot be found.
     """
     if 'csv' in extension:
         df, metadata = _csv2zoo(fl, skip_rows=skip_rows, sep=sep)
@@ -63,13 +67,17 @@ def table2zoo_data(
 
     # now try to calculate freq from a time column
     if freq is None:
-        time_col = [col for col in df.columns if 'time' in col.lower()]
-        if time_col is not None and len(time_col) > 0:
-            time_data = df[time_col].to_numpy()[:, 0]
-            freq = compute_sampling_rate_from_time(time_data)
-        else:
-            raise ValueError('Unable to compute sampling rate for time column, please specify a sampling frequency'
-                             )
+        if time_column is None:
+            time_columns = [col for col in df.columns if 'time' in col.lower()]
+            if time_columns:
+                time_column = time_columns[0]
+        if time_column not in df.columns:
+            raise ValueError(
+                'Unable to find time column {!r}; specify a valid time_column or sampling frequency'
+                .format(time_column)
+            )
+        time_data = df[time_column].to_numpy()
+        freq = compute_sampling_rate_from_time(time_data)
     # add metadata
     if data_type == 'Video':
         data['zoosystem']['Video']['Freq'] = freq
@@ -200,7 +208,21 @@ def _parse_metadata(
 
 if __name__ == '__main__':
     """ for unit testing"""
-    current_dir = os.path.dirname(os.path.abspath(__file__))
-    project_root = os.path.dirname(os.path.dirname(os.path.dirname(current_dir)))
-    csv_file = os.path.join(project_root, 'data', 'csv', 'opencap_jogging.csv')
-    data = table2zoo_data(csv_file, extension='csv', freq=60)
+    with tempfile.TemporaryDirectory() as temp_dir:
+        csv_file = os.path.join(temp_dir, 'test_data.csv')
+        pd.DataFrame({
+            'timestamp': [i / 60 for i in range(10)],
+            'value': [float(i + 1) for i in range(10)],
+        }).to_csv(csv_file, index=False)
+
+        # test 1, given sampling rate of 60Hz
+        data = table2zoo_data(csv_file, extension='csv', freq=60)
+        assert data['zoosystem']['Video']['Freq'] == 60
+        print('sampling rate is {}'.format(data['zoosystem']['Video']['Freq'])) # Should print 60
+
+        # test 2, infer sampling rate from the specified timestamp column
+        data = table2zoo_data(
+            csv_file, extension='csv', freq=None, time_column='timestamp',
+        )
+        assert data['zoosystem']['Video']['Freq'] == 60
+        print('inferred sampling rate is {}'.format(data['zoosystem']['Video']['Freq'])) # Should print 60
