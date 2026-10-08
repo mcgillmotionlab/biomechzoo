@@ -70,7 +70,6 @@ def signal_analysis_data(
             else:
                 raise ValueError(f'Unknown event type: {etype}')
 
-
             # Add event to the channel's event dict
             if isinstance(exd, list):
                 for i, ex in enumerate(exd):

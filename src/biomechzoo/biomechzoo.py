@@ -1,8 +1,10 @@
 import inspect
 import os
+import random
 import time
 from typing import Dict, List, Literal, Optional, Union
 
+import numpy as np
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
 from biomechzoo.linear_algebra_ops.kinematics import (quats2euler_data, dcms2euler_data, marker2dcm_data, quats2dcm_data,
@@ -124,6 +126,111 @@ class BiomechZoo:
 
         batchdisp('all files saved to: {}'.format(self.in_folder ), level=1, verbose=self.verbose)
 
+    def file_info(
+            self, file_path: Optional[str] = None, head_rows: int = 5,
+    ) -> None:
+        """
+        Display metadata and a sample of a selected or random .zoo file.
+
+        Parameters
+        ----------
+        file_path : str, optional
+            Path to a .zoo file. If omitted, a file is selected randomly
+            from ``self.in_folder`` using the instance's file filters.
+            A filename can also be provided to select it from that folder.
+        head_rows : int, optional
+            Number of initial samples to display for each channel. Default
+            is 5.
+
+        Raises
+        ------
+        FileNotFoundError
+            If the requested file does not exist or no .zoo files are found
+            when selecting a random file.
+        ValueError
+            If ``head_rows`` is negative or the selected file is not a
+            ``.zoo`` file.
+        """
+        if isinstance(head_rows, bool) or not isinstance(head_rows, int) or head_rows < 0:
+            raise ValueError('head_rows must be a non-negative integer.')
+
+        if file_path is None:
+            files = engine(
+                self.in_folder, name_contains=self.name_contains,
+                name_excludes=self.name_excludes, subfolders=self.subfolders,
+            )
+            if not files:
+                raise FileNotFoundError(
+                    'No .zoo files found in {!r}.'.format(self.in_folder)
+                )
+            selected_file = random.choice(files)
+        else:
+            selected_file = file_path
+            if not os.path.isfile(selected_file):
+                folder_file = os.path.join(self.in_folder, file_path)
+                if os.path.isfile(folder_file):
+                    selected_file = folder_file
+                else:
+                    matches = engine(
+                        self.in_folder, name_contains=self.name_contains,
+                        name_excludes=self.name_excludes, subfolders=self.subfolders,
+                    )
+                    selected_file = next(
+                        (path for path in matches if os.path.basename(path) == file_path),
+                        selected_file,
+                    )
+                    if not os.path.isfile(selected_file):
+                        raise FileNotFoundError(
+                            'File {!r} was not found.'.format(file_path)
+                        )
+
+        if not selected_file.lower().endswith('.zoo'):
+            raise ValueError('file_info only supports .zoo files.')
+
+        data = zload(selected_file)
+        zoosystem = data.get('zoosystem', {})
+        video = zoosystem.get('Video', {})
+        analog = zoosystem.get('Analog', {})
+        video_channels = video.get('Channels', [])
+        analog_channels = analog.get('Channels', [])
+        if isinstance(video_channels, str):
+            video_channels = [video_channels]
+        if isinstance(analog_channels, str):
+            analog_channels = [analog_channels]
+        channels = list(dict.fromkeys(
+            list(video_channels) + list(analog_channels)
+        ))
+        if not channels:
+            channels = [
+                name for name, channel in data.items()
+                if isinstance(channel, dict) and 'line' in channel
+            ]
+
+        print('File: {}'.format(selected_file))
+        print('Size: {} bytes'.format(os.path.getsize(selected_file)))
+        print('Video frequency: {} Hz'.format(video.get('Freq', 'unknown')))
+        print('Analog frequency: {} Hz'.format(analog.get('Freq', 'unknown')))
+        print('Channels ({}): {}'.format(len(channels), ', '.join(channels)))
+
+        if not channels or head_rows == 0:
+            return
+
+        lines = {
+            channel: np.atleast_1d(np.asarray(data[channel]['line']))
+            for channel in channels if channel in data and 'line' in data[channel]
+        }
+        sample_count = max((len(line) for line in lines.values()), default=0)
+        print('Samples: {}'.format(sample_count))
+        print('First {} sample(s):'.format(head_rows))
+        print('sample\t' + '\t'.join(lines))
+        for row in range(head_rows):
+            values = []
+            if not any(row < len(line) for line in lines.values()):
+                break
+            for line in lines.values():
+                values.append(str(line[row]) if row < len(line) else '')
+            print('{}\t{}'.format(row, '\t'.join(values)))
+
     def remove_files(
             self, fl_remove: List[str], out_folder: Optional[str] = None,
             inplace: Optional[bool] = None,
@@ -163,7 +270,8 @@ class BiomechZoo:
             data = zload(f)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
 
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         t = time.time() - start_time
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, removed, t), level=1,
                   verbose=self.verbose)
@@ -195,9 +303,10 @@ class BiomechZoo:
             data = mvnx2zoo_data(f)
             f_zoo = f.replace('.mvnx', '.zoo')
             zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
-        # Update self.folder after processing
+        # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
     def c3d2zoo(
@@ -228,7 +337,8 @@ class BiomechZoo:
             data = c3d2zoo_data(c3d_obj)
             f_zoo = f.replace('.c3d', '.zoo')
             zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
@@ -237,6 +347,7 @@ class BiomechZoo:
             self, extension: str, out_folder: Optional[str] = None,
             inplace: Optional[bool] = None, skip_rows: int = 0,
             freq: Optional[int] = None, sep: str = ",",
+            time_column: Optional[str] = None,
     ) -> None:
         """
         Convert generic table files (CSV/Parquet) in the folder to .zoo format.
@@ -255,6 +366,10 @@ class BiomechZoo:
             Sampling frequency in Hz. If None, inferred from a time column.
         sep : str, optional
             Column separator. Default is ','.
+        time_column : str, optional
+            Name of the timestamp column used to infer sampling frequency.
+            If None, the first column with ``'time'`` in its name is used.
+            Only used if freq is None.
         """
         start_time = time.time()
         verbose = self.verbose
@@ -269,10 +384,17 @@ class BiomechZoo:
                     subfolders=self.subfolders)
         for f in fl:
             batchdisp('converting {} to zoo for {}'.format(extension, f), level=2, verbose=verbose)
-            data = table2zoo_data(f, extension=extension, skip_rows=skip_rows, freq=freq, sep=sep)
+            data = table2zoo_data(
+                f, extension=extension, skip_rows=skip_rows, freq=freq,
+                sep=sep, time_column=time_column,
+            )
+            if freq is None:
+                inferred_freq = data['zoosystem']['Video']['Freq']
+                batchdisp('Inferred sampling rate of {} Hz'.format(inferred_freq), level=1, verbose=verbose,)
             f_zoo = f.replace(extension, '.zoo')
             zsave(f_zoo, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
@@ -355,7 +477,8 @@ class BiomechZoo:
                                   fl1exclude=fl1exlude, fl2exclude=fl2exclude,
                                   out_folder=out_folder, strmatch=strmatch)
 
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp(
             '{} process complete for in {:.2f} secs'.format(method_name, time.time() - start_time),
             level=1, verbose=verbose)
@@ -394,7 +517,8 @@ class BiomechZoo:
             data = zload(f)
             data = tilt_algorithm_data(data, chname_avert, chname_medlat, chname_antpost)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp(
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
             level=1, verbose=verbose)
@@ -482,7 +606,8 @@ class BiomechZoo:
             for f in files_to_remove:
                 os.remove(f)
 
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete in {:.2f} secs'.format(method_name, time.time() - start_time),
             level=1, verbose=verbose)
 
@@ -521,11 +646,76 @@ class BiomechZoo:
             data = zload(f)
             data = compute_magnitude_data(data, chname1, chname2, chname3, ch_new_name)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp(
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
             level=1, verbose=verbose)
         # Update self.folder after  processing
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def signal_analysis(
+            self, channels: Union[str, List[str]], etype: str, ename: str,
+            single_channel: bool, constant: Optional[List[float]] = None,
+            save_channel: Optional[str] = None, out_folder: Optional[str] = None,
+            inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Run signal analysis and save its results to selected .zoo files.
+
+        Parameters
+        ----------
+        channels : str or list of str
+            Channel name(s) required for the analysis.
+        etype : str
+            Analysis type supported by :func:`signal_analysis_data`.
+        ename : str
+            Event name under which to store the analysis result.
+        single_channel : bool
+            Set True for single-channel analyses, False for multichannel analyses.
+        constant : list of float, optional
+            Analysis-specific constants, such as an event cutoff for LDLJ.
+        save_channel : str, optional
+            Channel to store a multichannel result on. Defaults to the first
+            channel in ``channels``.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        if isinstance(channels, str):
+            channels = [channels]
+
+        files = engine(
+            in_folder, extension='.zoo', name_contains=self.name_contains,
+            name_excludes=self.name_excludes, subfolders=self.subfolders,
+        )
+        for f in files:
+            batchdisp(
+                'running {} analysis on {} for {}'.format(etype, channels, f),
+                level=2, verbose=verbose,
+            )
+            data = zload(f)
+            data = signal_analysis_data(
+                data, channels=channels, etype=etype, ename=ename,
+                single_channel=single_channel, constant=constant,
+                save_channel=save_channel,
+            )
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(
+                method_name, len(files), time.time() - start_time,
+            ),
+            level=1, verbose=verbose,
+        )
         self._update_folder(out_folder, inplace, in_folder)
 
     def rectify(
@@ -556,7 +746,8 @@ class BiomechZoo:
             data = zload(f)
             data = rectify_data(data, chs)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp(
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
             level=1, verbose=verbose)
@@ -592,7 +783,8 @@ class BiomechZoo:
             data = zload(f)
             data = phase_angle_data(data, ch)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
         # Update self.folder after  processing
@@ -629,7 +821,8 @@ class BiomechZoo:
             data = zload(f)
             data = continuous_relative_phase_data(data, ch_dist, ch_prox)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
         # Update self.folder after  processing
@@ -677,7 +870,8 @@ class BiomechZoo:
                     data_new = split_trial_data(data, start, end)
                     if data_new is not None:
                         zsave(fl_new, data_new, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
         # Update self.folder after  processing
@@ -713,7 +907,8 @@ class BiomechZoo:
             data = zload(f)
             data = renameevent_data(data, evt, nevt)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
         # Update self.folder after  processing
@@ -749,7 +944,8 @@ class BiomechZoo:
             data = zload(f)
             data = renamechannel_data(data, ch, ch_new)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
         # Update self.folder after  processing
@@ -785,7 +981,8 @@ class BiomechZoo:
             data = zload(f)
             data = removechannel_data(data, ch, mode)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
         # Update self.folder after  processing
@@ -822,7 +1019,8 @@ class BiomechZoo:
             data = zload(f)
             data = removeevent_data(data, events, mode)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
         # Update self.folder after  processing
@@ -856,7 +1054,8 @@ class BiomechZoo:
             data = zload(f)
             data = explodechannel_data(data)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
         # Update self.folder after  processing
@@ -891,7 +1090,8 @@ class BiomechZoo:
             data = zload(f)
             data = normalize_data(data, nlen)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
         # Update self.folder after  processing
@@ -935,7 +1135,8 @@ class BiomechZoo:
             data = zload(f)
             data = addevent_data(data, ch, event_name, event_type, fsamp, constant)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
 
         # Update self.folder after  processing
@@ -973,7 +1174,8 @@ class BiomechZoo:
             data = zload(f)
             data = sync_channels_data(data, method, ch_1, ch_2, manual_lag, corr_ch_1, corr_ch_2)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp(
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
         # Update self.folder after  processing
@@ -1048,7 +1250,8 @@ class BiomechZoo:
             data = zload(f)
             data = partition_data(data, evt_start, evt_end)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
@@ -1084,7 +1287,8 @@ class BiomechZoo:
             data = zload(f)
             data = filter_data(data, ch, filt)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
             level=1, verbose=verbose)
         # Update self.folder after  processing
@@ -1120,7 +1324,8 @@ class BiomechZoo:
             data = zload(f)
             data = resample_data(data, up=up, down=down)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
             level=1, verbose=verbose)
         # Update self.folder after  processing
@@ -1159,7 +1364,8 @@ class BiomechZoo:
             data = zload(f)
             data = quats2euler_data(data, ch_prox, ch_dist, sequence)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
             level=1, verbose=verbose)
         # Update self.folder after  processing
@@ -1198,7 +1404,8 @@ class BiomechZoo:
             data = zload(f)
             data = dcms2euler_data(data, ch_prox, ch_dist, sequence)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp(
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
             level=1, verbose=verbose)
@@ -1239,7 +1446,8 @@ class BiomechZoo:
             data = zload(f)
             data = marker2dcm_data(data, seg=seg, origin=origin, marker_1=marker_1, marker_2=marker_2)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp(
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time),
             level=1, verbose=self.verbose)
@@ -1276,7 +1484,8 @@ class BiomechZoo:
             data = zload(f)
             data = quats2dcm_data(data, seg=seg, ch=ch)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp(
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl),
                                                                        time.time() - start_time),
@@ -1317,7 +1526,8 @@ class BiomechZoo:
             data = zload(f)
             data = rotate_dcm_data(data, ch=ch, axis=axis, degrees=degrees)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        method_name = inspect.currentframe().f_code.co_name
+        frame = inspect.currentframe()
+        method_name = frame.f_code.co_name if frame is not None else ''
         batchdisp(
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl),
                                                                        time.time() - start_time),

@@ -1,4 +1,4 @@
-SIGNAL ANALYSIS FUNCTIONS
+Signal Analysis Functions
 =========================
 
 Functions for computing linear and non-linear signal analysis metrics including impact peaks, loading rate, entropy, smoothness, and
