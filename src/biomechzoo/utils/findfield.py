@@ -29,8 +29,17 @@ def findfield(
         events = content.get('event', {})
         if target_event in events:
             val = events[target_event]
+            val = [int(val[0]), int(val[1]), int(val[2])]
             return val, channel
 
     return None, None
 
 
+if __name__ == "__main__":
+    import os
+    from biomechzoo.utils.zload import zload
+
+    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
+    fl = os.path.join(project_root, 'data', 'sample_study', 'normalized', 'HC002D', 'Straight', 'HC002D06.zoo')
+    data = zload(fl)
+    val, channel = findfield(data, 'Left_FootOff1')

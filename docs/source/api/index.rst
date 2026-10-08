@@ -10,6 +10,7 @@ API Reference
    ensembler
    imu
    linear_algebra_ops
+   signal_analysis
    statistics
    utils
    visualization

@@ -13,6 +13,7 @@ from biomechzoo.biomech_ops.resample import resample_data
 from biomechzoo.utils.engine import engine  # assumes this returns .zoo files in folder
 from biomechzoo.utils.zload import zload
 from biomechzoo.utils.zsave import zsave
+from biomechzoo.statistics.rmse_data import rmse_data, _export_rmse_csv
 from biomechzoo.utils.batchdisp import batchdisp
 from biomechzoo.utils.get_split_events import get_split_events
 from biomechzoo.processing.split_trial_data import split_trial_data
@@ -36,6 +37,7 @@ from biomechzoo.linear_algebra_ops.compute_magnitude_data import compute_magnitu
 from biomechzoo.linear_algebra_ops.rectify import rectify_data
 from biomechzoo.utils.group_by_terminal_folder import group_by_terminal_folder
 from biomechzoo.processing.rep_trial_data import reptrial_data
+from biomechzoo.statistics.rmse_data import rmse_data
 from biomechzoo.signal_analysis.signal_analysis_data import signal_analysis_data
 
 class BiomechZoo:
@@ -1140,11 +1142,7 @@ class BiomechZoo:
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
 
-    def sync_channels(
-            self, method: str, ch_1: List[str], ch_2: List[str],
-            manual_lag: Optional[int] = None, out_folder: Optional[str] = None,
-            inplace: Optional[bool] = None,
-    ) -> None:
+    def sync_channels(self, method, ch_1, ch_2, manual_lag = None, corr_ch_1: list[str] = None, corr_ch_2: list[str] = None, out_folder=None, inplace=None):
         """
         Biomechzoo-style wrapper for :func:`sync_channels_data`.
 
@@ -1174,7 +1172,7 @@ class BiomechZoo:
             if verbose:
                 batchdisp('sync_channels for file {} using method: {}'.format(f, method), level=2, verbose=verbose)
             data = zload(f)
-            data = sync_channels_data(data, method, ch_1, ch_2, manual_lag)
+            data = sync_channels_data(data, method, ch_1, ch_2, manual_lag, corr_ch_1, corr_ch_2)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         frame = inspect.currentframe()
         method_name = frame.f_code.co_name if frame is not None else ''
@@ -1182,6 +1180,44 @@ class BiomechZoo:
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
         # Update self.folder after  processing
         self._update_folder(out_folder, inplace, in_folder)
+
+
+    def rmse(
+            self, suffix1: str, suffix2: str,
+            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
+    ) -> None:
+        """
+        Compute RMSE between channels with specified suffixes.
+
+        Parameters
+        ----------
+        suffix1 : str
+            Suffix for the first channel group.
+        suffix2 : str
+            Suffix for the second channel group.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
+                    subfolders=self.subfolders)
+        for f in fl:
+            if verbose:
+                batchdisp('computing RMSE between channels with suffix {} and {} for {}'.format(suffix1, suffix2, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = rmse_data(data, suffix1, suffix2)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        method_name = inspect.currentframe().f_code.co_name
+        batchdisp('{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl), time.time() - start_time), level=1, verbose=verbose)
+        # Update self.folder after processing
+        self._update_folder(out_folder, inplace, in_folder)
+
 
     def partition(
             self, evt_start: str, evt_end: str,
@@ -1492,6 +1528,34 @@ class BiomechZoo:
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         frame = inspect.currentframe()
         method_name = frame.f_code.co_name if frame is not None else ''
+        batchdisp(
+            '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl),
+                                                                       time.time() - start_time),
+            level=1, verbose=self.verbose)
+        batchdisp('all files saved to: {}'.format(out_folder), level=1, verbose=verbose)
+        self._update_folder(out_folder, inplace, in_folder)
+
+    def rmse(self, suff1:str, suff2:str, export:bool, out_folder=None, inplace=False):
+        """
+        Biomechzoo style implementation of rmse_data
+        """
+        start_time = time.time()
+        verbose = self.verbose
+        in_folder = self.in_folder
+        if inplace is None:
+            inplace = self.inplace
+        all_rmse = {}
+        fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
+        for f in fl:
+            batchdisp('Calculating RMSE between {} and {} in file {}'.format(suff1, suff2, f), level=2, verbose=verbose)
+            data = zload(f)
+            data = rmse_data(data, suff1=suff1, suff2=suff2)
+            if export:
+                all_rmse[f] = data['zoosystem']["RMSE"].copy()
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
+        if export:
+            _export_rmse_csv(all_rmse, out_folder)
+        method_name = inspect.currentframe().f_code.co_name
         batchdisp(
             '{} process complete for {} file(s) in {:.2f} secs'.format(method_name, len(fl),
                                                                        time.time() - start_time),
