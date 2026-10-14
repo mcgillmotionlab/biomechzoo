@@ -1,5 +1,4 @@
 import copy
-import warnings
 from typing import Dict
 
 from biomechzoo.biomech_ops.normalize_line import normalize_line
@@ -21,15 +20,16 @@ def normalize_data(data: Dict, nlength: int = 101) -> Dict:
     -------
     data_new : dict
         Deep copy of the input data with all channel 'line' arrays
-        resampled to ``nlength`` samples.
+        resampled to ``nlength`` samples and event frame indices scaled
+        to the new length.
 
     Notes
     -----
     It is often necessary to partition data to a single cycle first
-    (see :func:`partition_data`) before normalizing.
+    (see: func:`partition_data`) before normalizing.
 
-    Event data and zoosystem metadata are not fully updated in the
-    current implementation; warnings are issued accordingly.
+    Event values and placeholders are preserved. Current end-frame
+    metadata are updated; acquisition and source metadata are unchanged.
     """
 
     # normalize channel length
@@ -37,19 +37,27 @@ def normalize_data(data: Dict, nlength: int = 101) -> Dict:
     for ch_name, ch_data in data_new.items():
         if ch_name != 'zoosystem':
             ch_data_line = ch_data['line']
-            # ch_data_event = ch_data['event']
             ch_data_event = ch_data.setdefault('event', {})
+            original_length = ch_data_line.shape[0]
             ch_data_normalized = normalize_line(ch_data_line, nlength)
             data_new[ch_name]['line'] = ch_data_normalized
+            for event in ch_data_event.values():
+                event_frame = event[0]
+                if event_frame == 999:
+                    continue
+                if original_length == 1 or nlength == 1:
+                    event[0] = 0
+                else:
+                    event[0] = round(
+                        event_frame * (nlength - 1) / (original_length - 1)
+                    )
             data_new[ch_name]['event'] = ch_data_event
-    warnings.warn('event data have not been normalized')
 
-    # update zoosystem
-    # todo: update all relevant zoosystem meta data related to data lengths
-    warnings.warn('zoosystem data have not been fully updated')
-    if 'Video' in data['zoosystem']:
-        data['zoosystem']['Video']['CURRENT_END_FRAME'] = nlength
-    if 'Analog' in data['zoosystem']:
-        data['zoosystem']['Analog']['CURRENT_END_FRAME'] = nlength
+    # Acquisition metadata such as sampling frequency and source frame
+    # counts describe the original recording and remain unchanged.
+    if 'Video' in data_new['zoosystem']:
+        data_new['zoosystem']['Video']['CURRENT_END_FRAME'] = nlength
+    if 'Analog' in data_new['zoosystem']:
+        data_new['zoosystem']['Analog']['CURRENT_END_FRAME'] = nlength
 
     return data_new
