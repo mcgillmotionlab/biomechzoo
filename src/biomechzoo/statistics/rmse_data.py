@@ -8,7 +8,7 @@ def rmse_line(a, b):
         raise ValueError(f"Shape mismatch: {a.shape} vs {b.shape}")
     return np.sqrt(np.mean((a - b) ** 2))
 
-def _export_rmse_csv(all_rmse: dict, out_folder: str):
+def export_rmse_csv(all_rmse: dict, out_folder: str):
 
     os.makedirs(out_folder, exist_ok=True)
     out_file = os.path.join(out_folder, 'rmse_results.csv')

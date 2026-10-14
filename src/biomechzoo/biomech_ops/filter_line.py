@@ -10,7 +10,7 @@ def filter_line(
         fs: Optional[float] = None,
 ) -> np.ndarray:
     """
-    Filter a 1-D signal array using a Butterworth filter.
+    Filter a 1-D signal array.
 
     Parameters
     ----------
@@ -18,12 +18,12 @@ def filter_line(
         Raw 1-D signal to be filtered.
     filt : dict, optional
         Filter parameter dictionary with keys:
-        - 'ftype' : str — filter type, e.g. 'butter' (default)
-        - 'order' : int — filter order (default: 4)
-        - 'cutoff' : float or tuple — cutoff frequency in Hz
-        - 'btype' : str — 'lowpass', 'highpass', 'bandpass', or 'bandstop'
-        - 'filtfilt' : bool — zero-phase filtering if True
-        - 'fs' : float — sampling frequency in Hz (required)
+        - 'ftype': str — filter type, e.g. 'butter' (default)
+        - 'order': int — filter order (default: 4)
+        - 'cutoff': float or tuple — cutoff frequency in Hz
+        - 'btype': str — 'lowpass', 'highpass', 'bandpass', or 'bandstop'
+        - 'filtfilt': bool — zero-phase filtering if True
+        - 'fs': float — sampling frequency in Hz (required)
     fs : float, optional
         Sampling frequency in Hz. Only used when filt is not provided.
 
@@ -73,7 +73,6 @@ def filter_line(
     order = filt['order']
     cutoff = filt['cutoff']
     btype = filt['btype']
-    filtfilt = filt['filtfilt']
     fs = filt['fs']
 
     # prepare normalized cutoff(s)
