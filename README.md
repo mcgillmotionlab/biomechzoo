@@ -29,7 +29,7 @@ BiomechZoo is a biomechanics processing toolbox for human movement analysis.
 
 ### Updating the package on pypi (developers only)
 open terminal
-cd to directory of repo
+cd to the directory of repo
 uv version --bump <major/minor/patch etc.>
 uv sync --group docs   
 uv run make -C docs html
