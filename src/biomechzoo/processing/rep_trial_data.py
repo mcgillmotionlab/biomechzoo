@@ -130,7 +130,7 @@ if __name__ == "__main__":
     channels = ['HipFlexion', 'KneeAngle']
 
     for t in range(n_trials):
-        trial_name = f"data{t+1}"
+        trial_name = 'data{0}'.format(t+1)
         gdata[trial_name] = {}
         for ch in channels:
             # synthetic waveform with slight random variation

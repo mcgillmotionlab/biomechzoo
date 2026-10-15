@@ -85,7 +85,7 @@ def filter_line(
         [b, a] = sgl.butter(N=order, Wn=norm_cutoff, btype=btype, )
         signal_filtered = sgl.filtfilt(b, a, signal_raw)
     else:
-        raise NotImplementedError(f"Filter type '{ftype}' not implemented.")
+        raise NotImplementedError("Filter type '{0}' not implemented.".format(ftype))
 
     return signal_filtered
 

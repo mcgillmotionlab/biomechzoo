@@ -54,7 +54,7 @@ class StyleContext:
 
     def should_show_legend(self, namespace: str, key: str) -> bool:
         """Returns True the first time (namespace, key) is seen,then False"""
-        token = f"{namespace}::{key}"
+        token = '{0}::{1}'.format(namespace, key)
         if token in self._legend_seen:
             return False
         self._legend_seen.add(token)

@@ -27,7 +27,7 @@ def zplot(
     """
 
     if ch not in data:
-        raise KeyError(f"Channel '{ch}' not found in data.")
+        raise KeyError("Channel '{0}' not found in data.".format(ch))
 
     y = data[ch]['line']
     x = range(len(y))

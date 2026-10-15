@@ -30,5 +30,5 @@ store = DataStore(fld = fld,  condition_spec= ConditionSpec(source = ConditionSo
 df = store.to_events_dataframe(channels=channels, event_names=events)
 print(df.head())
 
-subset = df.query(f"condition == 'Turn'")
+subset = df.query("condition == 'Turn'".format())
 print(subset.head())

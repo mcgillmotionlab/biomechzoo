@@ -38,7 +38,7 @@ def lineval_wide2arrays(
     for cond in conditions:
         group = df[df[condition_col] == cond]
         if group.empty:
-            raise ValueError(f"Condition '{cond}' not found in DataFrame")
+            raise ValueError("Condition '{0}' not found in DataFrame".format(cond))
         cond_arrays[cond] = group[time_cols].to_numpy()
 
     return cond_arrays

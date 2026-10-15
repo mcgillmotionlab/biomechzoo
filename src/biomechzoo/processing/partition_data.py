@@ -48,7 +48,7 @@ def partition_data(
     e2, _ = findfield(data, evt_end)
 
     if e1 is None or e2 is None or len(e1) == 0 or len(e2) == 0:
-        raise ValueError(f"Event not found: evt_start='{evt_start}' returned {e1}, evt_end='{evt_end}' returned {e2}")
+        raise ValueError("Event not found: evt_start='{0}' returned {1}, evt_end='{2}' returned {3}".format(evt_start, e1, evt_end, e2))
 
     data_new = copy.deepcopy(data)
     for ch_name, ch_data in sorted(data_new.items()):
@@ -62,7 +62,7 @@ def partition_data(
             except (IndexError, ValueError) as e:
                 # IndexError: if e1[0]:e2[0] goes beyond the available indices
                 # ValueError: less likely, but may arise with shape mismatches
-                warnings.warn(f"Skipping {ch_name} due to error: {e}")
+                warnings.warn('Skipping {0} due to error: {1}'.format(ch_name, e))
 
             # partition events
             events = ch_data['event']

@@ -623,12 +623,9 @@ class BiomechZoo:
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 
-    def signal_analysis(
-            self, channels: Union[str, List[str]], etype: str, ename: str,
-            single_channel: bool, constant: Optional[List[float]] = None,
-            save_channel: Optional[str] = None, out_folder: Optional[str] = None,
-            inplace: Optional[bool] = None,
-    ) -> None:
+    def signal_analysis(self, channels: Union[str, List[str]], etype: str, ename: str,
+                        constant: Optional[List[float]] = None, save_channel: Optional[str] = None,
+                        out_folder: Optional[str] = None, inplace: Optional[bool] = None) -> None:
         """
         Run signal analysis and save its results to selected .zoo files.
 
@@ -637,11 +634,9 @@ class BiomechZoo:
         channels : str or list of str
             Channel name(s) required for the analysis.
         etype : str
-            Analysis type supported by :func:`signal_analysis_data`.
+            Analysis type supported by: func:`signal_analysis_data`.
         ename : str
             Event name under which to store the analysis result.
-        single_channel : bool
-            Set True for single-channel analyses, False for multichannel analyses.
         constant : list of float, optional
             Analysis-specific constants, such as an event cutoff for LDLJ.
         save_channel : str, optional
@@ -666,11 +661,8 @@ class BiomechZoo:
         for f in files:
             batchdisp('running {} analysis on {} for {}'.format(etype, channels, f),level=2, verbose=self.verbose,)
             data = zload(f)
-            data = signal_analysis_data(
-                data, channels=channels, etype=etype, ename=ename,
-                single_channel=single_channel, constant=constant,
-                save_channel=save_channel,
-            )
+            data = signal_analysis_data(data, channels=channels, etype=etype, ename=ename, constant=constant,
+                                        save_channel=save_channel)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(files), start_time, out_folder, inplace, in_folder)
 

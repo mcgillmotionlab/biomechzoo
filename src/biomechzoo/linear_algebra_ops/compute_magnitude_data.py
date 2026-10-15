@@ -5,6 +5,7 @@ from numpy.typing import ArrayLike
 
 from biomechzoo.processing.addchannel_data import addchannel_data
 from biomechzoo.utils.common_substring import common_substring_join
+from biomechzoo.linear_algebra_ops.euclidean_norm import euclidean_norm, euclidean_norm
 
 
 def compute_magnitude_data(
@@ -65,7 +66,7 @@ def compute_magnitude_data(
         )
 
     #calculate the magnitude of the data
-    magnitude_data = compute_magnitude_line(x, y, z)
+    magnitude_data = euclidean_norm(x, y, z)
 
     # get name of the new channel:
     if ch_new_name is None:
@@ -82,40 +83,8 @@ def compute_magnitude_data(
     return data
 
 
-def compute_magnitude_line(
-        x: Optional[ArrayLike], y: Optional[ArrayLike],
-        z: Optional[ArrayLike],
-) -> np.ndarray:
-    """
-    Compute Euclidean magnitude (supports 2D by allowing y or z to be None).
-
-    Parameters
-    ----------
-    x, y, z : array_like or None
-        Signal components. Any component can be None.
-        If a component is None, it is treated as zero (i.e., 2D or 1D data is supported).
-
-    Returns
-    -------
-    magnitude : ndarray
-        Vector magnitude sqrt(x^2 + y^2 + z^2)
-    """
-
-    # Find a reference length from the first non-None input
-    ref = x if x is not None else (y if y is not None else z)
-    if ref is None:
-        raise ValueError("At least one of x, y, z must be provided")
-    ref = np.asarray(ref)
-
-    x = _prep(x, ref)
-    y = _prep(y, ref)
-    z = _prep(z, ref)
-
-    magnitude = np.sqrt(x**2 + y**2 + z**2)
-
-    return magnitude
-
 def _prep(a: Optional[ArrayLike], ref: np.ndarray) -> np.ndarray:
+    raise NotImplementedError
     """
     Convert input to array or replace None with zeros matching ref shape.
 
@@ -157,17 +126,12 @@ if __name__ == "__main__":
     y = np.array([4, 0, 0])
     z = np.array([5, 0, 0])
 
-    mag = compute_magnitude_line(x, y, z)
+    mag = euclidean_norm(x, y, z)
     print("3D Magnitude output:")
     print(mag)
     print("Expected output:[7.07106781, 0, 0]")
 
-    mag = compute_magnitude_line(x, y, z=None)
+    mag = euclidean_norm(x, y, z=None)
     print("2D Magnitude output:")
     print(mag)
     print("Expected output:[5, 0, 0]")
-
-    mag = compute_magnitude_line(x, y=None, z=None)
-    print("1D Magnitude output:")
-    print(mag)
-    print("Expected output:[3, 0, 0]")

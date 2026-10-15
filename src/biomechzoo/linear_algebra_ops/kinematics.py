@@ -97,7 +97,7 @@ def _resolve_marker_label(data: dict, marker: str) -> str:
             if candidate in data:
                 return candidate
 
-    raise KeyError(f"Trajectory '{marker}' not found. Available markers: {list(data.keys())}")
+    raise KeyError("Trajectory '{0}' not found. Available markers: {1}".format(marker, list(data.keys())))
 
 
 def _decomp2euler(
@@ -141,9 +141,9 @@ def _decomp2euler(
     prox_label = _extract_segment_label(ch_prox[0])
     dist_label = _extract_segment_label(ch_dist[0])
 
-    data = addchannel_data(data=data, ch_new_name=(f'{prox_label}_{dist_label}_alpha'), ch_new_data= euler[:,0])
-    data = addchannel_data(data=data, ch_new_name=(f'{prox_label}_{dist_label}_beta'), ch_new_data= euler[:,1])
-    data = addchannel_data(data=data, ch_new_name=(f'{prox_label}_{dist_label}_gamma'), ch_new_data= euler[:,2])
+    data = addchannel_data(data=data, ch_new_name=('{0}_{1}_alpha'.format(prox_label, dist_label)), ch_new_data= euler[:,0])
+    data = addchannel_data(data=data, ch_new_name=('{0}_{1}_beta'.format(prox_label, dist_label)), ch_new_data= euler[:,1])
+    data = addchannel_data(data=data, ch_new_name=('{0}_{1}_gamma'.format(prox_label, dist_label)), ch_new_data= euler[:,2])
 
     return data
 
@@ -181,9 +181,9 @@ def _explodedcm(data: dict, dcm: np.ndarray, seg: str) -> dict:
         j = dcm[:, :, 1]
         k = dcm[:, :, 2]
 
-    data = addchannel_data(data=data, ch_new_name=f'i_{seg}', ch_new_data=i)
-    data = addchannel_data(data=data, ch_new_name=f'j_{seg}', ch_new_data=j)
-    data = addchannel_data(data=data, ch_new_name=f'k_{seg}', ch_new_data=k)
+    data = addchannel_data(data=data, ch_new_name='i_{0}'.format(seg), ch_new_data=i)
+    data = addchannel_data(data=data, ch_new_name='j_{0}'.format(seg), ch_new_data=j)
+    data = addchannel_data(data=data, ch_new_name='k_{0}'.format(seg), ch_new_data=k)
 
     return data
 
@@ -267,12 +267,12 @@ def rotate_dcm_data(
 
     if len(segs) != 1:
         raise ValueError(
-            f"All channels must belong to the same segment. Got segments: {segs}"
+            'All channels must belong to the same segment. Got segments: {0}'.format(segs)
         )
 
     seg = segs.pop()
 
-    dcm = np.stack(arrays=[data[f"i_{seg}"]["line"], data[f"j_{seg}"]["line"], data[f"k_{seg}"]["line"]], axis=-1)
+    dcm = np.stack(arrays=[data['i_{0}'.format(seg)]["line"], data['j_{0}'.format(seg)]["line"], data['k_{0}'.format(seg)]["line"]], axis=-1)
     transform = _create_rot_matrix(axis=axis, degrees=degrees)
     rotated_dcm = dcm @ transform
 
@@ -386,9 +386,9 @@ def dcms2euler_data(
     """
 
     if len(ch_prox) != 3:
-        raise ValueError(f"prox_ch must have 3 elements corresponding to the i, j, k DCM column vectors")
+        raise ValueError('prox_ch must have 3 elements corresponding to the i, j, k DCM column vectors'.format())
     if len(ch_dist) != 3:
-        raise ValueError(f"dist_ch must have 3 elements corresponding to the i, j, k DCM column vectors")
+        raise ValueError('dist_ch must have 3 elements corresponding to the i, j, k DCM column vectors'.format())
 
     R_prox_array = _stack_channel_data(data, ch_prox)
     R_dist_array = _stack_channel_data(data, ch_dist)
@@ -470,7 +470,7 @@ def marker2dcm_data(
     det = np.linalg.det(dcm)
     if not np.allclose(det, 1.0, atol=1e-6):
         raise ValueError(
-            f"DCM is not orthonormal. Determinant: {det:.6e} (expected ~1.0)"
+            'DCM is not orthonormal. Determinant: {0:.6e} (expected ~1.0)'.format(det)
         )
 
     data = _explodedcm(data, dcm, seg)

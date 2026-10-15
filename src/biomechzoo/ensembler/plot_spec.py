@@ -25,7 +25,7 @@ class PlotSpec:
     def __post_init__(self) -> None:
         """Default ``title`` to the channel name when not provided."""
         if not self.title:
-            self.title = f"{self.channel}"
+            self.title = '{0}'.format(self.channel)
 
     @property
     def all_conditions(self) -> List[Optional[str]]:

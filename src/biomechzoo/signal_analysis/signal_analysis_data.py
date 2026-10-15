@@ -1,42 +1,49 @@
 import copy
 from typing import Dict
 
+import numpy as np
+
 from .compute_entropy import sample_entropy
 from .compute_impact import impact_peak, loading_rate
 from .compute_smoothness import log_dimensionless_jerk_imu
 from .compute_rms import rms_ratio_analysis
+from .symmetry import symmetry
+from .LyE import LyE_R
+from biomechzoo.processing.addchannel_data import addchannel_data
+
+
 def signal_analysis_data(
-        data: Dict, channels:str | list[str], etype:str, ename:str, single_channel:bool, constant:list=None, save_channel:bool=None
+        data: Dict, channels: str | list[str], etype: str, ename: str, constant: list = None, save_channel: bool = None
 ) -> Dict:
 
     """
-    This collection of functions operates on predetermined channels to calculate the parameter of preference on the given channel.
-
-    Currently implemented for single channel analysis: impact peak, loading rate, sample entropy;
-    Currently implemented for multichannel analysis: LDLJ, RMS ratio.
+    This collection of functions operates on channels to calculate linear and non-linear signal metrics.
 
     Parameters
     ----------
     data : dict
         Biomechanical data dictionary loaded from a zoo file.
     channels : str or list[str]
-        channel names for the analysis
+        For impact-peak and loading-rate analyses, one or more names of 1D channels can be used. If more than one,
+         the calculation is repeated independently for each channel. For other analyses, either three names of 1D
+         channels or one name of a channel containing a ``(samples, 3)`` array.
     etype : str
-        Name of the function to call
+        Name of the function to call.
+        Options include: 'impact_peak', 'loading_rate', 'ldlj', 'lyapanov_short', 'lyapanov_long', 'sample_entropy',
+        'rmsr', 'step_symmetry', and 'stride_symmetry'.
     ename : str
-        Event name of saving purposes.
-    single_channel : bool
-        if False, the analysis needs multiple channels to work.
+        Event name for saving purposes.
     constant : list, default=None
-        Any type of constants needed for the specific analysis.
+        Any type of constants needed for a specific analysis. Used for loading-rate analysis to specify the pre-peak
+        window.
     save_channel : str, default=None
-        Name of the channel to save the data to. Useful if the analysis needs multiple channels.
+        Name of the channel to save the data to. If None, the first channel in ``channels`` is used.
 
 
     Returns
     -------
     data_new : dict
-        A zoo type dictionary containing the added data
+        A zoo type dictionary containing the added data and events
 
     Raises
     ------
@@ -45,61 +52,66 @@ def signal_analysis_data(
     """
 
     data_new = copy.deepcopy(data)
+    if isinstance(channels, str):
+        channels = [channels]
+    else:
+        channels = list(channels)
+    if not channels:
+        raise ValueError("At least one channel must be specified.")
 
     freq = data["zoosystem"]["Video"]["Freq"]
+    etype = etype.lower()
 
-    # single channel analysis i.e. analysis only requires a single channel to compute.
-    if single_channel:
+    if etype in {"impact_peak", "loading_rate"}:
         for channel in channels:
-            yd = data_new[channel]['line']
-            etype = etype.lower()
-
-            if etype == 'impact_peak':
-                exd, eyd = impact_peak(ch_line=yd, freq=freq)
-            elif etype == 'loading_rate':
-                exd, eyd = loading_rate(ch_line=yd, freq=freq, pre_peak_window=20)
-            elif etype == 'sample_entropy':
-                eyd = sample_entropy(ch_line=yd, freq=freq)
-                exd = 0
-            elif etype =="step_symmetry":
-                NotImplementedError()
-            elif etype == 'stride_symmetry':
-                NotImplementedError()
-            elif etype=="rms":
-                NotImplementedError()
+            signal = np.asarray(data_new[channel]["line"])
+            if signal.ndim != 1:
+                raise ValueError(
+                    '{0} requires a 1D signal; channel {1!r} is not 1D.'.format(etype, channel)
+                )
+            if etype == "impact_peak":
+                exd, eyd = impact_peak(ch_line=signal, freq=freq)
             else:
-                raise ValueError(f'Unknown event type: {etype}')
+                exd, eyd = loading_rate(ch_line=signal, freq=freq, pre_peak_window=constant)
 
-            # Add event to the channel's event dict
             if isinstance(exd, list):
                 for i, ex in enumerate(exd):
-                    name = ename + '_' + str(i + 1)
-                    data_new[channel]['event'][name] = [int(ex), eyd[i], 0]
+                    name = '{0}_{1}'.format(ename, i + 1)
+                    data_new[channel]["event"][name] = [int(ex), eyd[i], 0]
             else:
-                data_new[channel]['event'][ename] = [exd, eyd, 0]
+                data_new[channel]["event"][ename] = [exd, eyd, 0]
+        return data_new
 
-    # Multiple channel analysis i.e. multiple channels are needed for the analysis.
+    channel = save_channel if save_channel is not None else channels[0]
+    if etype == "ldlj":
+        eyd = log_dimensionless_jerk_imu(data=data_new, ch=channels)
+    elif etype == "lyapanov_short":
+        exponents, _ = LyE_R(data=data_new, ch=channels)
+        eyd = exponents[0]
+    elif etype == "lyapanov_long":
+        exponents, _ = LyE_R(data=data_new, ch=channels)
+        eyd = exponents[1]
+    elif etype == "sample_entropy":
+        sampen_values, _ = sample_entropy(data=data_new, ch=channels)
+        eyd = sampen_values[-1]
+    elif etype == "rmsr":
+        eyd = rms_ratio_analysis(data=data_new, ch=channels)
+    elif etype in {"step_symmetry", "stride_symmetry"}:
+        d_1, _, d_2, _, autocorr = symmetry(data=data_new, ch=channels)
+        eyd = d_1 if etype == "step_symmetry" else d_2
+        data_new = addchannel_data(
+            data_new,
+            ch_new_name='{0}_autocorr'.format(ename),
+            ch_new_data=autocorr,
+        )
     else:
-        if save_channel is not None:
-            channel = save_channel
-        else:
-            channel = channels[0]
+        raise ValueError('Unknown event type: {0}'.format(etype))
 
-        etype = etype.lower()
-
-        if etype == 'ldlj':
-            eyd = log_dimensionless_jerk_imu(data=data_new, ch=channels, event=constant)
-            exd = 0
-        elif etype == "rmsr":
-            eyd = rms_ratio_analysis(data=data_new, ch=channels)
-            exd = 0
-
-        # Add event to the channel's event dict
-        if isinstance(eyd, dict):
-            for channel, ey in eyd.items():
-                data_new[channel]['event'][ename] = [0, ey, 0]
-        else:
-            data_new[channel]['event'][ename] = [exd, eyd, 0]
+    if isinstance(eyd, dict):
+        for result_channel, value in eyd.items():
+            data_new[result_channel]["event"][ename] = [0, value, 0]
+    else:
+        data_new[channel]["event"][ename] = [0, eyd, 0]
 
     return data_new
 
@@ -111,11 +123,11 @@ if __name__ == '__main__':
     fl = os.path.join(project_root, 'data', 'csv', 'manheim', 'subject_1_acc_running_waist.csv')
     data = table2zoo_data(fl, extension='csv', freq=50)
 
-    # conduct signal analysis on single channels
-    data = signal_analysis_data(data, channels=['attr_x'], single_channel=True, etype='impact_peak', ename='impact_peak')
-    data = signal_analysis_data(data, channels=['attr_x'], single_channel=True, etype='loading_rate', ename='loading_rate')
-    data = signal_analysis_data(data, channels=['attr_x'], single_channel=True, etype='sample_entropy', ename='sample_entropy')
+    # Impact and loading-rate analyses operate on individual 1D channels.
+    data = signal_analysis_data(data, channels=['attr_x'], etype='impact_peak', ename='impact_peak')
+    data = signal_analysis_data(data, channels=['attr_x'], etype='loading_rate', ename='loading_rate')
 
-    # conduction signal analysis of multiple (3D channels required)
-    data = signal_analysis_data(data, channels=['attr_x', 'attr_y', 'attr_z'], single_channel=False, etype='ldlj', ename='ldlj')
-    data = signal_analysis_data(data, channels=['attr_x', 'attr_y', 'attr_z'], single_channel=False, etype='rmsr', ename='rmsr')
+    # These analyses accept either three 1D channels or one Nx3 channel.
+    data = signal_analysis_data(data, channels=['attr_x', 'attr_y', 'attr_z'], etype='ldlj', ename='ldlj')
+    data = signal_analysis_data(data, channels=['attr_x', 'attr_y', 'attr_z'], etype='sample_entropy', ename='sample_entropy')
+    data = signal_analysis_data(data, channels=['attr_x', 'attr_y', 'attr_z'], etype='rmsr', ename='rmsr')

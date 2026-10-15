@@ -2,9 +2,11 @@ import numpy as np
 import math
 from typing import Dict
 
+from .signal_inputs import three_axis_signal
+
 
 def log_dimensionless_jerk_imu(
-        data: Dict, ch:str, **kwargs
+        data: Dict, ch: str
 ) -> float:
 
     """
@@ -25,11 +27,6 @@ def log_dimensionless_jerk_imu(
         Names of the three acceleration channels used to compute the
         Euclidean norm.
 
-    event : int, optional
-        Index corresponding to the final step of the analysis window.
-        If provided, the Euclidean norm is computed only up to this
-        sample. If omitted, the entire time series is analysed.
-
     Returns
     -------
     float
@@ -37,11 +34,7 @@ def log_dimensionless_jerk_imu(
         movement, whereas higher values indicate smoother movement.
     """
 
-    if kwargs['event'] is not None:
-        last_step = kwargs.get("event")
-        ldlj_factor = log_dimensionless_jerk_factors(data, ch, last_step)
-    else:
-        ldlj_factor = log_dimensionless_jerk_factors(data, ch)
+    ldlj_factor = log_dimensionless_jerk_factors(data, ch)
 
     ldlj = ldlj_factor[0] + ldlj_factor[1] + ldlj_factor[2]
 
@@ -49,7 +42,7 @@ def log_dimensionless_jerk_imu(
 
 
 # embedded functions
-def log_dimensionless_jerk_factors(data, ch, **kwargs):
+def log_dimensionless_jerk_factors(data: Dict, ch: str):
     """
     Returns the individual factors of the log dimensionless jerk metric
     used for IMU data.
@@ -60,23 +53,14 @@ def log_dimensionless_jerk_factors(data, ch, **kwargs):
     :return: factors to calculate the LDLJ
     """
 
-    if kwargs.get("last_step"):
-        last_step = kwargs.get("last_step")
-        accls = np.array([data[ch[0]]['line'][:last_step],
-                          data[ch[1]]["line"][:last_step],
-                          data[ch[2]]["line"][:last_step]]).T
-    else:
-        accls = np.array([data[ch[0]]['line'],
-                          data[ch[1]]["line"],
-                          data[ch[2]]["line"]]).T
-
+    accls, _ = three_axis_signal(data, ch)
     N = len(accls)
 
     gyros = None
 
-    a_z_static, a_y_static, a_x_static = gravity_component(np.array(data[ch[0]]['line']),
-                                                           np.array(data[ch[1]]["line"]),
-                                                           np.array(data[ch[2]]["line"]))
+    a_z_static, a_y_static, a_x_static = gravity_component(
+        accls[:, 0], accls[:, 1], accls[:, 2]
+    )
 
     grav = [a_z_static, a_y_static, a_x_static]
 

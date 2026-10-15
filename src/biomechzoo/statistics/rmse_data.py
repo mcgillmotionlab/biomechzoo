@@ -5,7 +5,7 @@ def rmse_line(a, b):
     a = np.asarray(a)
     b = np.asarray(b)
     if a.shape != b.shape:
-        raise ValueError(f"Shape mismatch: {a.shape} vs {b.shape}")
+        raise ValueError('Shape mismatch: {0} vs {1}'.format(a.shape, b.shape))
     return np.sqrt(np.mean((a - b) ** 2))
 
 def export_rmse_csv(all_rmse: dict, out_folder: str):
@@ -22,7 +22,7 @@ def export_rmse_csv(all_rmse: dict, out_folder: str):
             row = [filepath] + [rmse_vals.get(k, '') for k in all_keys]
             w.writerow(row)
 
-    print(f"RMSE results exported to: {out_file}")
+    print('RMSE results exported to: {0}'.format(out_file))
 
 
 def rmse_data(data: dict, suff1: str, suff2: str):
@@ -35,7 +35,7 @@ def rmse_data(data: dict, suff1: str, suff2: str):
     matching_bases = set(base_to_key1.keys()) & set(base_to_key2.keys())
 
     if not matching_bases:
-        raise ValueError(f"No matching keys found for suffixes '{suff1}' and '{suff2}'")
+        raise ValueError("No matching keys found for suffixes '{0}' and '{1}'".format(suff1, suff2))
 
     rmse_values = {}
 

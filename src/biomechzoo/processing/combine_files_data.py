@@ -66,7 +66,7 @@ def combine_files_within(
         suffix = ' '.join(s)
         ch_names = list(data_new.keys())
         ch_names.remove("zoosystem")
-        new_ch_names = [f"{ch}_{suffix}" for ch in ch_names if ch != "zoosystem"]
+        new_ch_names = ['{0}_{1}'.format(ch, suffix) for ch in ch_names if ch != "zoosystem"]
 
         data_new = renamechannel_data(data_new, ch_names, new_ch_names)
 
@@ -86,8 +86,8 @@ def combine_files_within(
                     line_data = data2[ch]["line"]
                     event_data = data2[ch]["event"]
 
-                    data_new = addchannel_data(data=data_new, ch_new_name= f"{ch}_{suffix}", ch_new_data=line_data, section=section)
-                    data_new[f"{ch}_{suffix}"]["event"] = event_data
+                    data_new = addchannel_data(data=data_new, ch_new_name= '{0}_{1}'.format(ch, suffix), ch_new_data=line_data, section=section)
+                    data_new['{0}_{1}'.format(ch, suffix)]["event"] = event_data
 
         zsave(fl[0], data_new, inplace=inplace, out_folder=out_folder, root_folder=fld)
 
@@ -216,8 +216,8 @@ def combine_files_between(
                         line_data = data2[ch]["line"]
                         event_data = data2[ch]["event"]
 
-                        data_new = addchannel_data(data=data_new, ch_new_name=f"{ch}_{suffix}", ch_new_data=line_data)
-                        data_new[f"{ch}_{suffix}"]["event"] = event_data
+                        data_new = addchannel_data(data=data_new, ch_new_name='{0}_{1}'.format(ch, suffix), ch_new_data=line_data)
+                        data_new['{0}_{1}'.format(ch, suffix)]["event"] = event_data
 
             zsave(f1, data_new, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
 

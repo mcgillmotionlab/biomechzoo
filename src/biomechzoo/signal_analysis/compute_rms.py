@@ -1,20 +1,16 @@
 import numpy as np
-import pandas as pd
+
+from .signal_inputs import three_axis_signal
 
 
 def rms_ratio_analysis(data, ch):
-    rms = []
-    for channel in ch:
-        ch_data = data[channel]["line"]
-        rms.append(root_mean_square(ch_data))
+    signal, channels = three_axis_signal(data, ch)
+    rms = np.sqrt(np.mean(signal**2, axis=0))
+    ratios = rms / np.linalg.norm(rms)
 
-    rms_t = np.linalg.norm(rms)
-    rms_ratio_x = rms[0]/rms_t
-    rms_ratio_y = rms[1]/rms_t
-    rms_ratio_z = rms[2]/rms_t
-
-
-    return {ch[0]: rms_ratio_x, ch[1]: rms_ratio_y, ch[2]: rms_ratio_z}
+    if len(channels) == 1:
+        return {channels[0]: ratios.tolist()}
+    return {channel: ratio for channel, ratio in zip(channels, ratios)}
 
 
 def root_mean_square(ndata):

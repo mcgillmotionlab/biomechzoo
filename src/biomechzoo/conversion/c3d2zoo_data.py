@@ -78,7 +78,7 @@ def c3d2zoo_data(c3d_obj: c3d) -> Dict:
                 subject = subjects[i].strip()
 
                 # Event channel name: e.g. 'Right_FootStrike' -> 'RightFootStrike'
-                event_name = f"{side}_{label}".replace(' ', '')
+                event_name = '{0}_{1}'.format(side, label).replace(' ', '')
                 event_name = ''.join(c for c in event_name if c.isalnum() or c == '_')  # make it a valid field name
 
                 if event_name not in events:
@@ -93,7 +93,7 @@ def c3d2zoo_data(c3d_obj: c3d) -> Dict:
                 valid_times = sorted([t for t in time_list if t != 0])
                 for j, time_val in enumerate(valid_times):
                     frame = round(time_val * video_freq) - original_start + 1  # MATLAB logic
-                    key_name = f"{event_name}{j + 1}"
+                    key_name = '{0}{1}'.format(event_name, j + 1)
 
                     # Place in correct channel
                     if 'SACR' in data:

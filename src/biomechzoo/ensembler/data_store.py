@@ -251,9 +251,7 @@ class DataStore:
             resolved = cond_map.get(channel)
             if resolved is None:
                 raise KeyError(
-                    f"No channel_map entry for base channel "
-                    f"{channel!r} under condition {condition!r}. "
-                    f"Available: {list(cond_map.keys())}"
+                    'No channel_map entry for base channel {0!r} under condition {1!r}. Available: {2}'.format(channel, condition, list(cond_map.keys()))
                 )
             return resolved
         return channel

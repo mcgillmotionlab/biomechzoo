@@ -82,7 +82,7 @@ def combine_imu_to_csv_data(
         df = pd.read_csv(csv_path, skiprows=skip_rows)
         for cols in sensor_columns.values():
             renamed = {
-                c: f"{prefix}_{c}" for c in cols
+                c: '{0}_{1}'.format(prefix, c) for c in cols
             }
             combined_dfs.append(df[cols].rename(columns=renamed))
 
@@ -91,7 +91,7 @@ def combine_imu_to_csv_data(
     combined_df.to_csv(out_file, index=False)
 
     if verbose:
-        print(f"Saved combined CSV to: {out_file}")
+        print('Saved combined CSV to: {0}'.format(out_file))
 
     return out_file
 
@@ -150,7 +150,7 @@ def combine_imu_to_csv(
 
     for subject, csv_files in subjects.items():
         batchdisp(
-            f'combine_imu_to_csv for {subject}',
+            'combine_imu_to_csv for {0}'.format(subject),
             level=2,
             verbose=verbose
         )
@@ -173,11 +173,10 @@ def combine_imu_to_csv(
                 csv_files=csv_sorted,
                 prefixes=prefix_sorted,
                 out_folder=subject_out_folder,
-                out_filename=f'{subject}_combined.csv',
+                out_filename='{0}_combined.csv'.format(subject),
                 verbose=verbose
             )
     batchdisp(
-        f'{inspect.currentframe().f_code.co_name} complete '
-        f'for {len(subjects)} file(s) in {time.time() - start_time:.2f}s',
+        '{0} complete for {1} file(s) in {2:.2f}s'.format(inspect.currentframe().f_code.co_name, len(subjects), time.time() - start_time),
         level=1,verbose=verbose
     )

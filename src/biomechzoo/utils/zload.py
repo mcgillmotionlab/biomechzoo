@@ -29,10 +29,10 @@ def zload(filepath: str) -> Dict:
         If ``filepath`` does not exist.
     """
     if not filepath.endswith('.zoo'):
-        raise ValueError(f"{filepath} is not a .zoo file")
+        raise ValueError('{0} is not a .zoo file'.format(filepath))
 
     if not os.path.exists(filepath):
-        raise FileNotFoundError(f"File not found: {filepath}")
+        raise FileNotFoundError('File not found: {0}'.format(filepath))
 
     mat_data = loadmat(filepath, struct_as_record=False, squeeze_me=True)
 

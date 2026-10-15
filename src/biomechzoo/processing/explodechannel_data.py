@@ -66,7 +66,7 @@ def explodechannel_data(
 
         ch_data = data_new[ch]['line']
         if ch_data.ndim != 2 or ch_data.shape[1] != 3:
-            print(f"Warning: channel '{ch}' 'line' is not n x 3 shape, skipping.")
+            print("Warning: channel '{0}' 'line' is not n x 3 shape, skipping.".format(ch))
             continue
 
         # Add exploded channels

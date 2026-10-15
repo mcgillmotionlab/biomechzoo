@@ -69,12 +69,12 @@ def eventval(
                             'condition': condition,
                             'subject': subject,
                             'file': fname,
-                            'event_name': f"{channel}_{evt}",
+                            'event_name': '{0}_{1}'.format(channel, evt),
                             'event_index': exd,
                             'event_value': eyd
                         })
                     except (KeyError, IndexError, TypeError) as e:
-                        print(f"Local event '{evt}' not found in channel '{channel}' for file '{fname}'")
+                        print("Local event '{0}' not found in channel '{1}' for file '{2}'".format(evt, channel, fname))
 
         # --- Global events ---
         if globalevts and ch:
@@ -83,13 +83,13 @@ def eventval(
                 # use findfield to locate where the global event is stored
                 evt_val, evt_ch = findfield(data, evt)
                 if not evt_ch:
-                    print(f"Global event '{evt}' not found in any channel for file '{fname}'")
+                    print("Global event '{0}' not found in any channel for file '{1}'".format(evt, fname))
                     continue
 
                 exd = int(evt_val[0])
                 for channel in ch:
                     if channel not in data:
-                        print(f"Skipping {evt}: channel {channel} not in data")
+                        print('Skipping {0}: channel {1} not in data'.format(evt, channel))
                         continue
                     try:
                         eyd = data[channel]['line'][exd]
@@ -97,12 +97,12 @@ def eventval(
                             'condition': condition,
                             'subject': subject,
                             'file': fname,
-                            'event_name': f"{channel}_{evt}",
+                            'event_name': '{0}_{1}'.format(channel, evt),
                             'event_index': exd,
                             'event_value': eyd
                         })
                     except (IndexError, KeyError, TypeError) as e:
-                        print(f"Global event '{evt}' index out of range in channel '{channel}' for file '{fname}': {e}")
+                        print("Global event '{0}' index out of range in channel '{1}' for file '{2}': {3}".format(evt, channel, fname, e))
 
         if anthroevts and ch:
             raise NotImplementedError

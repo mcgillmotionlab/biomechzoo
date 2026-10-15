@@ -99,7 +99,7 @@ def run_quality_check(
             children=
                 dcc.Graph(id='cycle-graph',
                     figure={"data": ensembler.fig.data,
-                            "layout":{"title": {"text": f"{ch[0]}", "x": 0.05, "xanchor": "left"},
+                            "layout":{"title": {"text": '{0}'.format(ch[0]), "x": 0.05, "xanchor": "left"},
                                       }
                             },
                           ), className="card",
@@ -282,7 +282,7 @@ def run_quality_check(
                 undo_disabled_out = False
 
             last_click_msg = json.dumps(record, indent=2)
-            click_count_msg = f"Total clicks: {len(clicks_out)}"
+            click_count_msg = 'Total clicks: {0}'.format(len(clicks_out))
 
             return last_click_msg, click_count_msg, clicks_out, fig_out, undo_out, undo_disabled_out
 
@@ -342,7 +342,7 @@ def run_quality_check(
     #     undo_disabled = len(undo_stack or []) == 0
     #
     #
-    #     return json.dumps(record, indent=2), f"Total clicks: {len(clicks)}", clicks, fig, undo_stack
+    #     return json.dumps(record, indent=2), "Total clicks: {}".format(len(clicks)), clicks, fig, undo_stack
 
 
     @app.callback(
@@ -385,7 +385,6 @@ def run_quality_check(
         return dcc.send_data_frame(df.to_csv, "removed_cycles.csv", index=False)
 
     app.run(debug=True)
-
 
 
 

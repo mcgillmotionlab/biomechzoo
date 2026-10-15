@@ -1,10 +1,14 @@
 import numpy as np
-import statsmodels.tsa.stattools as stattools
 import scipy.signal as signal
+
+from .autocorrelation import compute_autocorrelation
+
 
 def step_symmetry(ch_line, freq, direction=None):
     seconds = len(ch_line) / freq
-    autocorr = SignalUtils.compute_autocorrelation(ch_line, freq, duration_sec=int(seconds))
+    autocorr = compute_autocorrelation(
+        ch_line, freq, duration_sec=int(seconds)
+    )
 
     if direction == "ml":
         peaks, properties = signal.find_peaks(-autocorr, distance=15, height=0)
@@ -30,11 +34,3 @@ def step_symmetry(ch_line, freq, direction=None):
         # ad_2 = np.nan
 
     return [d_1, ad_1]
-
-
-class SignalUtils:
-    @staticmethod
-    def compute_autocorrelation(data, sample_rate, duration_sec=3):
-        lags = sample_rate * duration_sec
-        autocorr = stattools.acf(data, nlags=lags, fft=True)
-        return autocorr

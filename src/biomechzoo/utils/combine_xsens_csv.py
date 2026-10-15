@@ -55,9 +55,9 @@ def combine_quats_to_csv(
     for csv_path, prefix in zip(csv_files, prefixes):
         df = pd.read_csv(csv_path)
 
-        quat_df = df[quat_cols].rename(columns={c: f"{prefix}_{c}" for c in quat_cols})
-        gyr_df  = df[gyr_cols].rename(columns={c: f"{prefix}_{c}" for c in gyr_cols})
-        acc_df  = df[acc_cols].rename(columns={c: f"{prefix}_{c}" for c in acc_cols})
+        quat_df = df[quat_cols].rename(columns={c: '{0}_{1}'.format(prefix, c) for c in quat_cols})
+        gyr_df  = df[gyr_cols].rename(columns={c: '{0}_{1}'.format(prefix, c) for c in gyr_cols})
+        acc_df  = df[acc_cols].rename(columns={c: '{0}_{1}'.format(prefix, c) for c in acc_cols})
 
         all_sensor_dfs.extend([quat_df, gyr_df, acc_df])
 
@@ -65,6 +65,6 @@ def combine_quats_to_csv(
 
     out_file = os.path.join(save_folder, out_filename)
     combined_df.to_csv(out_file, index=False)
-    print(f"Saved combined CSV to: {out_file}")
+    print('Saved combined CSV to: {0}'.format(out_file))
 
     return out_file

@@ -167,7 +167,7 @@ class ConditionSpec:
                     )
                 self.channel_map = {
                     cond: {
-                        base : f"{base}{suffix}"
+                        base : '{0}{1}'.format(base, suffix)
                         for base in self.base_channels
                     }
                     for cond, suffix in self.suffix_map.items()
@@ -249,9 +249,7 @@ def align_by_subject(
         n_a, n_b = len(trials_a), len(trials_b)
         if n_a != n_b:
             warnings.warn(
-                f"Subject {subj!r} has {n_a} trials in condition A "
-                f"and {n_b} in condition B. "
-                f"Using first {min(n_a, n_b)} trials only."
+                'Subject {0!r} has {1} trials in condition A and {2} in condition B. Using first {3} trials only.'.format(subj, n_a, n_b, min(n_a, n_b))
             )
 
         for ia, ib in zip(trials_a, trials_b):
@@ -281,5 +279,5 @@ def resolve_shade(color: str) -> str:
 
     # shade color with opacity
     opacity = 0.2
-    shade_color = f"rgba({rgb[0]}, {rgb[1]}, {rgb[2]}, {opacity})"
+    shade_color = 'rgba({0}, {1}, {2}, {3})'.format(rgb[0], rgb[1], rgb[2], opacity)
     return shade_color

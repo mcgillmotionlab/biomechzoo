@@ -84,8 +84,7 @@ class IndividualLinesRenderer(Renderer):
                     opacity=0.45,
                     showlegend=show_leg,
                     hovertemplate=(
-                        f"<b>{subj}</b><br>"
-                        f"%{{x:.1f}}% | %{{y:.2f}}<extra></extra>"
+                        '<b>{0}</b><br>%{{x:.1f}}% | %{{y:.2f}}<extra></extra>'.format(subj)
                     ),
                 ), row=row, col=col)
 
@@ -131,12 +130,11 @@ class MeanSDRenderer(Renderer):
             show_leg = style.should_show_legend("mean", condition)
             fig.add_trace(go.Scatter(
                 x=x, y=mean,
-                name=f"Mean_{condition}",
-                legendgroup=f"Mean_{condition}",
+                name='Mean_{0}'.format(condition),
+                legendgroup='Mean_{0}'.format(condition),
                 line=dict(color=color, width=3, dash=dash),
                 hovertemplate=(
-                    f"<b>Mean – {condition}</b><br>"
-                    f"%{{x:.1f}}% | %{{y:.2f}}<extra></extra>"
+                    '<b>Mean – {0}</b><br>%{{x:.1f}}% | %{{y:.2f}}<extra></extra>'.format(condition)
                 ),
                 showlegend=show_leg,
             ), row=row, col=col)
@@ -162,18 +160,17 @@ class EventOverlayRenderer(Renderer):
                 for ev, subj in zip(evs, subjects):
                     color = style.subject_color(subj)
                     show_leg = style.should_show_legend(
-                        "event", f"{subj}_{event_name}",
+                        "event", '{0}_{1}'.format(subj, event_name),
                     )
                     fig.add_trace(go.Scatter(
                         x=[ev.x], y=[ev.y],
                         mode="markers",
-                        name=f"{subj} – {event_name}",
+                        name='{0} – {1}'.format(subj, event_name),
                         legendgroup=subj,
                         marker=dict(color=color, size=8),
                         showlegend=show_leg,
                         hovertemplate=(
-                            f"<b>{subj} – {event_name}</b><br>"
-                            f"x: %{{x:.1f}} | y: %{{y:.2f}}<extra></extra>"
+                            '<b>{0} – {1}</b><br>x: %{{x:.1f}} | y: %{{y:.2f}}<extra></extra>'.format(subj, event_name)
                         ),
                     ), row=row, col=col)
 
@@ -236,14 +233,14 @@ class ViolinRenderer(Renderer):
 
                     color = style.condition_color(condition)
                     label = (
-                        f"{condition} – {event_name} – {grp}"
+                        '{0} – {1} – {2}'.format(condition, event_name, grp)
                         if spec.group_by
-                        else f"{condition} – {event_name}"
+                        else '{0} – {1}'.format(condition, event_name)
                     )
                     show_leg = style.should_show_legend("violin", grp)
 
                     fig.add_trace(go.Violin(
-                        x = [f"{grp}"] * len(grp_values),
+                        x = ['{0}'.format(grp)] * len(grp_values),
                         y = grp_values,
                         name=grp,
                         legendgroup=label,
@@ -320,9 +317,7 @@ class BlandAltmanRenderer(Renderer):
         else:
             if len(spec.all_conditions) != 2:
                 raise ValueError(
-                    f"BlandAltmanRenderer requires exactly two "
-                    f"conditions, got {spec.all_conditions}. Use "
-                    f"companions= to specify the second"
+                    'BlandAltmanRenderer requires exactly two conditions, got {0}. Use companions= to specify the second'.format(spec.all_conditions)
                 )
             cond_a, cond_b = spec.all_conditions
             vals_a, vals_b, subjects = store.get_paired(
@@ -371,14 +366,14 @@ class BlandAltmanRenderer(Renderer):
 
         # bias, loa, and reference lines
         fig.add_hline(y = bias, line_color="black", line_dash="dash",
-                      annotation_text=f"Bias: {bias:.2f}",
+                      annotation_text='Bias: {0:.2f}'.format(bias),
                       annotation_position="bottom right", row=row, col=col)
 
         fig.add_hline(y = loa_upper, line_color="red", line_dash="dash",
-                      annotation_text = f"LoA: {loa_upper:.2f}",
+                      annotation_text = 'LoA: {0:.2f}'.format(loa_upper),
                       annotation_position = "top right", row=row, col=col)
         fig.add_hline(y = loa_lower, line_color="red", line_dash="dash",
-                      annotation_text = f"LoA: {loa_lower:.2f}",
+                      annotation_text = 'LoA: {0:.2f}'.format(loa_lower),
                       annotation_position = "bottom right", row=row, col=col)
 
         fig.add_hline(
@@ -427,9 +422,7 @@ class ScatterRenderer(Renderer):
         else:
             if not spec.events:
                 raise ValueError(
-                    f"ScatterRenderer requires 2 events to be "
-                    f"specified, got {spec.all_conditions}. Use "
-                    f"companions= to specify the second"
+                    'ScatterRenderer requires 2 events to be specified, got {0}. Use companions= to specify the second'.format(spec.all_conditions)
                 )
             cond_a, cond_b = spec.all_conditions
             vals_a, vals_b, subjects = store.get_paired(
@@ -485,7 +478,7 @@ class ScatterRenderer(Renderer):
 
             fig.add_trace(go.Scatter(
                 x=x_line, y=y_line,
-                mode="lines", name=f"OLS (R²={r_sq:.2f})",
+                mode="lines", name='OLS (R²={0:.2f})'.format(r_sq),
                 line=dict(color="#333", width=2.5),
                 showlegend=True,
             ), row=row, col=col)

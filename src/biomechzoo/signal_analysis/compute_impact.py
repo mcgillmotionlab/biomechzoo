@@ -1,6 +1,7 @@
 import numpy as np
-import statsmodels.tsa.stattools as stattools
 import scipy.signal as signal
+
+from .autocorrelation import compute_autocorrelation
 
 
 def impact_peak(ch_line, freq):
@@ -9,7 +10,6 @@ def impact_peak(ch_line, freq):
     mask = np.where(temp_heights > 0.25 * np.mean(temp_heights))
     eyd = temp_heights[mask]
     exd = peaks_idx[mask]
-
     return exd.tolist(), eyd.tolist()
 
 
@@ -34,7 +34,6 @@ def loading_rate(ch_line, freq, pre_peak_window=20):
             eyd.append(np.max(pre_peak_segment))
 
             exd.append(np.argmax(pre_peak_segment) + start_index)
-
     return exd, eyd
 
 
@@ -44,20 +43,9 @@ def peak_impacts(data, freq):
     return peaks, properties
 
 def compute_distance(data, distance_ratio, freq):
-    autocorr = SignalUtils.compute_autocorrelation(data, freq)
-    peaks, properties = signal.find_peaks(autocorr, distance=30, height=0)
+    autocorr = compute_autocorrelation(data, freq)
+    peaks, _ = signal.find_peaks(autocorr, distance=30, height=0)
     d_1 = peaks[0]
     if d_1 < 30:
         d_1 = peaks[1]
-
     return round(d_1 * distance_ratio)
-
-
-
-class SignalUtils:
-    @staticmethod
-    def compute_autocorrelation(data, sample_rate, duration_sec=3):
-        lags = sample_rate * duration_sec
-        autocorr = stattools.acf(data, nlags=lags, fft=True)
-        return autocorr
-

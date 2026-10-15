@@ -113,7 +113,7 @@ def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str]
     supported_methods = {"cross-correlation", "manual"}
 
     if method not in supported_methods:
-        raise ValueError(f"Unknown method '{method}'. Supported: {supported_methods}")
+        raise ValueError("Unknown method '{0}'. Supported: {1}".format(method, supported_methods))
     if len(ch_1) != len(ch_2):
         raise ValueError("ch_1 and ch_2 must have the same number of channels.")
 
@@ -140,7 +140,7 @@ def sync_channels_data(data: dict, method: str, ch_1: list[str], ch_2: list[str]
     all_ch_2 = [k for k in data_copy if k.endswith(suffix_2)]
 
     if not all_ch_1 or not all_ch_2:
-        raise ValueError(f"No channels found for suffix '{suffix_1}' or '{suffix_2}'.")
+        raise ValueError("No channels found for suffix '{0}' or '{1}'.".format(suffix_1, suffix_2))
 
     if lag > 0:
         for ch in all_ch_1:

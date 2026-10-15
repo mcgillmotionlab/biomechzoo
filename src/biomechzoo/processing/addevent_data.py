@@ -191,7 +191,7 @@ def addevent_data(
                 exd = exd_array[-1] + 1
                 eyd = yd[exd]
         else:
-            raise ValueError(f'Unknown event type: {etype}')
+            raise ValueError('Unknown event type: {0}'.format(etype))
 
         # Add event to the channel's event dict
         if isinstance(exd, list):

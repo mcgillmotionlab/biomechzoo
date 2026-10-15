@@ -39,7 +39,7 @@ def get_split_events(data: Dict, first_event_name: str) -> Optional[List[str]]:
         i = first_event_number
 
     while True:
-        key = f"{event_name_root}{i}"
+        key = '{0}{1}'.format(event_name_root, i)
         if key in data[channel_name]['event']:
             split_events.append(key)
             i += 1
