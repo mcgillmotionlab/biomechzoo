@@ -115,19 +115,4 @@ def signal_analysis_data(
 
     return data_new
 
-if __name__ == '__main__':
-    import os
-    from biomechzoo.conversion.table2zoo_data import table2zoo_data
-    # load a sample zoo file
-    project_root = os.path.dirname(os.path.dirname(os.path.dirname(os.path.dirname(os.path.abspath(__file__)))))
-    fl = os.path.join(project_root, 'data', 'csv', 'manheim', 'subject_1_acc_running_waist.csv')
-    data = table2zoo_data(fl, extension='csv', freq=50)
 
-    # Impact and loading-rate analyses operate on individual 1D channels.
-    data = signal_analysis_data(data, channels=['attr_x'], etype='impact_peak', ename='impact_peak')
-    data = signal_analysis_data(data, channels=['attr_x'], etype='loading_rate', ename='loading_rate')
-
-    # These analyses accept either three 1D channels or one Nx3 channel.
-    data = signal_analysis_data(data, channels=['attr_x', 'attr_y', 'attr_z'], etype='ldlj', ename='ldlj')
-    data = signal_analysis_data(data, channels=['attr_x', 'attr_y', 'attr_z'], etype='sample_entropy', ename='sample_entropy')
-    data = signal_analysis_data(data, channels=['attr_x', 'attr_y', 'attr_z'], etype='rmsr', ename='rmsr')

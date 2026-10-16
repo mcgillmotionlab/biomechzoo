@@ -32,6 +32,7 @@ from biomechzoo.signal_analysis.signal_analysis_data import signal_analysis_data
 from biomechzoo.statistics.rmse_data import rmse_data, export_rmse_csv
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
+from biomechzoo.utils.zplot import zplot
 from biomechzoo.utils.zsave import zsave
 from biomechzoo.utils.batchdisp import batchdisp
 from biomechzoo.utils.get_split_events import get_split_events
@@ -146,6 +147,56 @@ class BiomechZoo:
             )
         batchdisp(message, level=1, verbose=self.verbose)
         self._update_folder(out_folder, inplace, in_folder)
+
+    def plot(self, ch: str, file_path: Optional[str] = None, xlabel: Optional[str] = None, ylabel: Optional[str] = None):
+        """
+        Plot a specific channel from the loaded .zoo file.
+
+        Parameters
+        ----------
+        ch : str
+            The channel name to plot.
+        xlabel : str, optional
+            The label for the x-axis.
+        ylabel : str, optional
+            The label for the y-axis.
+        """
+
+        if file_path is None:
+            files = engine(
+                self.in_folder, name_contains=self.name_contains,
+                name_excludes=self.name_excludes, subfolders=self.subfolders,
+            )
+            if not files:
+                raise FileNotFoundError(
+                    'No .zoo files found in {!r}.'.format(self.in_folder)
+                )
+            selected_file = random.choice(files)
+        else:
+            selected_file = file_path
+            if not os.path.isfile(selected_file):
+                folder_file = os.path.join(self.in_folder, file_path)
+                if os.path.isfile(folder_file):
+                    selected_file = folder_file
+                else:
+                    matches = engine(
+                        self.in_folder, name_contains=self.name_contains,
+                        name_excludes=self.name_excludes, subfolders=self.subfolders,
+                    )
+                    selected_file = next(
+                        (path for path in matches if os.path.basename(path) == file_path),
+                        selected_file,
+                    )
+                    if not os.path.isfile(selected_file):
+                        raise FileNotFoundError(
+                            'File {!r} was not found.'.format(file_path)
+                        )
+
+        if not selected_file.lower().endswith('.zoo'):
+            raise ValueError('file_info only supports .zoo files.')
+
+        data = zload(selected_file)
+        zplot(data, ch=ch, xlabel=xlabel, ylabel=ylabel)
 
     def file_info(
             self, file_path: Optional[str] = None, head_rows: int = 5,

@@ -44,11 +44,22 @@ def partition_data(
     """
 
     # extract event values
-    e1, _ = findfield(data, evt_start)
-    e2, _ = findfield(data, evt_end)
+    e1, start_channel = findfield(data, evt_start)
+    e2, end_channel = findfield(data, evt_end)
 
     if e1 is None or e2 is None or len(e1) == 0 or len(e2) == 0:
         raise ValueError("Event not found: evt_start='{0}' returned {1}, evt_end='{2}' returned {3}".format(evt_start, e1, evt_end, e2))
+
+    start_frame = int(e1[0])
+    end_frame = int(e2[0])
+    if (
+        start_frame < 0
+        or end_frame > len(data[start_channel]['line'])
+        or end_frame > len(data[end_channel]['line'])
+    ):
+        raise ValueError('Partition event indices are outside the data range.')
+    if start_frame >= end_frame:
+        raise ValueError('Start event must occur before end event.')
 
     data_new = copy.deepcopy(data)
     for ch_name, ch_data in sorted(data_new.items()):
@@ -56,9 +67,9 @@ def partition_data(
             r = ch_data['line']
             try:
                 if r.ndim == 1:
-                    data_new[ch_name]['line'] = r[e1:e2]
+                    data_new[ch_name]['line'] = r[start_frame:end_frame]
                 else:
-                    data_new[ch_name]['line'] = r[e1:e2, :]
+                    data_new[ch_name]['line'] = r[start_frame:end_frame, :]
             except (IndexError, ValueError) as e:
                 # IndexError: if e1[0]:e2[0] goes beyond the available indices
                 # ValueError: less likely, but may arise with shape mismatches
@@ -73,7 +84,7 @@ def partition_data(
                         continue  # do not change outlier markers
                     else:
                         arr = np.array(data_new[ch_name]['event'][event_name], dtype=np.int32)
-                        arr[0] = original_frame - e1
+                        arr[0] = original_frame - start_frame
                         data_new[ch_name]['event'][event_name] = arr
 
     return data_new
