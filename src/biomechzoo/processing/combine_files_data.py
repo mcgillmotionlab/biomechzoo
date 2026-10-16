@@ -233,7 +233,7 @@ if __name__ == '__main__':
     bmech = BiomechZoo(os.path.join(data_dir, 'normalized'))
     ch_old = ['LeftAnklePower', 'LeftKneePower', 'LeftHipPower']
     ch_new = ['LAnklePower', 'LKPower', 'LHipPower']
-    bmech.renamechannnel(ch=ch_old, ch_new=ch_new, out_folder='normalized_rename')
+    bmech.renamechannnel(ch_current=ch_old, ch_new=ch_new, out_folder='normalized_rename')
     bmech.removechannel(ch=ch_new, mode='keep', out_folder='normalized_rename_remove')
 
     bmech.combine_files(within=False,

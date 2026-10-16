@@ -526,20 +526,18 @@ class BiomechZoo:
 
         self._finish_processing(None, start_time, out_folder, inplace, in_folder)
 
-    def tilt_algorithm(
-            self, chname_avert: str, chname_medlat: str, chname_antpost: str,
-            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
-    ) -> None:
+    def tilt_algorithm(self, ch_vert: str, ch_medlat: str, ch_antpost: str, out_folder: Optional[str] = None,
+                       inplace: Optional[bool] = None) -> None:
         """
         Apply tilt correction for acceleration data.
 
         Parameters
         ----------
-        chname_avert : str
+        ch_vert : str
             Name of the vertical acceleration channel.
-        chname_medlat : str
+        ch_medlat : str
             Name of the mediolateral acceleration channel.
-        chname_antpost : str
+        ch_antpost : str
             Name of the anteroposterior acceleration channel.
         out_folder : str, optional
             Output folder for processed files.
@@ -555,7 +553,7 @@ class BiomechZoo:
         for f in fl:
             batchdisp('tilt correction of acceleration channels for {}'.format(f), level=2, verbose=self.verbose)
             data = zload(f)
-            data = tilt_algorithm_data(data, chname_avert, chname_medlat, chname_antpost)
+            data = tilt_algorithm_data(data, ch_vert, chname_medlat, chname_antpost)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 
@@ -641,20 +639,18 @@ class BiomechZoo:
 
         self._finish_processing(None, start_time, out_folder, inplace, in_folder)
 
-    def compute_magnitude(
-            self, chname1: Optional[str], chname2: Optional[str],
-            chname3: Optional[str], ch_new_name: Optional[str] = None,
-            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
-    ) -> None:
+    def compute_magnitude(self, ch_1: Optional[str], ch_2: Optional[str], ch_3: Optional[str],
+                          ch_new: Optional[str] = None, out_folder: Optional[str] = None,
+                          inplace: Optional[bool] = None) -> None:
         """
         Compute Euclidean magnitude from up to 3 channels as a new channel.
 
         Parameters
         ----------
-        chname1, chname2, chname3 : str or None
+        ch_1, ch_2, ch_3 : str or None
             Channel names for the X, Y, Z components. Any may be
             None; at least 2 must be provided.
-        ch_new_name : str, optional
+        ch_new : str, optional
             Name of the output magnitude channel. Auto-generated if None.
         out_folder : str, optional
             Output folder for processed files.
@@ -668,9 +664,9 @@ class BiomechZoo:
         fl = engine(in_folder, name_contains=self.name_contains, name_excludes=self.name_excludes,
                     subfolders=self.subfolders)
         for f in fl:
-            batchdisp('compute magnitude from channels {}, {}, {} for {}'.format(chname1, chname2, chname3, f), level=2, verbose=self.verbose)
+            batchdisp('compute magnitude from channels {}, {}, {} for {}'.format(ch_1, ch_2, ch_3, f), level=2, verbose=self.verbose)
             data = zload(f)
-            data = compute_magnitude_data(data, chname1, chname2, chname3, ch_new_name)
+            data = compute_magnitude_data(data, ch_1, ch_2, ch_3, ch_new)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 
@@ -882,16 +878,14 @@ class BiomechZoo:
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 
-    def renamechannnel(
-            self, ch: Union[str, List[str]], ch_new: Union[str, List[str]],
-            out_folder: Optional[str] = None, inplace: Optional[bool] = None,
-    ) -> None:
+    def renamechannel(self, ch_current: Union[str, List[str]], ch_new: Union[str, List[str]],
+                       out_folder: Optional[str] = None, inplace: Optional[bool] = None) -> None:
         """
         Rename channel(s) from ``ch`` to ``ch_new`` in all zoo files.
 
         Parameters
         ----------
-        ch : str or list of str
+        ch_current : str or list of str
             Current channel name(s) to rename.
         ch_new : str or list of str
             New channel name(s). Must be the same length as ``ch``.
@@ -907,9 +901,9 @@ class BiomechZoo:
         fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
                     subfolders=self.subfolders)
         for f in fl:
-            batchdisp('renaming channels from {} to {} for {}'.format(ch, ch_new ,f), level=2, verbose=self.verbose)
+            batchdisp('renaming channels from {} to {} for {}'.format(ch_current, ch_new, f), level=2, verbose=self.verbose)
             data = zload(f)
-            data = renamechannel_data(data, ch, ch_new)
+            data = renamechannel_data(data, ch_current, ch_new)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 

@@ -49,14 +49,11 @@ def split_trial_data(
     start_event_indx, _ = findfield(data_new, start_event)
     end_event_indx, _ = findfield(data_new, end_event)
 
-    start_event_indx = int(start_event_indx[0])
-    end_event_indx = int(end_event_indx[0])
-
-    if start_event_indx is None:
+    if start_event_indx is None or len(start_event_indx) == 0:
         raise ValueError('start_event {} not found'.format(start_event))
 
-    if end_event_indx is None:
-        raise ValueError('event_event {} not found'.format(end_event))
+    if end_event_indx is None or len(end_event_indx) == 0:
+        raise ValueError('end_event {} not found'.format(end_event))
 
     for key, value in data_new.items():
         if key == 'zoosystem':
