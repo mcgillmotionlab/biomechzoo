@@ -1024,7 +1024,7 @@ class BiomechZoo:
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 
 
-    def sync_channels(self, method, ch_1, ch_2, manual_lag = None, corr_ch_1: list[str] = None, corr_ch_2: list[str] = None, out_folder=None, inplace=None):
+    def sync_channels(self, method, ch_1, ch_2, manual_lag = None, out_folder=None, inplace=None):
         """
         Biomechzoo-style wrapper for: func:`sync_channels_data`.
 
@@ -1057,7 +1057,7 @@ class BiomechZoo:
             if self.verbose:
                 batchdisp('sync_channels for file {} using method: {}'.format(f, method), level=2, verbose=self.verbose)
             data = zload(f)
-            data = sync_channels_data(data, method, ch_1, ch_2, manual_lag, corr_ch_1, corr_ch_2)
+            data = sync_channels_data(data, method, ch_1, ch_2, manual_lag)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 
