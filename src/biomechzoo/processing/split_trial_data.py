@@ -55,6 +55,10 @@ def split_trial_data(
     if end_event_indx is None or len(end_event_indx) == 0:
         raise ValueError('end_event {} not found'.format(end_event))
 
+    # get first element for exd
+    start_event_indx = start_event_indx[0]
+    end_event_indx = end_event_indx[0]
+
     for key, value in data_new.items():
         if key == 'zoosystem':
             continue

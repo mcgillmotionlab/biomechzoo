@@ -1042,7 +1042,7 @@ class BiomechZoo:
         ch : str or list of str
             Channel name(s) to add the event to.
         event_type : str
-            Event type; see :func:`addevent_data` for supported values.
+            Event type; see: func:`addevent_data` for supported values.
         event_name : str
             Name of the event to add.
         out_folder : str, optional
