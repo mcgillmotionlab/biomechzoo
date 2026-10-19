@@ -932,7 +932,10 @@ class BiomechZoo:
         fl = engine(in_folder, extension='.zoo', name_contains=self.name_contains, name_excludes=self.name_excludes,
                     subfolders=self.subfolders)
         for f in fl:
-            batchdisp('removing channels for {}'.format(f), level=2, verbose=self.verbose)
+            if mode == 'remove':
+                batchdisp('removing {} channels for {}'.format(len(ch), f), level=2, verbose=self.verbose)
+            else:
+                batchdisp('keeping {} channels for {}'.format(len(ch), f), level=2, verbose=self.verbose)
             data = zload(f)
             data = removechannel_data(data, ch, mode)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)

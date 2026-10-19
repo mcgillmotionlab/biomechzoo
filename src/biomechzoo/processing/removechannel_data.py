@@ -58,12 +58,6 @@ def removechannel_data(
 
     # --- Compute channels to remove ---
     remove_channels = [ch for ch in all_channels if ch not in keep_channels]
-
-    if remove_channels:
-        print('Removing channels: {}'.format(remove_channels))
-    else:
-        print('No channels to remove')
-
     for ch in remove_channels:
         data.pop(ch, None)
 
