@@ -6,7 +6,7 @@ from .signal_inputs import three_axis_signal
 
 
 def log_dimensionless_jerk_imu(
-        data: Dict, ch: str
+        data: Dict, ch: list[str]
 ) -> float:
 
     """
@@ -42,15 +42,19 @@ def log_dimensionless_jerk_imu(
 
 
 # embedded functions
-def log_dimensionless_jerk_factors(data: Dict, ch: str):
+def log_dimensionless_jerk_factors(data: Dict, ch: list[str])->list[float]:
     """
     Returns the individual factors of the log dimensionless jerk metric
     used for IMU data.
-    :param data: dictionary containing all data.
-    :param ch: list of strings that provide the names three acceleration direction.
-    :param
-    last_step: int the index for the last step
-    :return: factors to calculate the LDLJ
+
+    Parameters
+    ---------
+    data: dictionary containing all data.
+    ch: list of strings that provide the names of three acceleration directions.
+
+    Returns
+    -------
+    ldlj_factor list of floats factors to calculate the LDLJ
     """
 
     accls, _ = three_axis_signal(data, ch)

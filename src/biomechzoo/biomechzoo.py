@@ -662,9 +662,13 @@ class BiomechZoo:
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 
-    def signal_analysis(self, channels: Union[str, List[str]], etype: str, ename: str,
+    def signal_analysis(self, channels: Union[str, List[str]], etype: str, ename: str = None,
                         constant: Optional[List[float]] = None, save_channel: Optional[str] = None,
-                        out_folder: Optional[str] = None, inplace: Optional[bool] = None) -> None:
+                        out_folder: Optional[str] = None, inplace: Optional[bool] = None, *,
+                        pre_peak_window: int = 20, distance_ratio: float = 0.9,
+                        relative_peak_height: float = 0.25, autocorrelation_peak_distance: int = 30,
+                        autocorrelation_duration_sec: float = 3, autocorrelation_peak_height: float = 0,
+                        peak_height: float = 0) -> None:
         """
         Run signal analysis and save its results to selected .zoo files.
 
@@ -675,9 +679,9 @@ class BiomechZoo:
         etype : str
             Analysis type supported by: func:`signal_analysis_data`.
         ename : str
-            Event name under which to store the analysis result.
+            Event name under which to store the analysis result. Optional. If None uses name of etype
         constant : list of float, optional
-            Analysis-specific constants, such as an event cutoff for LDLJ.
+            Legacy analysis-specific constants argument.
         save_channel : str, optional
             Channel to store a multichannel result on. Defaults to the first
             channel in ``channels``.
@@ -685,6 +689,20 @@ class BiomechZoo:
             Output folder for processed files.
         inplace : bool, optional
             If True, overwrite in place. Defaults to ``self.inplace``.
+        pre_peak_window : int, default=20
+            Number of samples before each peak used for loading-rate analysis.
+        distance_ratio : float, default=0.9
+            Multiplier applied to the autocorrelation peak lag to set minimum peak spacing.
+        relative_peak_height : float, default=0.25
+            Minimum peak height as a fraction of the mean candidate peak height.
+        autocorrelation_peak_distance : int, default=30
+            Minimum sample distance between peaks in the autocorrelation.
+        autocorrelation_duration_sec : float, default=3
+            Maximum lag duration, in seconds, used to compute autocorrelation.
+        autocorrelation_peak_height : float, default=0
+            Minimum autocorrelation peak height passed to peak detection.
+        peak_height : float, default=0
+            Minimum signal peak height passed to peak detection.
         """
         start_time = time.time()
         in_folder = self.in_folder
@@ -692,7 +710,8 @@ class BiomechZoo:
             inplace = self.inplace
         if isinstance(channels, str):
             channels = [channels]
-
+        if ename is None:
+            ename = etype
         files = engine(
             in_folder, extension='.zoo', name_contains=self.name_contains,
             name_excludes=self.name_excludes, subfolders=self.subfolders,
@@ -701,7 +720,12 @@ class BiomechZoo:
             batchdisp('running {} analysis on {} for {}'.format(etype, channels, f),level=2, verbose=self.verbose,)
             data = zload(f)
             data = signal_analysis_data(data, channels=channels, etype=etype, ename=ename, constant=constant,
-                                        save_channel=save_channel)
+                                        save_channel=save_channel, pre_peak_window=pre_peak_window,
+                                        distance_ratio=distance_ratio, relative_peak_height=relative_peak_height,
+                                        autocorrelation_peak_distance=autocorrelation_peak_distance,
+                                        autocorrelation_duration_sec=autocorrelation_duration_sec,
+                                        autocorrelation_peak_height=autocorrelation_peak_height,
+                                        peak_height=peak_height)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(files), start_time, out_folder, inplace, in_folder)
 

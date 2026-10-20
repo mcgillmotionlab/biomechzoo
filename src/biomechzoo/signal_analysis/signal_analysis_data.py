@@ -13,7 +13,10 @@ from biomechzoo.processing.addchannel_data import addchannel_data
 
 
 def signal_analysis_data(
-        data: Dict, channels: str | list[str], etype: str, ename: str, constant: list = None, save_channel: bool = None
+        data: Dict, channels: str | list[str], etype: str, ename: str, constant: list | None = None,
+        save_channel: bool | None = None, *, pre_peak_window: int = 20, distance_ratio: float = 0.9,
+        relative_peak_height: float = 0.25, autocorrelation_peak_distance: int = 30,
+        autocorrelation_duration_sec: float = 3, autocorrelation_peak_height: float = 0, peak_height: float = 0
 ) -> Dict:
 
     """
@@ -34,10 +37,23 @@ def signal_analysis_data(
     ename : str
         Event name for saving purposes.
     constant : list, default=None
-        Any type of constants needed for a specific analysis. Used for loading-rate analysis to specify the pre-peak
-        window.
+        Legacy analysis-specific constants argument.
     save_channel : str, default=None
         Name of the channel to save the data to. If None, the first channel in ``channels`` is used.
+    pre_peak_window : int, default=20
+        Number of samples before each peak used for loading-rate analysis.
+    distance_ratio : float, default=0.9
+        Multiplier applied to the autocorrelation peak lag to set minimum peak spacing.
+    relative_peak_height : float, default=0.25
+        Minimum peak height as a fraction of the mean candidate peak height.
+    autocorrelation_peak_distance : int, default=30
+        Minimum sample distance between peaks in the autocorrelation.
+    autocorrelation_duration_sec : float, default=3
+        Maximum lag duration, in seconds, used to compute autocorrelation.
+    autocorrelation_peak_height : float, default=0
+        Minimum autocorrelation peak height passed to peak detection.
+    peak_height : float, default=0
+        Minimum signal peak height passed to peak detection.
 
 
     Returns
@@ -70,9 +86,28 @@ def signal_analysis_data(
                     '{0} requires a 1D signal; channel {1!r} is not 1D.'.format(etype, channel)
                 )
             if etype == "impact_peak":
-                exd, eyd = impact_peak(ch_line=signal, freq=freq)
+                exd, eyd = impact_peak(
+                    ch_line=signal,
+                    freq=freq,
+                    distance_ratio=distance_ratio,
+                    relative_peak_height=relative_peak_height,
+                    autocorrelation_peak_distance=autocorrelation_peak_distance,
+                    autocorrelation_duration_sec=autocorrelation_duration_sec,
+                    autocorrelation_peak_height=autocorrelation_peak_height,
+                    peak_height=peak_height,
+                )
             else:
-                exd, eyd = loading_rate(ch_line=signal, freq=freq, pre_peak_window=constant)
+                exd, eyd = loading_rate(
+                    ch_line=signal,
+                    freq=freq,
+                    pre_peak_window=pre_peak_window if constant is None else constant,
+                    distance_ratio=distance_ratio,
+                    relative_peak_height=relative_peak_height,
+                    autocorrelation_peak_distance=autocorrelation_peak_distance,
+                    autocorrelation_duration_sec=autocorrelation_duration_sec,
+                    autocorrelation_peak_height=autocorrelation_peak_height,
+                    peak_height=peak_height,
+                )
 
             if isinstance(exd, list):
                 for i, ex in enumerate(exd):
@@ -114,5 +149,3 @@ def signal_analysis_data(
         data_new[channel]["event"][ename] = [0, eyd, 0]
 
     return data_new
-
-
