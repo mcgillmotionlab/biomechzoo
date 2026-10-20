@@ -18,6 +18,7 @@ class PlotSpec:
     group_by: str | None = None  # ← e.g. "sex", "age_group"
     # ← {"P01": "male", "P02": "female"}
     group_map: dict[str, str] | None = None
+    line_scalar: str | None = "mean"
     title: str = ""
     x_label: str = ""
     y_label: str = ""

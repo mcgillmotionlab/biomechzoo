@@ -310,7 +310,7 @@ class BlandAltmanRenderer(Renderer):
             vals_a, vals_b, subjects = store.get_intra_channel(
                 channel_a=spec.channel,
                 channel_b=spec.companion_channel,
-                condition=spec.conition,
+                condition=spec.condition,
                 event_name=spec.events[0],
                 line_scalar=self.line_scalar
             )
@@ -325,7 +325,7 @@ class BlandAltmanRenderer(Renderer):
                 cond_a = cond_a,
                 cond_b = cond_b,
                 event_name = spec.events[0],
-                line_scaler = self.line_scaler
+                line_scalar = self.line_scalar
             )
 
         if not vals_a:
@@ -411,6 +411,9 @@ class ScatterRenderer(Renderer):
         event_name = spec.events[0]
 
         if spec.companion_channel is not None:
+            # comparing two channels within one condition — cond_a has
+            # no meaning here, so fall back to the single condition
+            cond_a = spec.condition
             vals_a, vals_b, subjects = store.get_intra_channel(
                 channel_a = spec.channel,
                 channel_b = spec.companion_channel,
