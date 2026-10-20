@@ -148,20 +148,20 @@ class BiomechZoo:
         batchdisp(message, level=1, verbose=self.verbose)
         self._update_folder(out_folder, inplace, in_folder)
 
-    def plot(self, ch: str, file_path: Optional[str] = None, xlabel: Optional[str] = None, ylabel: Optional[str] = None):
+    def _get_file(self, file_path: Optional[str]) -> str:
         """
-        Plot a specific channel from the loaded .zoo file.
+        Determine the file path to use for plotting or displaying info.
 
         Parameters
         ----------
-        ch : str
-            The channel name to plot.
-        xlabel : str, optional
-            The label for the x-axis.
-        ylabel : str, optional
-            The label for the y-axis.
-        """
+        file_path : str or None
+            The user-provided file path. If None, a random .zoo file will be selected.
 
+        Returns
+        -------
+        str
+            The determined file path to use.
+        """
         if file_path is None:
             files = engine(
                 self.in_folder, name_contains=self.name_contains,
@@ -191,7 +191,27 @@ class BiomechZoo:
                         raise FileNotFoundError(
                             'File {!r} was not found.'.format(file_path)
                         )
+        return selected_file
 
+    def plot(
+        self, ch: str, file_path: Optional[str] = None, xlabel: Optional[str] = None, ylabel: Optional[str] = None
+    ) -> None:
+        """
+        Plot a specific channel from the loaded .zoo file.
+
+        Parameters
+        ----------
+        ch : str
+            The channel name to plot.
+        file_path : str, optional
+            The path to the .zoo file to plot. If None, a random file will be selected.
+        xlabel : str, optional
+            The label for the x-axis.
+        ylabel : str, optional
+            The label for the y-axis.
+        """
+
+        selected_file = self._get_file(file_path)
         if not selected_file.lower().endswith('.zoo'):
             raise ValueError('file_info only supports .zoo files.')
 
@@ -226,35 +246,7 @@ class BiomechZoo:
         if isinstance(head_rows, bool) or not isinstance(head_rows, int) or head_rows < 0:
             raise ValueError('head_rows must be a non-negative integer.')
 
-        if file_path is None:
-            files = engine(
-                self.in_folder, name_contains=self.name_contains,
-                name_excludes=self.name_excludes, subfolders=self.subfolders,
-            )
-            if not files:
-                raise FileNotFoundError(
-                    'No .zoo files found in {!r}.'.format(self.in_folder)
-                )
-            selected_file = random.choice(files)
-        else:
-            selected_file = file_path
-            if not os.path.isfile(selected_file):
-                folder_file = os.path.join(self.in_folder, file_path)
-                if os.path.isfile(folder_file):
-                    selected_file = folder_file
-                else:
-                    matches = engine(
-                        self.in_folder, name_contains=self.name_contains,
-                        name_excludes=self.name_excludes, subfolders=self.subfolders,
-                    )
-                    selected_file = next(
-                        (path for path in matches if os.path.basename(path) == file_path),
-                        selected_file,
-                    )
-                    if not os.path.isfile(selected_file):
-                        raise FileNotFoundError(
-                            'File {!r} was not found.'.format(file_path)
-                        )
+        selected_file = self._get_file(file_path)
 
         if not selected_file.lower().endswith('.zoo'):
             raise ValueError('file_info only supports .zoo files.')
@@ -1425,4 +1417,3 @@ class BiomechZoo:
         if export:
             export_rmse_csv(all_rmse, out_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
-
