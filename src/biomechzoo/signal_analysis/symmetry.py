@@ -1,6 +1,7 @@
 import scipy
 import statsmodels.tsa.stattools as stattools
 from typing import Dict
+import numpy as np
 
 from .signal_inputs import three_axis_signal
 
