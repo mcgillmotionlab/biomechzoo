@@ -45,7 +45,12 @@ def peak_impacts(data, freq):
 def compute_distance(data, distance_ratio, freq):
     autocorr = compute_autocorrelation(data, freq)
     peaks, _ = signal.find_peaks(autocorr, distance=30, height=0)
+    if len(peaks) == 0:
+        raise ValueError(
+            "No peaks found in the autocorrelation; cannot estimate a "
+            "step distance for this signal."
+        )
     d_1 = peaks[0]
-    if d_1 < 30:
+    if d_1 < 30 and len(peaks) > 1:
         d_1 = peaks[1]
     return round(d_1 * distance_ratio)
