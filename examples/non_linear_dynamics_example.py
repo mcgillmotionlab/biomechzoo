@@ -38,7 +38,7 @@ def main():
 
 
     # STEP 4: COMPUTE NON-LINEAR DYNAMICS ##############################################################################
-    bmech.signal_analysis(
+    bmech.non_linear_dynamics(
         channels=['ax', 'ay', 'az'],
         etype='ldlj',
         out_folder='3-non-linear dynamics',

@@ -19,20 +19,10 @@ Loading Rate
 Computes the loading rate (slope around the impact region) for a single
 time series channel and stores the result as an event.
 
-Sample Entropy
-~~~~~~~~~~~~~~
-
-Calculates the sample entropy of a single time series channel and
-stores the value as an event.
 
 Multi-channel metrics
 ---------------------
 
-Log Dimensionless Jerk (LDLJ)
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
-
-Computes log dimensionless jerk as a smoothness measure across multiple
-channels and stores the resulting value(s) as events.
 
 RMS Ratio (RMSR)
 ~~~~~~~~~~~~~~~~

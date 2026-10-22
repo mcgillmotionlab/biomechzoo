@@ -103,7 +103,7 @@ def log_dimensionless_jerk_factors(data: Dict, ch: list[str])->list[float]:
 
 def gravity_component(x, y, z):
     """
-    Determines the gravity compnent of the x, y, and z direction of the acceleration signal using trigonomitry.
+    Determines the gravity component of the x, y, and z direction of the acceleration signal using trigonometry.
     :param x:
     :param y:
     :param z:

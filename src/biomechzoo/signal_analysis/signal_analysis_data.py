@@ -3,69 +3,47 @@ from typing import Dict
 
 import numpy as np
 
-from .compute_entropy import sample_entropy
 from .compute_impact import impact_peak, loading_rate
-from .compute_smoothness import log_dimensionless_jerk_imu
-from .compute_rms import rms_ratio_analysis
-from .symmetry import symmetry
-from .LyE import LyE_R
-from biomechzoo.processing.addchannel_data import addchannel_data
 
 
 def signal_analysis_data(
-        data: Dict, channels: str | list[str], etype: str, ename: str, constant: list | None = None,
-        save_channel: bool | None = None, *, pre_peak_window: int = 20, distance_ratio: float = 0.9,
-        relative_peak_height: float = 0.25, autocorrelation_peak_distance: int = 30,
-        autocorrelation_duration_sec: float = 3, autocorrelation_peak_height: float = 0, peak_height: float = 0
+        data: Dict, channels: str | list[str], etype: str, ename: str
 ) -> Dict:
 
     """
-    This collection of functions operates on channels to calculate linear and non-linear signal metrics.
+    Calculate impact peaks or loading rates on one or more 1D channels.
 
     Parameters
     ----------
     data : dict
         Biomechanical data dictionary loaded from a zoo file.
     channels : str or list[str]
-        For impact-peak and loading-rate analyses, one or more names of 1D channels can be used. If more than one,
-         the calculation is repeated independently for each channel. For other analyses, either three names of 1D
-         channels or one name of a channel containing a ``(samples, 3)`` array.
+        One or more names of 1D channels. The selected analysis is repeated
+        independently for each channel.
     etype : str
-        Name of the function to call.
-        Options include: 'impact_peak', 'loading_rate', 'ldlj', 'lyapanov_short', 'lyapanov_long', 'sample_entropy',
-        'rmsr', 'step_symmetry', and 'stride_symmetry'.
+        Analysis to perform: ``'impact_peak'`` or ``'loading_rate'``.
     ename : str
-        Event name for saving purposes.
-    constant : list, default=None
-        Legacy analysis-specific constants argument.
-    save_channel : str, default=None
-        Name of the channel to save the data to. If None, the first channel in ``channels`` is used.
-    pre_peak_window : int, default=20
-        Number of samples before each peak used for loading-rate analysis.
-    distance_ratio : float, default=0.9
-        Multiplier applied to the autocorrelation peak lag to set minimum peak spacing.
-    relative_peak_height : float, default=0.25
-        Minimum peak height as a fraction of the mean candidate peak height.
-    autocorrelation_peak_distance : int, default=30
-        Minimum sample distance between peaks in the autocorrelation.
-    autocorrelation_duration_sec : float, default=3
-        Maximum lag duration, in seconds, used to compute autocorrelation.
-    autocorrelation_peak_height : float, default=0
-        Minimum autocorrelation peak height passed to peak detection.
-    peak_height : float, default=0
-        Minimum signal peak height passed to peak detection.
-
-
+        Event name used to store the result. Multiple detected peaks are
+        stored with numbered event names.
     Returns
     -------
     data_new : dict
-        A zoo type dictionary containing the added data and events
+        A copy of the input zoo dictionary with detected results added as
+        events.
 
     Raises
     ------
     ValueError
 
     """
+
+    pre_peak_window = 20
+    distance_ratio = 0.9
+    relative_peak_height = 0.25
+    autocorrelation_peak_distance = 30
+    autocorrelation_duration_sec = 3
+    autocorrelation_peak_height = 0
+    peak_height = 0
 
     data_new = copy.deepcopy(data)
     if isinstance(channels, str):
@@ -100,7 +78,7 @@ def signal_analysis_data(
                 exd, eyd = loading_rate(
                     ch_line=signal,
                     freq=freq,
-                    pre_peak_window=pre_peak_window if constant is None else constant,
+                    pre_peak_window=pre_peak_window,
                     distance_ratio=distance_ratio,
                     relative_peak_height=relative_peak_height,
                     autocorrelation_peak_distance=autocorrelation_peak_distance,
@@ -117,35 +95,4 @@ def signal_analysis_data(
                 data_new[channel]["event"][ename] = [exd, eyd, 0]
         return data_new
 
-    channel = save_channel if save_channel is not None else channels[0]
-    if etype == "ldlj":
-        eyd = log_dimensionless_jerk_imu(data=data_new, ch=channels)
-    elif etype == "lyapanov_short":
-        exponents, _ = LyE_R(data=data_new, ch=channels)
-        eyd = exponents[0]
-    elif etype == "lyapanov_long":
-        exponents, _ = LyE_R(data=data_new, ch=channels)
-        eyd = exponents[1]
-    elif etype == "sample_entropy":
-        sampen_values, _ = sample_entropy(data=data_new, ch=channels)
-        eyd = sampen_values[-1]
-    elif etype == "rmsr":
-        eyd = rms_ratio_analysis(data=data_new, ch=channels)
-    elif etype in {"step_symmetry", "stride_symmetry"}:
-        d_1, _, d_2, _, autocorr = symmetry(data=data_new, ch=channels)
-        eyd = d_1 if etype == "step_symmetry" else d_2
-        data_new = addchannel_data(
-            data_new,
-            ch_new_name='{0}_autocorr'.format(ename),
-            ch_new_data=autocorr,
-        )
-    else:
-        raise ValueError('Unknown event type: {0}'.format(etype))
-
-    if isinstance(eyd, dict):
-        for result_channel, value in eyd.items():
-            data_new[result_channel]["event"][ename] = [0, value, 0]
-    else:
-        data_new[channel]["event"][ename] = [0, eyd, 0]
-
-    return data_new
+    raise ValueError('Unknown event type: {0}'.format(etype))

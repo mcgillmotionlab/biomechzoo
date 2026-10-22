@@ -34,7 +34,7 @@ def symmetry(data: Dict, ch: str|list[str]):
     signal, _ = three_axis_signal(data, ch)
     norm = np.linalg.norm(signal, axis=1)
     _lags = len(norm)
-    autocorr = stattools.acf(norm, nlags=_lags)
+    autocorr = stattools.acf(norm, nlags=_lags, adjusted=True)
     peaks_auto, peak_properties = scipy.signal.find_peaks(autocorr, distance=MIN_DISTANCE, height=MIN_HEIGHT)
 
     try:
@@ -55,4 +55,3 @@ def symmetry(data: Dict, ch: str|list[str]):
             ad_2 = peak_properties["peak_heights"][2]
 
     return d_1, ad_1, d_2, ad_2, autocorr
-
