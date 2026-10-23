@@ -29,6 +29,7 @@ from biomechzoo.processing.partition_data import partition_data
 from biomechzoo.processing.renameevent_data import renameevent_data
 from biomechzoo.processing.rep_trial_data import reptrial_data
 from biomechzoo.signal_analysis.signal_analysis_data import signal_analysis_data
+from biomechzoo.signal_analysis.non_linear_dynamics_data import non_linear_dynamics_data
 from biomechzoo.statistics.rmse_data import rmse_data, export_rmse_csv
 from biomechzoo.utils.engine import engine
 from biomechzoo.utils.zload import zload
@@ -662,9 +663,9 @@ class BiomechZoo:
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 
-    def signal_analysis(self, channels: Union[str, List[str]], etype: str, ename: str,
-                        constant: Optional[List[float]] = None, save_channel: Optional[str] = None,
-                        out_folder: Optional[str] = None, inplace: Optional[bool] = None) -> None:
+    def non_linear_dynamics(self, channels: Union[str, List[str]], etype: str, ename: str = None,
+                            save_channel: Optional[str] = None, out_folder: Optional[str] = None,
+                            inplace: Optional[bool] = None) -> None:
         """
         Run signal analysis and save its results to selected .zoo files.
 
@@ -673,11 +674,9 @@ class BiomechZoo:
         channels : str or list of str
             Channel name(s) required for the analysis.
         etype : str
-            Analysis type supported by: func:`signal_analysis_data`.
+            Analysis type supported by: func:`non_linear_dynamics_data`.
         ename : str
-            Event name under which to store the analysis result.
-        constant : list of float, optional
-            Analysis-specific constants, such as an event cutoff for LDLJ.
+            Event name under which to store the analysis result. Optional. If None uses name of etype
         save_channel : str, optional
             Channel to store a multichannel result on. Defaults to the first
             channel in ``channels``.
@@ -692,7 +691,8 @@ class BiomechZoo:
             inplace = self.inplace
         if isinstance(channels, str):
             channels = [channels]
-
+        if ename is None:
+            ename = etype
         files = engine(
             in_folder, extension='.zoo', name_contains=self.name_contains,
             name_excludes=self.name_excludes, subfolders=self.subfolders,
@@ -700,10 +700,49 @@ class BiomechZoo:
         for f in files:
             batchdisp('running {} analysis on {} for {}'.format(etype, channels, f),level=2, verbose=self.verbose,)
             data = zload(f)
-            data = signal_analysis_data(data, channels=channels, etype=etype, ename=ename, constant=constant,
-                                        save_channel=save_channel)
+            data = non_linear_dynamics_data(
+                data, channels=channels, etype=etype, ename=ename, save_channel=save_channel
+            )
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(files), start_time, out_folder, inplace, in_folder)
+
+    def signal_analysis(self, channels: Union[str, List[str]], etype: str, ename: str = None,
+                        out_folder: Optional[str] = None, inplace: Optional[bool] = None) -> None:
+        """
+        Run impact-peak or loading-rate analysis and save its results to .zoo files.
+
+        Parameters
+        ----------
+        channels : str or list of str
+            One or more 1D channel names to analyze.
+        etype : str
+            Analysis type supported by:func:`signal_analysis_data`:
+            ``'impact_peak'`` or ``'loading_rate'``.
+        ename : str, optional
+            Event name for the results. Defaults to ``etype``.
+        out_folder : str, optional
+            Output folder for processed files.
+        inplace : bool, optional
+            If True, overwrite in place. Defaults to ``self.inplace``.
+        """
+        start_time = time.time()
+        if inplace is None:
+            inplace = self.inplace
+        if isinstance(channels, str):
+            channels = [channels]
+        if ename is None:
+            ename = etype
+        files = engine(
+            self.in_folder, extension='.zoo', name_contains=self.name_contains,
+            name_excludes=self.name_excludes, subfolders=self.subfolders,
+        )
+        for f in files:
+            batchdisp('running {} analysis on {} for {}'.format(etype, channels, f),
+                      level=2, verbose=self.verbose)
+            data = zload(f)
+            data = signal_analysis_data(data, channels=channels, etype=etype, ename=ename)
+            zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder= self.in_folder)
+        self._finish_processing(len(files), start_time, out_folder, inplace,  self.in_folder)
 
     def rectify(
             self, chs: Union[str, List[str]], out_folder: Optional[str] = None,
@@ -720,6 +759,11 @@ class BiomechZoo:
             Output folder for processed files.
         inplace : bool, optional
             If True, overwrite in place. Defaults to ``self.inplace``.
+
+        Notes
+        -----
+        see non_linear_dynamics_data for details on algorithms implemented
+
         """
         start_time = time.time()
         in_folder = self.in_folder
@@ -744,7 +788,7 @@ class BiomechZoo:
         Parameters
         ----------
         ch : list of str
-            Channel names to compute phase angle for.
+            Channel names to compute the phase angle for.
         out_folder : str, optional
             Output folder for processed files.
         inplace : bool, optional
