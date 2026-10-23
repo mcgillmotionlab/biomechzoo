@@ -199,7 +199,7 @@ def addevent_data(
                 name = ename + '_' + str(i + 1)
                 data_new[channel]['event'][name] = [int(ex), eyd[i], 0]
         else:
-            data_new[channel]['event'][ename] = [exd, eyd, 0]
+            data_new[channel]['event'][ename] = [int(exd), eyd, 0]
 
     return data_new
 
