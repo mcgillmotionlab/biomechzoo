@@ -1,12 +1,26 @@
 from typing import List, Tuple
 
 import numpy as np
+import scipy.integrate
 from numpy.typing import ArrayLike, NDArray
 from scipy.signal import butter, filtfilt, find_peaks
 
 from kielmat.utils.preprocessing import (
     signal_decomposition_algorithm,
 )
+
+_cumtrapz_orig = scipy.integrate.cumulative_trapezoid
+
+
+def _cumtrapz_compat(y, *args, initial=None, **kwargs):
+    """Wrap ``cumulative_trapezoid`` to accept a string ``initial``.
+
+    KielMAT 0.0.5 calls ``cumulative_trapezoid(..., initial="0")``,
+    which SciPy >= 1.15 rejects.
+    """
+    if isinstance(initial, str):
+        initial = float(initial)
+    return _cumtrapz_orig(y, *args, initial=initial, **kwargs)
 
 
 def imu_kielmat(
@@ -55,10 +69,15 @@ def imu_kielmat(
             'Sampling frequency must be greater than zero'
         )
 
-    fs_times, fo_times = signal_decomposition_algorithm(
-        vertical_accelerarion_data=vertical_acceleration,
-        initial_sampling_frequency=fsamp,
-    )
+    # temporarily patch scipy for KielMAT compatibility (see _cumtrapz_compat)
+    scipy.integrate.cumulative_trapezoid = _cumtrapz_compat
+    try:
+        fs_times, fo_times = signal_decomposition_algorithm(
+            vertical_accelerarion_data=vertical_acceleration,
+            initial_sampling_frequency=fsamp,
+        )
+    finally:
+        scipy.integrate.cumulative_trapezoid = _cumtrapz_orig
 
     fs = _times_to_frames(fs_times, fsamp, len(vertical_acceleration))
     fo = _times_to_frames(fo_times, fsamp, len(vertical_acceleration))
@@ -260,3 +279,38 @@ def crash_catch(
         IC = IC[:min_len]
         TC = TC[:min_len]
     return IC, TC
+
+
+if __name__ == '__main__':
+    # -------TESTING--------
+    # compare KielMAT step detection with and without the scipy patch
+    import scipy
+
+    # synthetic vertical acceleration: 20 s of 1.8 Hz walking at 100 Hz
+    fsamp = 100
+    t = np.arange(0, 20, 1 / fsamp)
+    acc = 9.81 + 3 * np.sin(2 * np.pi * 1.8 * t)
+    print('scipy version: {}'.format(scipy.__version__))
+
+    # 1) without patch: call KielMAT directly
+    print('\nWithout patch:')
+    try:
+        fs_times, fo_times = signal_decomposition_algorithm(
+            vertical_accelerarion_data=acc,
+            initial_sampling_frequency=fsamp,
+        )
+        print('  succeeded: {} foot strikes, {} foot offs'.format(
+            len(fs_times), len(fo_times)))
+    except ValueError as e:
+        print('  failed with ValueError: {}'.format(e))
+
+    # 2) with patch: imu_kielmat wraps cumulative_trapezoid
+    print('\nWith patch:')
+    fs, fo = imu_kielmat(acc, fsamp)
+    print('  succeeded: {} foot strikes, {} foot offs'.format(len(fs), len(fo)))
+    print('  first foot strikes (frames): {}'.format(fs[:5]))
+    print('  first foot offs (frames):    {}'.format(fo[:5]))
+
+    # the patch must not leak outside imu_kielmat
+    restored = scipy.integrate.cumulative_trapezoid is _cumtrapz_orig
+    print('\nscipy.integrate.cumulative_trapezoid restored: {}'.format(restored))
