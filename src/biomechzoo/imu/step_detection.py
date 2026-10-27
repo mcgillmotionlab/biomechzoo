@@ -1,5 +1,5 @@
 from typing import List, Tuple
-
+import warnings
 import numpy as np
 from numpy.typing import ArrayLike, NDArray
 from scipy.signal import butter, filtfilt, find_peaks
@@ -233,13 +233,13 @@ def crash_catch(
         min_stance_samples: int, IC: List[int], TC: List[int],
 ) -> Tuple[np.ndarray, np.ndarray]:
     """
-    Ensure initial and terminal contact index arrays are the same
-    length, truncating any extra detections.
+    Remove repeated contact indices, pair each initial contact with the next
+    terminal contact, and discard pairs shorter than the minimum stance time.
 
     Parameters
     ----------
     min_stance_samples : int
-        Unused. Reserved for future stance-time validation.
+        Minimum number of samples between initial and terminal contact.
     IC : list of int
         Indices of detected initial contact events.
     TC : list of int
@@ -248,15 +248,45 @@ def crash_catch(
     Returns
     -------
     IC : ndarray
-        Initial contact indices, truncated to match ``TC`` length.
+        Initial contact indices paired with valid terminal contacts.
     TC : ndarray
-        Terminal contact indices, truncated to match ``IC`` length.
+        Terminal contact indices paired with valid initial contacts.
     """
-    # Ensure IC and TC arrays are same length and valid
-    IC = np.array(IC)
-    TC = np.array(TC)
-    if len(IC) != len(TC):
-        min_len = min(len(IC), len(TC))
-        IC = IC[:min_len]
-        TC = TC[:min_len]
-    return IC, TC
+    # Overlapping search windows can identify the same contact more than once.
+    IC = np.unique(IC)
+    TC = np.unique(TC)
+
+    valid_ic = []
+    valid_tc = []
+    ic_idx = 0
+    tc_idx = 0
+
+    while ic_idx < len(IC) and tc_idx < len(TC):
+        if TC[tc_idx] <= IC[ic_idx]:
+            tc_idx += 1
+            continue
+
+        stance_samples = TC[tc_idx] - IC[ic_idx]
+
+        if stance_samples >= min_stance_samples:
+            valid_ic.append(IC[ic_idx])
+            valid_tc.append(TC[tc_idx])
+        else:
+            samples_short = min_stance_samples - stance_samples
+            warnings.warn(
+                'Removing IC index {0} and TC index {1}: stance duration '
+                'was {2} samples, which is {3} samples shorter than '
+                'min_stance_t ({4} samples).'.format(
+                    IC[ic_idx],
+                    TC[tc_idx],
+                    stance_samples,
+                    samples_short,
+                    min_stance_samples,
+                ),
+                RuntimeWarning,
+            )
+
+        ic_idx += 1
+        tc_idx += 1
+
+    return np.asarray(valid_ic, dtype=int), np.asarray(valid_tc, dtype=int)
