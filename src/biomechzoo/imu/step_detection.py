@@ -112,7 +112,8 @@ def imu_mcgrath(
     Parameters
     ----------
     ch_line : array_like
-        Vertical acceleration signal.
+        Channel to use for step detection. Typically the gyroscope channel in
+        the sagittal plane of the lower leg. Expressed in rad/s.
     fsamp : float
         Sampling frequency in Hz.
     min_stance_t : float
