@@ -29,7 +29,6 @@ def findfield(
         events = content.get('event', {})
         if target_event in events:
             val = events[target_event]
-            val = [int(val[0]), int(val[1]), int(val[2])]
             return val, channel
 
     return None, None

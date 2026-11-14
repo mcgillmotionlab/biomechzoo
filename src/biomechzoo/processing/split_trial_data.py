@@ -46,18 +46,18 @@ def split_trial_data(
     # todo check index problem compared to matlab start at 0 or 1
     data_new = copy.deepcopy(data)
 
-    start_event_indx, _ = findfield(data_new, start_event)
-    end_event_indx, _ = findfield(data_new, end_event)
+    start_event, _ = findfield(data_new, start_event)
+    end_event, _ = findfield(data_new, end_event)
 
-    if start_event_indx is None or len(start_event_indx) == 0:
+    if start_event is None or len(start_event) == 0:
         raise ValueError('start_event {} not found'.format(start_event))
 
-    if end_event_indx is None or len(end_event_indx) == 0:
+    if end_event is None or len(end_event) == 0:
         raise ValueError('end_event {} not found'.format(end_event))
 
     # get first element for exd
-    start_event_indx = start_event_indx[0]
-    end_event_indx = end_event_indx[0]
+    start_event_indx = int(start_event[0])
+    end_event_indx = int(end_event[0])
 
     for key, value in data_new.items():
         if key == 'zoosystem':

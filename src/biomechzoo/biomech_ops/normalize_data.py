@@ -38,6 +38,8 @@ def normalize_data(data: Dict, nlength: int = 101) -> Dict:
         if ch_name != 'zoosystem':
             ch_data_line = ch_data['line']
             ch_data_event = ch_data.setdefault('event', {})
+            if ch_data_line is int:
+                raise ValueError('Channel line must be a numpy array.')
             original_length = ch_data_line.shape[0]
             ch_data_normalized = normalize_line(ch_data_line, nlength)
             data_new[ch_name]['line'] = ch_data_normalized
