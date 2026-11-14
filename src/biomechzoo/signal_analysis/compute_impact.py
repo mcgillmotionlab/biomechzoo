@@ -181,49 +181,15 @@ def peak_impacts(
     peaks, properties = signal.find_peaks(data, distance=min_distance, height=peak_height)
     return peaks, properties
 
-
-def compute_distance(
-        data,
-        distance_ratio,
-        freq,
-        autocorrelation_peak_distance: int = 30,
-        autocorrelation_duration_sec: float = 3,
-        autocorrelation_peak_height: float = 0,
-):
-    """Calculate minimum signal-peak spacing from the signal autocorrelation.
-
-    The first autocorrelation peak is used unless it occurs before
-    ``autocorrelation_peak_distance`` samples, in which case the next detected
-    peak is used. The selected lag is multiplied by ``distance_ratio``.
-
-    Parameters
-    ----------
-    data : array-like
-        One-dimensional signal used to estimate periodicity.
-    distance_ratio : float
-        Multiplier applied to the selected autocorrelation peak lag.
-    freq : int
-        Signal sampling frequency in samples per second.
-    autocorrelation_peak_distance : int, default=30
-        Minimum separation, in samples, between peaks detected in the
-        autocorrelation.
-    autocorrelation_duration_sec : float, default=3
-        Maximum autocorrelation lag in seconds.
-    autocorrelation_peak_height : float, default=0
-        Minimum height for peaks detected in the autocorrelation.
-
-    Returns
-    -------
-    int
-        Minimum separation between detected signal peaks, in samples.
-    """
-    autocorr = compute_autocorrelation(data, freq, duration_sec=autocorrelation_duration_sec)
-    peaks, _ = signal.find_peaks(
-        autocorr,
-        distance=autocorrelation_peak_distance,
-        height=autocorrelation_peak_height,
-    )
+def compute_distance(data, distance_ratio, freq):
+    autocorr = compute_autocorrelation(data, freq)
+    peaks, _ = signal.find_peaks(autocorr, distance=30, height=0)
+    if len(peaks) == 0:
+        raise ValueError(
+            "No peaks found in the autocorrelation; cannot estimate a "
+            "step distance for this signal."
+        )
     d_1 = peaks[0]
-    if d_1 < autocorrelation_peak_distance:
+    if d_1 < 30 and len(peaks) > 1:
         d_1 = peaks[1]
     return round(d_1 * distance_ratio)
