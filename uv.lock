@@ -219,7 +219,7 @@ wheels = [
 
 [[package]]
 name = "biomechzoo"
-version = "0.8.25"
+version = "0.8.26"
 source = { editable = "." }
 dependencies = [
     { name = "dash" },
