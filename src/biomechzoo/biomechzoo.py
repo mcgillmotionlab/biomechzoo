@@ -4,6 +4,7 @@ import random
 import time
 from typing import Dict, List, Literal, Optional, Union
 import numpy as np
+import pandas as pd
 
 from biomechzoo.imu.tilt_algorithm import tilt_algorithm_data
 from biomechzoo.linear_algebra_ops.kinematics import quats2euler_data, dcms2euler_data, marker2dcm_data, quats2dcm_data, rotate_dcm_data
@@ -221,7 +222,7 @@ class BiomechZoo:
 
     def file_info(
             self, file_path: Optional[str] = None, head_rows: int = 5,
-    ) -> None:
+    ) -> pd.DataFrame:
         """
         Display metadata and a sample of a selected or random .zoo file.
 
@@ -234,6 +235,12 @@ class BiomechZoo:
         head_rows : int, optional
             Number of initial samples to display for each channel. Default
             is 5.
+
+        Returns
+        -------
+        pandas.DataFrame
+            The first ``head_rows`` samples from each channel, excluding
+            ``zoosystem``.
 
         Raises
         ------
@@ -256,45 +263,37 @@ class BiomechZoo:
         zoosystem = data.get('zoosystem', {})
         video = zoosystem.get('Video', {})
         analog = zoosystem.get('Analog', {})
-        video_channels = video.get('Channels', [])
-        analog_channels = analog.get('Channels', [])
-        if isinstance(video_channels, str):
-            video_channels = [video_channels]
-        if isinstance(analog_channels, str):
-            analog_channels = [analog_channels]
-        channels = list(dict.fromkeys(
-            list(video_channels) + list(analog_channels)
-        ))
-        if not channels:
-            channels = [
-                name for name, channel in data.items()
-                if isinstance(channel, dict) and 'line' in channel
-            ]
+        channels = [
+            name for name, channel in data.items()
+            if name != 'zoosystem'
+            and isinstance(channel, dict)
+            and 'line' in channel
+        ]
+        event_counts = [
+            len(data[channel].get('event', {}))
+            for channel in channels
+        ]
+        event_total = sum(event_counts)
+        channels_with_events = sum(count > 0 for count in event_counts)
 
-        print('File: {}'.format(selected_file))
+        print('File name: {}'.format(os.path.basename(selected_file)))
+        print('File path: {}'.format(os.path.dirname(selected_file) or '.'))
         print('Size: {} bytes'.format(os.path.getsize(selected_file)))
         print('Video frequency: {} Hz'.format(video.get('Freq', 'unknown')))
         print('Analog frequency: {} Hz'.format(analog.get('Freq', 'unknown')))
-        print('Channels ({}): {}'.format(len(channels), ', '.join(channels)))
-
-        if not channels or head_rows == 0:
-            return
-
-        lines = {
-            channel: np.atleast_1d(np.asarray(data[channel]['line']))
-            for channel in channels if channel in data and 'line' in data[channel]
-        }
-        sample_count = max((len(line) for line in lines.values()), default=0)
-        print('Samples: {}'.format(sample_count))
-        print('First {} sample(s):'.format(head_rows))
-        print('sample\t' + '\t'.join(lines))
-        for row in range(head_rows):
-            values = []
-            if not any(row < len(line) for line in lines.values()):
-                break
-            for line in lines.values():
-                values.append(str(line[row]) if row < len(line) else '')
-            print('{}\t{}'.format(row, '\t'.join(values)))
+        print('Number of channels: {}'.format(len(channels)))
+        print(
+            'Events: {} across {} of {} channels'.format(
+                event_total, channels_with_events, len(channels),
+            )
+        )
+        print('\nChannel preview (first {} rows):\n'.format(head_rows))
+        preview = pd.DataFrame({
+            channel: pd.Series(np.atleast_1d(np.asarray(data[channel]['line'])))
+            for channel in channels
+        }).head(head_rows)
+        print(preview)
+        return preview
 
     def remove_files(
             self, fl_remove: List[str], out_folder: Optional[str] = None,
@@ -468,7 +467,7 @@ class BiomechZoo:
             out_folder: Optional[str] = None, inplace: Optional[bool] = None,
             fld1: Optional[str] = None, fld2: Optional[str] = None,
             method: Optional[str] = None,
-            fl1exlude: Optional[List[str]] = None,
+            fl1exclude: Optional[List[str]] = None,
             fl2exclude: Optional[List[str]] = None,
             strmatch: Optional[str] = None,
     ) -> None:
@@ -511,10 +510,10 @@ class BiomechZoo:
         if within:
             combine_files_within(fld=in_folder, suffix_map=suffix, name_contains=self.name_contains, subfolders=self.subfolders, inplace=inplace, out_folder=out_folder,)
         else:
-            combine_files_between(in_folder=in_folder, fld1=fld1, fld2=fld2, suffix=suffix,  name_contains=self.name_contains,
+            combine_files_between(in_folder=in_folder, fld1=fld1, fld2=fld2, suffix=suffix, name_contains=self.name_contains,
                                   subfolders=self.subfolders,
                                   method=method, inplace=inplace,
-                                  fl1exclude=fl1exlude, fl2exclude=fl2exclude,
+                                  fl1exclude=fl1exclude, fl2exclude=fl2exclude,
                                   out_folder=out_folder, strmatch=strmatch)
 
         self._finish_processing(None, start_time, out_folder, inplace, in_folder)
@@ -546,7 +545,7 @@ class BiomechZoo:
         for f in fl:
             batchdisp('tilt correction of acceleration channels for {}'.format(f), level=2, verbose=self.verbose)
             data = zload(f)
-            data = tilt_algorithm_data(data, ch_vert, chname_medlat, chname_antpost)
+            data = tilt_algorithm_data(data, ch_vert, ch_medlat, ch_antpost)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 
