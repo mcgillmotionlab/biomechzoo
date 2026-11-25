@@ -519,7 +519,7 @@ class BiomechZoo:
         self._finish_processing(None, start_time, out_folder, inplace, in_folder)
 
     def tilt_algorithm(self, ch_vert: str, ch_medlat: str, ch_antpost: str, out_folder: Optional[str] = None,
-                       inplace: Optional[bool] = None, threshold: int=5) -> None:
+                       inplace: Optional[bool] = None) -> None:
         """
         Apply tilt correction for acceleration data.
 
@@ -535,11 +535,6 @@ class BiomechZoo:
             Output folder for processed files.
         inplace : bool, optional
             If True, overwrite in place. Defaults to ``self.inplace``.
-        threshold : int, optional. Default is 5.
-            If average vertical acceleration is more than threshold,
-            data is expressed in m/s^2 and all channels divided by 9.81 to convert to G's.
-            If average vertical acceleration is less than threshold, data is assumed to be in G's
-            and no conversion is applied.
         """
         start_time = time.time()
         in_folder = self.in_folder
@@ -550,7 +545,7 @@ class BiomechZoo:
         for f in fl:
             batchdisp('tilt correction of acceleration channels for {}'.format(f), level=2, verbose=self.verbose)
             data = zload(f)
-            data = tilt_algorithm_data(data, ch_vert, ch_medlat, ch_antpost, threshold)
+            data = tilt_algorithm_data(data, ch_vert, ch_medlat, ch_antpost)
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 

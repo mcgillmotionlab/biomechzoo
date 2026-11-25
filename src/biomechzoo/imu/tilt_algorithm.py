@@ -10,7 +10,7 @@ from biomechzoo.processing.addchannel_data import addchannel_data
 
 def tilt_algorithm_data(
         data: Dict, ch_vert: str, ch_medlat: str, ch_antpost: str,
-        threshold: Optional[int] = 5
+        plot_or_not: Optional[bool] = None,
 ) -> Dict:
     """
     Apply the tilt correction algorithm to the vertical, mediolateral,
@@ -26,11 +26,8 @@ def tilt_algorithm_data(
         Name of the mediolateral acceleration channel.
     ch_antpost : str
         Name of the anteroposterior acceleration channel.
-    threshold : int, optional. Default is 5.
-            If average vertical acceleration is more than threshold,
-            data is expressed in m/s^2 and all channels divided by 9.81 to convert to G's.
-            If average vertical acceleration is less than threshold, data is assumed to be in G's
-            and no conversion is applied.
+    plot_or_not : bool, optional
+        Unused. Reserved for future plotting support.
 
     Returns
     -------
@@ -43,7 +40,7 @@ def tilt_algorithm_data(
     amedlat = data[ch_medlat]['line']
     aantpost = data[ch_antpost]['line']
 
-    _, avert_corr, amedlat_corr, aantpost_corr = tilt_algorithm_line(avert, amedlat, aantpost, threshold)
+    _, avert_corr, amedlat_corr, aantpost_corr = tilt_algorithm_line(avert, amedlat, aantpost)
 
     data = addchannel_data(data, ch_vert + '_tilt_corr', avert_corr)
     data = addchannel_data(data, ch_medlat + '_tilt_corr', amedlat_corr)
@@ -52,8 +49,9 @@ def tilt_algorithm_data(
     return data
 
 
-def tilt_algorithm_line(avert: ArrayLike, amedlat: ArrayLike, aantpost: ArrayLike,
-                        threshold: int=5) -> Tuple[pd.DataFrame, np.ndarray, np.ndarray, np.ndarray]:
+def tilt_algorithm_line(
+        avert: ArrayLike, amedlat: ArrayLike, aantpost: ArrayLike,
+) -> Tuple[pd.DataFrame, np.ndarray, np.ndarray, np.ndarray]:
     """
     Account for gravity and improper tilt alignment of a tri-axial
     trunk accelerometer.
@@ -76,11 +74,6 @@ def tilt_algorithm_line(avert: ArrayLike, amedlat: ArrayLike, aantpost: ArrayLik
     aantpost : array_like
         Data predominantly in anterior-posterior direction. Expressed
         in g's.
-    threshold : int, optional. Default is 5.
-            If average vertical acceleration is more than threshold,
-            data is expressed in m/s^2 and all channels divided by 9.81 to convert to G's.
-            If average vertical acceleration is less than threshold, data is assumed to be in G's
-            and no conversion is applied.
 
     Returns
     -------
@@ -98,8 +91,7 @@ def tilt_algorithm_line(avert: ArrayLike, amedlat: ArrayLike, aantpost: ArrayLik
 
     Notes
     -----
-    - If average acceleration is above 5m/s^2, the signal will be corrected.
-    :param threshold:
+    -  If average acceleration is above 5m/s^2, the signal will be corrected.
 
     """
 
@@ -109,7 +101,7 @@ def tilt_algorithm_line(avert: ArrayLike, amedlat: ArrayLike, aantpost: ArrayLik
 
     # if average vertical acceleration is more than 5, data is expressed in m/s^2
     # Update signals to G's
-    if a_vt > threshold:
+    if a_vt > 5:
         avert /= 9.81
         amedlat /= 9.81
         aantpost /= 9.81
@@ -117,6 +109,8 @@ def tilt_algorithm_line(avert: ArrayLike, amedlat: ArrayLike, aantpost: ArrayLik
         a_vt = avert.mean()
         a_ml = amedlat.mean()
         a_ap = aantpost.mean()
+
+
 
     # if avert is negative than turn the sensor around.
     if a_vt < 0.5:
