@@ -1440,7 +1440,7 @@ class BiomechZoo:
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)
 
-    def rmse(self, suff1:str, suff2:str, export:bool, out_folder=None, inplace=False):
+    def rmse(self, suff1:str, suff2:str, out_folder=None, inplace=False):
         """
         Biomechzoo style implementation of rmse_data
         """
@@ -1448,15 +1448,10 @@ class BiomechZoo:
         in_folder = self.in_folder
         if inplace is None:
             inplace = self.inplace
-        all_rmse = {}
         fl = engine(in_folder, name_contains=self.name_contains, subfolders=self.subfolders)
         for f in fl:
             batchdisp('Calculating RMSE between {} and {} in file {}'.format(suff1, suff2, f), level=2, verbose=self.verbose)
             data = zload(f)
             data = rmse_data(data, suff1=suff1, suff2=suff2)
-            if export:
-                all_rmse[f] = data['zoosystem']["RMSE"].copy()
             zsave(f, data, inplace=inplace, out_folder=out_folder, root_folder=in_folder)
-        if export:
-            export_rmse_csv(all_rmse, out_folder)
         self._finish_processing(len(fl), start_time, out_folder, inplace, in_folder)

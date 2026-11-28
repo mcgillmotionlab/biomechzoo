@@ -8,23 +8,6 @@ def rmse_line(a, b):
         raise ValueError('Shape mismatch: {0} vs {1}'.format(a.shape, b.shape))
     return np.sqrt(np.mean((a - b) ** 2))
 
-def export_rmse_csv(all_rmse: dict, out_folder: str):
-
-    os.makedirs(out_folder, exist_ok=True)
-    out_file = os.path.join(out_folder, 'rmse_results.csv')
-
-    all_keys = sorted({k for rmse in all_rmse.values() for k in rmse})
-
-    with open(out_file, 'w', newline='') as f:
-        w = csv.writer(f)
-        w.writerow(['file'] + all_keys)
-        for filepath, rmse_vals in all_rmse.items():
-            row = [filepath] + [rmse_vals.get(k, '') for k in all_keys]
-            w.writerow(row)
-
-    print('RMSE results exported to: {0}'.format(out_file))
-
-
 def rmse_data(data: dict, suff1: str, suff2: str):
     keys1 = [k for k in data.keys() if k.endswith('_' + suff1)]
     keys2 = [k for k in data.keys() if k.endswith('_' + suff2)]
